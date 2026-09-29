@@ -30,3 +30,7 @@ desktop.ini
 .DS_Store
 .vscode/
 .idea/
+
+# Render previews / logs
+02_Blender/04_Renders/_preview.png
+**/_render_log.txt
