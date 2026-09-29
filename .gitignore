@@ -34,3 +34,7 @@ desktop.ini
 # Render previews / logs
 02_Blender/04_Renders/_preview.png
 **/_render_log.txt
+
+# Video frame sequences (the encoded .mp4 is kept)
+02_Blender/04_Renders/animation/frames/
+**/_blender_stdout.txt
