@@ -1,0 +1,21 @@
+# Text
+* text=auto
+*.md   text eol=lf
+*.py   text eol=lf
+*.gns3 text eol=lf
+
+# Binaries via Git LFS
+*.blend filter=lfs diff=lfs merge=lfs -text
+*.png   filter=lfs diff=lfs merge=lfs -text
+*.jpg   filter=lfs diff=lfs merge=lfs -text
+*.jpeg  filter=lfs diff=lfs merge=lfs -text
+*.exr   filter=lfs diff=lfs merge=lfs -text
+*.hdr   filter=lfs diff=lfs merge=lfs -text
+*.mp4   filter=lfs diff=lfs merge=lfs -text
+*.mov   filter=lfs diff=lfs merge=lfs -text
+*.pptx  filter=lfs diff=lfs merge=lfs -text
+*.docx  filter=lfs diff=lfs merge=lfs -text
+*.xlsx  filter=lfs diff=lfs merge=lfs -text
+*.pdf   filter=lfs diff=lfs merge=lfs -text
+*.gns3project filter=lfs diff=lfs merge=lfs -text
+*.pkt   filter=lfs diff=lfs merge=lfs -text

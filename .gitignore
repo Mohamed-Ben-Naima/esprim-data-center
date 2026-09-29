@@ -1,0 +1,32 @@
+# Blender backups and autosaves
+*.blend1
+*.blend2
+*.blend@
+*.autosave.blend
+quit.blend
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# GNS3 runtime files (keep the .gns3 project + configs, not the disks/captures)
+03_Network/**/project-files/qemu/
+03_Network/**/project-files/docker/
+03_Network/**/project-files/captures/
+*.qcow2
+*.vmdk
+*.iso
+*.img
+*.pcap
+*.pcapng
+
+# Office lock files
+~$*
+
+# OS / editors
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/
