@@ -13,18 +13,19 @@ services that run on it.
 | `02_Blender/` | 3D model of the campus (scenes, scripts, textures, renders) |
 | `03_Network/` | GNS3 / Packet Tracer projects, topology, IP and VLAN plan |
 | `04_Code/` | Automation and configuration scripts |
-| `05_Report/` | Final report and presentation |
+| `05_Report/` | Report (French, .docx + .pdf) and presentation |
+| `06_Documentation/` | Technical documentation: architecture decisions, site, Blender guide, Git workflow, roadmap |
 
 ## Phases
 
 1. Conception - plan and sizing (done)
-2. Exterior in Blender - campus, three buildings, parking, power, cameras (done, v02)
+2. Exterior in Blender - campus, three buildings, parking, power, cameras (done, v04: photoreal renders + drone video)
 3. Interiors - white room, technical rooms, NOC
 4. Network design in GNS3
 5. Services and security
 6. Deliverables - renders, video, report, presentation
 
-See `01_Planning/ESPRIM_DC_Project_Plan.md` for details.
+See `06_Documentation/` for the full technical documentation and `05_Report/` for the phase 1–2 report.
 
 ## Working rules
 
