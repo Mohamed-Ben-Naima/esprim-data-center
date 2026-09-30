@@ -38,3 +38,4 @@ desktop.ini
 # Video frame sequences (the encoded .mp4 is kept)
 02_Blender/04_Renders/animation/frames/
 **/_blender_stdout.txt
+**/_blender_stdout*.txt

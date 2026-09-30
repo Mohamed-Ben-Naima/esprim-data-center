@@ -15,7 +15,7 @@ v.render.resolution_x=1920; v.render.resolution_y=1080; v.render.resolution_perc
 v.render.fps=30; v.frame_start=1; v.frame_end=1020
 se=v.sequence_editor_create()
 files=sorted(glob.glob(os.path.join(frames,"f_*.png")))
-strips=getattr(se,"strips",None) or se.sequences
+strips=se.strips if hasattr(se,"strips") else se.sequences
 s=strips.new_image("frames",files[0],1,1)
 for f in files[1:]: s.elements.append(os.path.basename(f))
 v.view_settings.view_transform="Standard"
@@ -26,6 +26,5 @@ ims.file_format="FFMPEG"
 ff=v.render.ffmpeg; ff.format="MPEG4"; ff.codec="H264"; ff.constant_rate_factor="HIGH"; ff.ffmpeg_preset="GOOD"; ff.audio_codec="NONE"
 v.render.filepath=os.path.join(anim,"DC_Drone_Flythrough.mp4")
 v.render.use_file_extension=False
-bpy.context.window_scene=v if bpy.context.window else None
 bpy.ops.render.render(animation=True, scene=v.name)
 w("ALL DONE")
