@@ -19,3 +19,9 @@
 *.pdf   filter=lfs diff=lfs merge=lfs -text
 *.gns3project filter=lfs diff=lfs merge=lfs -text
 *.pkt   filter=lfs diff=lfs merge=lfs -text
+
+# Device configs / scripts pushed to Linux & network consoles must keep LF
+03_Network/configs/** text eol=lf
+03_Network/docker/** text eol=lf
+*.yaml text eol=lf
+*.sh   text eol=lf

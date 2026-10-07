@@ -8,7 +8,7 @@ Table: Plateforme matérielle et logicielle
 | Hôte | PC Windows 11, 15,7 Go de RAM (le dossier de conception visait 32 Go) |
 | Hyperviseur | VMware Workstation, VM « GNS3 VM » stockée sur `H:\GNS3 VM` |
 | GNS3 | Version 2.2.56.1 (client, serveur local et serveur de la VM identiques) |
-| Ressources allouées à la VM | 10 Go de RAM, 3 vCPU, virtualisation imbriquée (VT-x) activée |
+| Ressources allouées à la VM | 10 Go de RAM, 6 vCPU (au lieu de 3, voir « Incidents de plateforme »), virtualisation imbriquée (VT-x), KSM activé |
 | Exécution des nœuds | Tous les nœuds QEMU et Docker s'exécutent dans la GNS3 VM (compute `vm`) |
 
 ## Remise en état de l'environnement
@@ -136,3 +136,46 @@ route-map RM-ISP-B-OUT permit 10
 > Le suivi `track 10` diminue la priorité HSRP d'un Edge qui perd sa route par défaut. Comme chaque Edge reçoit
 > aussi la route par défaut de son voisin en iBGP, un Edge isolé de ses deux opérateurs continue d'acheminer le
 > trafic via l'autre Edge : le service est maintenu, au prix d'un détour par le lien inter-Edge.
+
+## Pilotage du laboratoire
+
+Les équipements ne sont jamais configurés « à la main » dans les consoles. Le module `automation/labctl.py` pilote
+le laboratoire de bout en bout :
+
+- **client de l'API GNS3** (`/v2`) : ouverture du projet, démarrage et arrêt des nœuds, suspension de liens pour
+  les tests de panne, écriture de fichiers dans les conteneurs ;
+- **pilote de console** : client telnet minimal (négociation d'options, attente d'invites par expressions
+  régulières), gestion des dialogues du premier démarrage IOS, authentification AAA, mode privilégié ;
+- **déploiement** : collage de la configuration générée ligne par ligne, détection des lignes refusées par
+  l'équipement (`% Invalid input`, `% Incomplete command`…), puis `write memory` ;
+- **preuves** : chaque commande de vérification peut être enregistrée dans `report/evidence/` avec son horodatage,
+  pour être reprise dans ce rapport.
+
+Le module `automation/gns3vm.py` exécute des scripts dans la GNS3 VM au travers de VMware Tools (sans SSH) ; il sert
+aux opérations de plateforme (Docker, réglages du noyau, diagnostics).
+
+```text title="labctl.py show CORE-A (show version | include IOS|uptime) --save"
+Cisco IOS Software, vios_l2 Software (vios_l2-ADVENTERPRISEK9-M), Experimental Version 15.2(20170321:233949) [mmen 101]
+ROM: Bootstrap program is IOSv
+Switch uptime is 8 minutes
+Cisco IOSv () processor (revision 1.0) with 574705K/209920K bytes of memory.
+saved report/evidence/CORE-A__show_version_include_ios_uptime.txt
+```
+
+## Incidents de plateforme
+
+La mise au point du pilote a révélé deux défauts de la plateforme, qui auraient rendu les tests de résilience
+non significatifs s'ils n'avaient pas été corrigés.
+
+Table: Incidents de plateforme et corrections
+| Incident | Diagnostic | Correction |
+|---|---|---|
+| Saturation CPU de la GNS3 VM (charge ≈ 8 pour 3 vCPU, 98 % d'occupation) avec les 25 nœuds démarrés | Chaque IOSvL2 consomme ≈ 34 % d'un cœur au repos (pas d'optimisation *idle-PC*), les IOSv ≈ 17 %, KSM ≈ 24 % | VM portée à **6 vCPU** (hôte i5-11400H, 12 threads) par l'API GNS3 ; KSM ralenti (200 pages / 100 ms, service `ksm-tune` persistant) ; démarrage des nœuds par étapes |
+| Plantage systématique des IOSvL2 environ une minute après le démarrage (`CPU exception occurred: Overflow(4)`, `PC/EIP = 0x8E18E9`), console muette, CPU à 100 % | Défaut connu de l'image IOSvL2 03.2017 avec les types de machine QEMU récents (QEMU 8.0.4 dans la VM) ; le disque était sain (`qemu-img check`) | Option QEMU `-machine pc-q35-4.2` appliquée aux 6 nœuds IOSvL2, au modèle GNS3 et au générateur de topologie |
+
+![Écran VGA de CORE-A capturé par le moniteur QEMU : démarrage bloqué après le plantage IOSvL2](../screenshots/01_iosvl2_boot_hang.png){width=420}
+
+> [!OK] Vérification
+> Après correction, CORE-A démarre et reste stable ; la console répond (`Switch#`) et le pilote récupère la sortie
+> des commandes. Mémoire de la VM avec les 25 nœuds démarrés : 3,6 Go utilisés sur 9,9 Go grâce à la déduplication
+> KSM (≈ 6 Go de pages identiques partagées entre les IOSv, IOSvL2 et Ubuntu).

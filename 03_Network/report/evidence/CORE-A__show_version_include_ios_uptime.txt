@@ -1,0 +1,5 @@
+# CORE-A – show version | include IOS|uptime – 2026-10-07 13:07:54
+Cisco IOS Software, vios_l2 Software (vios_l2-ADVENTERPRISEK9-M), Experimental Version 15.2(20170321:233949) [mmen 101]
+ROM: Bootstrap program is IOSv
+Switch uptime is 8 minutes
+Cisco IOSv () processor (revision 1.0) with 574705K/209920K bytes of memory.

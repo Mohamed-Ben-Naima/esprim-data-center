@@ -72,7 +72,7 @@ Table: Avancement des sous-tâches
 | 0.2 | Arborescence `03_Network`, plan, chaîne de génération du rapport | **Terminé** |
 | 1.1 | Inventaire source de vérité et contrôle de cohérence | **Terminé** |
 | 1.2 | Générateurs de configurations et de tableaux | **Terminé** |
-| 1.3 | Pilotage du laboratoire (API GNS3, consoles) | À faire |
+| 1.3 | Pilotage du laboratoire (API GNS3, consoles) et correctifs de plateforme | **Terminé** |
 | 2.1 – 2.3 | Évolutions de topologie, images Docker, budget mémoire | À faire |
 | 3.1 – 3.3 | WAN et bordure | À faire |
 | 4.1 – 4.4 | Pare-feux pfSense HA | À faire |

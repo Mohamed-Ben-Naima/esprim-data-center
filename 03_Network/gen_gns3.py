@@ -145,6 +145,7 @@ def node_json(n):
         ram = 768
         base.update(node_type="qemu", first_port_name="", port_name_format="Gi{1}/{0}", port_segment_size=4,
                     properties=dict(qemu_common, adapters=CAP[k], adapter_type="e1000",
+                                    options="-machine pc-q35-4.2",  # IOSvL2 crashes (CPU vector 4) on newer machine types
                                     hda_disk_image=IMG_IOSVL2, hda_disk_interface="virtio", ram=ram))
     elif k == "pfsense":
         base.update(node_type="qemu", first_port_name="", port_name_format="em{0}", port_segment_size=0,

@@ -113,6 +113,7 @@ def cisco_base(name, d):
         "login on-failure log",
         "login on-success log",
         "!",
+        "crypto key generate rsa modulus 2048",
         "ip ssh version 2",
         "ip ssh time-out 60",
         "ip ssh authentication-retries 3",

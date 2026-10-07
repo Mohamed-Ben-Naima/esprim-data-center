@@ -1,0 +1,5 @@
+# EDGE-A – show version | include IOS|uptime|processor – 2026-10-07 12:33:05
+Cisco IOS Software, IOSv Software (VIOS-ADVENTERPRISEK9-M), Version 15.9(3)M6, RELEASE SOFTWARE (fc1)
+ROM: Bootstrap program is IOSv
+Router uptime is 52 minutes
+Cisco IOSv (revision 1.0) with  with 410869K/111616K bytes of memory.
