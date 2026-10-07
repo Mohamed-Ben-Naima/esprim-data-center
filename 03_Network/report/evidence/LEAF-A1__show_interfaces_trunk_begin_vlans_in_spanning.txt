@@ -1,0 +1,4 @@
+# LEAF-A1 – show interfaces trunk | begin Vlans in spanning – 2026-10-07 19:03:10
+Port        Vlans in spanning tree forwarding state and not pruned
+Gi0/0       20,40,60,100
+Gi0/1       30,70,80

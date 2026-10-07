@@ -1,0 +1,13 @@
+# CORE-B – show spanning-tree root | exclude ^$ – 2026-10-07 19:02:23
+                                        Root    Hello Max Fwd
+Vlan                   Root ID          Cost    Time  Age Dly  Root Port
+---------------- -------------------- --------- ----- --- ---  ------------
+VLAN0020          4116 0cd6.99bb.0000         3    2   20  15  Po1             
+VLAN0030          4126 0c3d.6fac.0000         0    2   20  15                  
+VLAN0040          4136 0cd6.99bb.0000         3    2   20  15  Po1             
+VLAN0060          4156 0cd6.99bb.0000         3    2   20  15  Po1             
+VLAN0070          4166 0c3d.6fac.0000         0    2   20  15                  
+VLAN0080          4176 0c3d.6fac.0000         0    2   20  15                  
+VLAN0100          4196 0cd6.99bb.0000         3    2   20  15  Po1             
+VLAN0902          4998 0cd6.99bb.0000         3    2   20  15  Po1             
+VLAN0998          5094 0cd6.99bb.0000         3    2   20  15  Po1

@@ -92,9 +92,9 @@ Table: Synthèse de la vérification des pare-feux
 | Règles étiquetées | Chaque règle porte sa référence (T18-x) dans son libellé pf | Traçabilité |
 
 > [!WARN] Points en attente des phases suivantes
-> - Sur le segment LAN (VLAN 902), FW-B est également maître du vhid 2 : les annonces CARP ne circulent pas encore
->   entre les deux pare-feux car CORE-A et CORE-B, qui portent ce segment, ne sont pas démarrés. La situation sera
->   vérifiée après la configuration du cœur (phase 5).
+> - Résolu en phase 5 : tant que le cœur n'était pas démarré, FW-B était également maître du vhid 2 (LAN), les
+>   annonces CARP ne circulant pas sur le segment 902 ; une fois CORE-A et CORE-B configurés, FW-B est passé
+>   BACKUP sur les cinq VIP.
 > - Les flux autorisés et refusés par la politique seront mesurés de bout en bout lorsque les serveurs seront en
 >   service (matrice de flux, phase 6).
 > - Le trafic propre de FW-B vers Internet n'aboutit que lorsqu'il est maître : la traduction vers 192.0.2.10, VIP

@@ -1,0 +1,4 @@
+# CORE-A – show ip ospf neighbor – 2026-10-07 19:01:47
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+10.255.0.22       1   FULL/BDR        00:00:31    10.254.2.3      Vlan902
+10.255.0.22       0   FULL/  -        00:00:02    10.254.4.2      Vlan998

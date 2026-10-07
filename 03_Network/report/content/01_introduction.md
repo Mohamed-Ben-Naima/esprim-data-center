@@ -78,7 +78,7 @@ Table: Avancement des sous-tâches
 | 2.3 | Budget de ressources et démarrage par étapes | **Terminé** |
 | 3.1 – 3.3 | WAN et bordure : FRR opérateurs, Edge (BGP, OSPF, HSRP), vérification | **Terminé** |
 | 4.1 – 4.4 | Pare-feux pfSense HA : installation, configuration générée, CARP, pfsync, NAT | **Terminé** (validation de bout en bout en phase 6) |
-| 5.1 – 5.3 | Cœur, Leaf, durcissement | À faire |
+| 5.1 – 5.3 | Cœur, Leaf, durcissement : HSRP, RPVST+, LACP, OSPF, ACL, VRF MGMT | **Terminé** |
 | 6.1 – 6.4 | Serveurs et conteneurs | À faire |
 | 7.1 – 7.3 | Supervision | À faire |
 | 8.1 – 8.2 | Tests de résilience | À faire |

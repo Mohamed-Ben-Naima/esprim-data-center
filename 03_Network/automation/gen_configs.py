@@ -69,7 +69,16 @@ def label(dev, port, to, role):
     return f"{node_space(dev)}-{dev}:{port} -> {node_space(peer)}-{peer}:{pport} | {role}"[:200]
 
 
+def ascii_only(text):
+    """IOS consoles reject non-ASCII bytes: transliterate accents and typographic dashes (é->e, –->-, œ->oe)."""
+    import unicodedata
+    text = text.replace("–", "-").replace("—", "-").replace("œ", "oe").replace("Œ", "OE").replace("’", "'")
+    return unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
+
+
 def write(path, text):
+    if path.suffix == ".cfg":
+        text = ascii_only(text)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text.rstrip() + "\n", encoding="utf-8", newline="\n")
 
@@ -470,8 +479,10 @@ def gen_leaf(name, d):
                   f" switchport trunk allowed vlan {trunk_data}", " switchport nonegotiate"]
         elif p["mode"] == "access":
             L += [" switchport mode access", f" switchport access vlan {p['vlan']}", " switchport nonegotiate",
-                  " spanning-tree portfast", " spanning-tree bpduguard enable",
-                  " storm-control broadcast level 10.00", " storm-control action trap"]
+                  " spanning-tree portfast", " spanning-tree bpduguard enable"]
+            # storm-control: not implemented by the IOSvL2 image (rejected), kept for physical switches
+            if d["platform"] != "iosvl2":
+                L += [" storm-control broadcast level 10.00", " storm-control action trap"]
         elif p["mode"] == "mgmt":
             L += [" switchport mode access", " switchport access vlan 10", " switchport nonegotiate", " spanning-tree portfast"]
         L += [" no shutdown", "!"]

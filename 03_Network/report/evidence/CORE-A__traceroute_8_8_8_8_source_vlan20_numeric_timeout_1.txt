@@ -1,0 +1,4 @@
+# CORE-A – traceroute 8.8.8.8 source Vlan20 numeric timeout 1 ttl 1 5 – 2026-10-07 19:03:47
+traceroute 8.8.8.8 source Vlan20 numeric timeout 1 ttl 1 5
+                   ^
+% Invalid input detected at '^' marker.

@@ -1,0 +1,12 @@
+# CORE-A – show standby brief – 2026-10-07 19:01:30
+                     P indicates configured to preempt.
+                     |
+Interface   Grp  Pri P State   Active          Standby         Virtual IP
+Vl20        20   110 P Active  local           10.20.0.3       10.20.0.1
+Vl30        30   90  P Standby 10.30.0.3       local           10.30.0.1
+Vl40        40   110 P Active  local           10.40.0.3       10.40.0.1
+Vl60        60   110 P Active  local           10.60.0.3       10.60.0.1
+Vl70        70   90  P Standby 10.70.0.3       local           10.70.0.1
+Vl80        80   90  P Standby 10.80.0.3       local           10.80.0.1
+Vl100       100  110 P Active  local           10.100.0.3      10.100.0.1
+Vl902       902  110 P Active  local           10.254.2.3      10.254.2.6

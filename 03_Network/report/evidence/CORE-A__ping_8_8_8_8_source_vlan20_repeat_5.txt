@@ -1,0 +1,6 @@
+# CORE-A – ping 8.8.8.8 source Vlan20 repeat 5 – 2026-10-07 19:03:27
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 8.8.8.8, timeout is 2 seconds:
+Packet sent with a source address of 10.20.0.2 
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 40/105/244 ms

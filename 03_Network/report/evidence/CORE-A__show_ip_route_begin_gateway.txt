@@ -1,0 +1,26 @@
+# CORE-A – show ip route | begin Gateway – 2026-10-07 19:01:54
+Gateway of last resort is 10.254.2.1 to network 0.0.0.0
+
+S*    0.0.0.0/0 [1/0] via 10.254.2.1
+      10.0.0.0/8 is variably subnetted, 20 subnets, 4 masks
+C        10.20.0.0/24 is directly connected, Vlan20
+L        10.20.0.2/32 is directly connected, Vlan20
+C        10.30.0.0/24 is directly connected, Vlan30
+L        10.30.0.2/32 is directly connected, Vlan30
+C        10.40.0.0/24 is directly connected, Vlan40
+L        10.40.0.2/32 is directly connected, Vlan40
+C        10.60.0.0/24 is directly connected, Vlan60
+L        10.60.0.2/32 is directly connected, Vlan60
+C        10.70.0.0/24 is directly connected, Vlan70
+L        10.70.0.2/32 is directly connected, Vlan70
+C        10.80.0.0/24 is directly connected, Vlan80
+L        10.80.0.2/32 is directly connected, Vlan80
+C        10.100.0.0/24 is directly connected, Vlan100
+L        10.100.0.2/32 is directly connected, Vlan100
+C        10.254.2.0/28 is directly connected, Vlan902
+L        10.254.2.2/32 is directly connected, Vlan902
+C        10.254.4.0/30 is directly connected, Vlan998
+L        10.254.4.1/32 is directly connected, Vlan998
+C        10.255.0.21/32 is directly connected, Loopback0
+O        10.255.0.22/32 [110/101] via 10.254.4.2, 00:08:49, Vlan998
+                        [110/101] via 10.254.2.3, 00:04:31, Vlan902

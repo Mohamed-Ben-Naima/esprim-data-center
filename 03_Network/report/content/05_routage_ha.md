@@ -71,3 +71,87 @@ Table: Synthèse de la vérification de la bordure
   2  *
 %SEC-6-IPACCESSLOGDP: list ACL-WAN-IN denied icmp 192.168.42.1 -> 198.51.100.2 (0/0), 1 packet
 ```
+
+## Cœur et distribution
+
+Le cœur (MDA) est constitué de deux commutateurs de niveau 3 reliés par un **Port-channel LACP** de deux liens.
+Ils portent les passerelles des VLAN métier en **HSRPv2** et routent entre ces VLAN en appliquant le filtrage du
+tableau 18. Chaque Leaf (HDA) est relié aux deux cœurs ; les serveurs sont raccordés à deux Leaf du même hall.
+
+Table: Répartition des rôles entre les cœurs (racine spanning-tree alignée sur la passerelle active)
+| VLAN | Passerelle virtuelle | HSRP actif (priorité 110) | Racine RPVST+ (priorité 4096) | Secours |
+|---|---|---|---|---|
+| 20 SERVEURS | 10.20.0.1 | CORE-A | CORE-A | CORE-B (90 / 8192) |
+| 30 STOCKAGE | 10.30.0.1 | CORE-B | CORE-B | CORE-A |
+| 40 BACKUP | 10.40.0.1 | CORE-A | CORE-A | CORE-B |
+| 60 MONITORING | 10.60.0.1 | CORE-A | CORE-A | CORE-B |
+| 70 BMS-DCIM | 10.70.0.1 | CORE-B | CORE-B | CORE-A |
+| 80 SECURITE-CCTV | 10.80.0.1 | CORE-B | CORE-B | CORE-A |
+| 100 SERVICES-INT | 10.100.0.1 | CORE-A | CORE-A | CORE-B |
+| 902 TRANSIT-INT | 10.254.2.6 (pour les pare-feux) | CORE-A | CORE-A | CORE-B |
+
+Aligner la racine spanning-tree sur la passerelle HSRP active évite que le trafic d'un VLAN traverse le lien
+inter-cœurs pour atteindre sa passerelle : le chemin de commutation et le chemin de routage coïncident.
+
+Table: Mécanismes de la couche cœur/distribution
+| Mécanisme | Configuration | Objectif |
+|---|---|---|
+| Rapid PVST+ (IEEE 802.1w) | Une instance par VLAN, racines réparties, *loop guard* global | Reconvergence rapide, aucune boucle |
+| LACP (IEEE 802.3ad) | Po1 = Gi0/2 + Gi0/3, trunk des VLAN 20–100, 902, 998 | Lien inter-cœurs redondant |
+| HSRPv2 | Temporisateurs 250/750 ms, préemption différée 30 s, authentification MD5 | Bascule de passerelle en moins d'une seconde |
+| OSPF zone 0 | Adjacence sur Vlan998 (point à point) et Vlan902 ; interfaces passives par défaut | Accessibilité des loopbacks, redondance |
+| Route par défaut | `0.0.0.0/0` vers le VIP CARP des pare-feux 10.254.2.1 | Sortie Internet et DMZ inspectée |
+| ACL inter-VLAN | ACL entrante sur chaque SVI : flux du tableau 18, réponses, refus journalisé | Segmentation interne (A.8.22) |
+| Ports serveurs (Leaf) | Accès dans le VLAN du serveur, PortFast, BPDU Guard, *storm-control* | Protection contre boucles et tempêtes |
+| Ports inutilisés | VLAN 999, désactivés | Réduction de la surface d'attaque |
+| Management | VRF MGMT sur Gi2/0 (cœurs), SVI VLAN 10 non transportée (Leaf) | Isolation du plan de gestion |
+
+## Vérification du cœur et de la distribution
+
+Les six commutateurs IOSvL2 ont été configurés par `labctl.py push` puis contrôlés. Deux limites de l'image IOSvL2
+sont apparues lors du déploiement, sans effet sur la fonction : la commande `storm-control` n'est pas implémentée
+(elle est désormais omise pour cette plateforme et conservée pour des commutateurs physiques), et la console refuse
+les caractères non ASCII des descriptions et remarques (le générateur translittère désormais les accents).
+
+```text title="CORE-A – show standby brief"
+Interface   Grp  Pri P State   Active          Standby         Virtual IP
+Vl20        20   110 P Active  local           10.20.0.3       10.20.0.1
+Vl30        30   90  P Standby 10.30.0.3       local           10.30.0.1
+Vl40        40   110 P Active  local           10.40.0.3       10.40.0.1
+Vl60        60   110 P Active  local           10.60.0.3       10.60.0.1
+Vl70        70   90  P Standby 10.70.0.3       local           10.70.0.1
+Vl80        80   90  P Standby 10.80.0.3       local           10.80.0.1
+Vl100       100  110 P Active  local           10.100.0.3      10.100.0.1
+Vl902       902  110 P Active  local           10.254.2.3      10.254.2.6
+```
+
+```text title="CORE-A – show etherchannel summary / show ip ospf neighbor"
+Group  Port-channel  Protocol    Ports
+1      Po1(SU)         LACP      Gi0/2(P)    Gi0/3(P)
+
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+10.255.0.22       1   FULL/BDR        00:00:31    10.254.2.3      Vlan902
+10.255.0.22       0   FULL/  -        00:00:02    10.254.4.2      Vlan998
+```
+
+```text title="LEAF-A1 – répartition des VLAN sur les deux uplinks (Rapid PVST+)"
+Port        Vlans in spanning tree forwarding state and not pruned
+Gi0/0       20,40,60,100          <- vers CORE-A (racine de ces VLAN)
+Gi0/1       30,70,80              <- vers CORE-B (racine de ces VLAN)
+VLAN 20 :  Gi0/0  Root FWD   |   Gi0/1  Altn BLK
+```
+
+Table: Synthèse de la vérification du cœur et de la distribution
+| Contrôle | Résultat | Attendu |
+|---|---|---|
+| HSRP actif par VLAN | CORE-A : 20, 40, 60, 100, 902 ; CORE-B : 30, 70, 80 | Conforme au tableau 15 du dossier |
+| Racines RPVST+ | Alignées sur la passerelle active de chaque VLAN | Alignées |
+| Port-channel Po1 | LACP, 2 membres actifs (SU / P) | 2/2 |
+| OSPF entre cœurs | 2 adjacences FULL (Vlan998, Vlan902) | 2 |
+| Uplinks des Leaf | Chaque uplink achemine les VLAN de « son » cœur, l'autre est en secours (BLK) | Partage de charge par VLAN |
+| Management | VRF MGMT sur Gi2/0 ; 10.10.0.0/24 absent de la table globale | Isolé |
+| Sortie Internet depuis le VLAN 20 | `ping 8.8.8.8 source Vlan20` : 5/5 (cœur → pare-feu → SNAT → Edge → ISP) | Succès |
+| ICMP vers le VIP du pare-feu depuis le transit | 0/3 (seul le VLAN 60 est autorisé, T18-7) | Refusé |
+| CARP sur le LAN des pare-feux | FW-B BACKUP sur les 5 VIP, lagg0 actif sur em3 | FW-A maître |
+
+![FW-B après démarrage du cœur : BACKUP sur les cinq VIP, lagg0 en basculement em3 (actif) / em4 (secours)](../screenshots/16_fw-b_carp_backup_all.png){width=440}

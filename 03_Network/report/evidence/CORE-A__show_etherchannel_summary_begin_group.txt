@@ -1,0 +1,4 @@
+# CORE-A – show etherchannel summary | begin Group – 2026-10-07 19:01:35
+Group  Port-channel  Protocol    Ports
+------+-------------+-----------+-----------------------------------------------
+1      Po1(SU)         LACP      Gi0/2(P)    Gi0/3(P)

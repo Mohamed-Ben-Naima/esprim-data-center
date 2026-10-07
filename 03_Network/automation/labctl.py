@@ -336,6 +336,58 @@ class Ios:
             self.c.expect(r"#\s*$", 120)
 
 
+# =========================================================================================== Linux (serial console)
+class Linux:
+    """Ubuntu cloud image on a serial console: login (ubuntu/ubuntu via GNS3 cloud-init ISO), root shell,
+    commands with an exit-code marker so output and status are captured reliably."""
+
+    def __init__(self, con, user="ubuntu", password="ubuntu"):
+        self.c, self.user, self.password = con, user, password
+        self.n = 0
+
+    def login(self, timeout=600):
+        c = self.c
+        end = time.time() + timeout
+        c.send("")
+        while time.time() < end:
+            try:
+                k, _, _ = c.expect([r"login:\s*$", r"Password:\s*$", r"\$\s*$", r"#\s*$"], timeout=10)
+            except TimeoutError:
+                c.send("")
+                continue
+            if k == 0:
+                c.send(self.user)
+            elif k == 1:
+                c.send(self.password)
+            elif k == 2:
+                c.send("sudo -i")
+            elif k == 3:
+                c.send("export TERM=dumb PS1='# '; stty -echo cols 250; dmesg -n 1")
+                time.sleep(1); c.read(1)
+                return True
+        raise TimeoutError("linux login")
+
+    def run(self, cmd, timeout=120):
+        """Run a shell command as root; returns (rc, output)."""
+        self.n += 1
+        tag = f"__RC{self.n}_"
+        self.c.read(0.2)
+        self.c.buf = ""
+        self.c.send(f"{cmd} ; echo {tag}$?__")
+        _, m, before = self.c.expect(re.escape(tag) + r"(\d+)__", timeout)
+        rc = int(m.group(1))
+        out = before.replace(cmd, "", 1).strip("\n")
+        return rc, out
+
+    def put_file(self, path, text, mode="644"):
+        """Write a text file through the console (base64, chunked)."""
+        b = base64.b64encode(text.replace("\r\n", "\n").encode()).decode()
+        self.run(f"rm -f /tmp/.up && : > /tmp/.up")
+        for i in range(0, len(b), 600):
+            self.run(f"echo '{b[i:i + 600]}' >> /tmp/.up")
+        return self.run(f"base64 -d /tmp/.up > {path} && chmod {mode} {path} && rm -f /tmp/.up")
+
+
 # =========================================================================================== evidence
 def save_evidence(node, command, output):
     EVIDENCE.mkdir(parents=True, exist_ok=True)

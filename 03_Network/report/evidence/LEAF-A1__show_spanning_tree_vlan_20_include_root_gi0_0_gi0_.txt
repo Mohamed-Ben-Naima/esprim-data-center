@@ -1,0 +1,4 @@
+# LEAF-A1 – show spanning-tree vlan 20 | include Root|Gi0/0|Gi0/1 – 2026-10-07 19:03:15
+  Root ID    Priority    4116
+Gi0/0               Root FWD 4         128.1    P2p 
+Gi0/1               Altn BLK 4         128.2    P2p
