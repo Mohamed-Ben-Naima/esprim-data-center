@@ -179,3 +179,29 @@ Table: Incidents de plateforme et corrections
 > Après correction, CORE-A démarre et reste stable ; la console répond (`Switch#`) et le pilote récupère la sortie
 > des commandes. Mémoire de la VM avec les 25 nœuds démarrés : 3,6 Go utilisés sur 9,9 Go grâce à la déduplication
 > KSM (≈ 6 Go de pages identiques partagées entre les IOSv, IOSvL2 et Ubuntu).
+
+## Évolutions de la topologie
+
+Les évolutions décidées lors de la conception (segment SW-OUT, accès Internet, poste d'administration) sont
+appliquées au projet en cours d'exécution par `automation/apply_topology.py`, au travers de l'API GNS3. Le script est
+**idempotent** : une seconde exécution ne modifie rien (« already up to date »). Le générateur de topologie
+`gen_gns3.py` et le plan de câblage ont été mis à jour de la même façon, afin que le projet reste reproductible.
+
+Table: Modifications appliquées au projet GNS3
+| Modification | Détail | Justification |
+|---|---|---|
+| Ajout de SW-OUT | Commutateur GNS3, 4 ports en VLAN 901 : EDGE-A Gi0/3, EDGE-B Gi0/3, FW-A em0, FW-B em0 | Segment partagé portant le VIP CARP des pare-feux et le VIP HSRP des Edge |
+| Suppression de 4 liens | Liens directs Edge–pare-feu ; EDGE-A/B Gi0/4 et FW-A/B em1 restent libres (désactivés) | Remplacés par le segment SW-OUT |
+| Accès Internet | ISP-A et ISP-B passent à 3 interfaces ; `eth2` relié aux nœuds NAT-A et NAT-B | Installation des services et tests vers de vraies destinations |
+| Poste ADMIN-WS | Conteneur `gns3/webterm` (navigateur, console VNC) sur SW-MGMT Ethernet11, VLAN 90 | Administration des interfaces web, captures d'écran |
+| VLAN des commutateurs GNS3 | SW-OUT : 901 ; SW-DMZ : 50 ; SW-MGMT : 10 (équipements), trunk 802.1Q vers FW-A/B em6, 90 (bastion, ADMIN-WS) ; ports libres en 999 | Conformité au plan de VLAN |
+| Disposition et cadres de zones | Nœuds rangés par couche ; cadres ER/MMR, MDA, Hall A, Hall B | Lisibilité, correspondance avec les espaces TIA-942 |
+
+Un second script, `automation/verify_topology.py`, compare le projet en cours d'exécution à l'inventaire : chaque
+lien attendu doit exister, aucun lien inattendu ne doit être présent et chaque port des commutateurs GNS3 doit porter
+le bon VLAN.
+
+```text title="verify_topology.py – projet GNS3 comparé à l'inventaire"
+live links: 60  inventory links: 60  nodes: 31
+RESULT: OK - GNS3 topology matches the inventory
+```

@@ -4,10 +4,10 @@ WAN eBGP,ISP-A,eth1,EDGE-B,Gi0/0
 WAN eBGP,ISP-B,eth0,EDGE-A,Gi0/1
 WAN eBGP,ISP-B,eth1,EDGE-B,Gi0/1
 iBGP,EDGE-A,Gi0/2,EDGE-B,Gi0/2
-Edge-FW (outside),EDGE-A,Gi0/3,FW-A,em0
-Edge-FW (outside),EDGE-A,Gi0/4,FW-B,em0
-Edge-FW (outside),EDGE-B,Gi0/3,FW-A,em1
-Edge-FW (outside),EDGE-B,Gi0/4,FW-B,em1
+Transit externe VLAN 901,EDGE-A,Gi0/3,SW-OUT,Ethernet0
+Transit externe VLAN 901,EDGE-B,Gi0/3,SW-OUT,Ethernet1
+Transit externe VLAN 901,FW-A,em0,SW-OUT,Ethernet2
+Transit externe VLAN 901,FW-B,em0,SW-OUT,Ethernet3
 FW HA sync 10.254.3.0/30,FW-A,em2,FW-B,em2
 FW-Core (inside),FW-A,em3,CORE-A,Gi0/0
 FW-Core (inside),FW-A,em4,CORE-B,Gi0/0
@@ -45,6 +45,8 @@ Hall B server NIC1,SRV-DCIM-01,eth1,LEAF-B2,Gi1/1
 Hall B service,SYSLOG,eth0,LEAF-B1,Gi1/2
 Hall B service,BMS-SIM,eth0,LEAF-B2,Gi1/2
 Hall B service,CCTV-SIM,eth0,LEAF-B2,Gi1/3
+Internet uplink (NAT),ISP-A,eth2,NAT-A,nat0
+Internet uplink (NAT),ISP-B,eth2,NAT-B,nat0
 OOB management,EDGE-A,Gi0/5,SW-MGMT,Ethernet0
 OOB management,EDGE-B,Gi0/5,SW-MGMT,Ethernet1
 OOB management,FW-A,em6,SW-MGMT,Ethernet2
@@ -56,3 +58,4 @@ OOB management,LEAF-A2,Gi1/2,SW-MGMT,Ethernet7
 OOB management,LEAF-B1,Gi1/3,SW-MGMT,Ethernet8
 OOB management,LEAF-B2,Gi2/0,SW-MGMT,Ethernet9
 OOB management,SRV-BASTION,eth0,SW-MGMT,Ethernet10
+Admin workstation VLAN 90,ADMIN-WS,eth0,SW-MGMT,Ethernet11

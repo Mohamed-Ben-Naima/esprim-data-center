@@ -42,3 +42,6 @@ desktop.ini
 
 # Node
 node_modules/
+
+# Regenerated topology (reproducibility check only; the live project is DC_Casablanca_TIA942_R3.gns3)
+03_Network/*.generated.gns3

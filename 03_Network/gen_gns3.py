@@ -14,11 +14,20 @@ COMPUTE    = "vm"                                         # run everything on th
 IMG_FRR    = "frrouting/frr:latest"
 IMG_TERM   = "gns3/ipterm:latest"
 IMG_WEB    = "nginx:alpine"
+IMG_ADMIN  = "gns3/webterm:latest"                       # admin desktop (Firefox, VNC console)
+
+# built-in switch port VLANs (mirrors inventory/dc_casa.yaml lab_switches)
+SWITCH_VLANS = {
+    "SW-OUT":  {i: ("access", 901) for i in range(4)},
+    "SW-DMZ":  {i: ("access", 50) for i in range(3)},
+    "SW-MGMT": {**{i: ("access", 10) for i in range(10)}, 2: ("dot1q", 1), 3: ("dot1q", 1), 10: ("access", 90), 11: ("access", 90)},
+}
 # --------------------------------------------------------------------------
 
 PROJECT_NAME = "DC_Casablanca_TIA942_R3"
-OUT = f"/mnt/user-data/outputs/{PROJECT_NAME}.gns3"
-WIRING = f"/mnt/user-data/outputs/{PROJECT_NAME}_wiring.csv"
+import os
+OUT = os.environ.get("GNS3_OUT", f"{PROJECT_NAME}.generated.gns3")      # never overwrites the live project
+WIRING = f"{PROJECT_NAME}_wiring.csv"
 
 nodes, links, wiring = {}, [], []
 counter = {}
@@ -39,7 +48,12 @@ def pname(name, adapter):
     if k == "iosvl2": return f"Gi{adapter // 4}/{adapter % 4}"
     if k == "pfsense": return f"em{adapter}"
     if k == "switch": return f"Ethernet{adapter}"
+    if k == "nat": return "nat0"
     return f"eth{adapter}"
+
+def skip(name):
+    """reserve the next port of a node (kept free after the SW-OUT re-cabling)"""
+    port(name)
 
 def connect(a, b, role):
     # ethernet switches: always adapter 0, port = next free
@@ -47,6 +61,7 @@ def connect(a, b, role):
     for n in (a, b):
         p = port(n)
         if nodes[n]["kind"] == "switch": ends.append((n, 0, p))
+        elif nodes[n]["kind"] == "nat": ends.append((n, 0, 0))
         else: ends.append((n, p, 0))
     links.append(ends)
     wiring.append([role, a, pname(a, ends[0][1] if nodes[a]["kind"] != "switch" else ends[0][2]),
@@ -70,7 +85,7 @@ for i, (n, x) in enumerate([("SRV-CMP-01", -800), ("SRV-CMP-02", -650),
                             ("SRV-CMP-03", -500), ("SRV-STO-01", -350)]):
     add(n, "linux", x, 170, ram=512, sym="qemu_guest")
 for n, x in [("SRV-BCK-01", 200), ("SRV-INF-01", 330), ("SRV-MON-01", 460)]:
-    add(n, "linux", x, 170, ram=512 if n != "SRV-MON-01" else 1024, sym="qemu_guest")
+    add(n, "linux", x, 170, ram=512 if n != "SRV-MON-01" else 1536, sym="qemu_guest")   # MON: Zabbix + Grafana
 add("SRV-BASTION", "linux", 1000, -320, ram=512, sym="qemu_guest")
 
 add("SRV-DCIM-01", "docker", 590, 170, image=IMG_TERM, sym="docker_guest")
@@ -79,6 +94,11 @@ add("BMS-SIM",  "docker", 850, 170, image=IMG_TERM, sym="docker_guest")
 add("CCTV-SIM", "docker", 980, 170, image=IMG_TERM, sym="docker_guest")
 add("SRV-WEB-01", "docker", -1000, -320, image=IMG_WEB, sym="docker_guest")
 
+add("ADMIN-WS", "docker", 1000, -230, image=IMG_ADMIN, sym="computer", console="vnc")
+add("NAT-A", "nat", -300, -760, sym="cloud")
+add("NAT-B", "nat",  300, -760, sym="cloud")
+
+add("SW-OUT",  "switch",  -40, -395, sym="ethernet_switch", ports=4)
 add("SW-DMZ",  "switch", -750, -320, sym="ethernet_switch", ports=8)
 add("SW-MGMT", "switch",  750, -320, sym="ethernet_switch", ports=16)
 
@@ -87,9 +107,11 @@ for isp in ("ISP-A", "ISP-B"):
     for edge in ("EDGE-A", "EDGE-B"):
         connect(isp, edge, "WAN eBGP")
 connect("EDGE-A", "EDGE-B", "iBGP")
-for edge in ("EDGE-A", "EDGE-B"):
-    for fw in ("FW-A", "FW-B"):
-        connect(edge, fw, "Edge-FW (outside)")
+# VLAN 901 transit: shared segment SW-OUT (carries the FW CARP VIP and the Edge HSRP VIP)
+for n in ("EDGE-A", "EDGE-B", "FW-A", "FW-B"):
+    connect(n, "SW-OUT", "Transit externe VLAN 901")
+for n in ("EDGE-A", "EDGE-B", "FW-A", "FW-B"):
+    skip(n)                       # Edge Gi0/4 and FW em1 stay free (former direct Edge-FW links)
 connect("FW-A", "FW-B", "FW HA sync 10.254.3.0/30")
 for fw in ("FW-A", "FW-B"):
     for core in ("CORE-A", "CORE-B"):
@@ -114,10 +136,15 @@ connect("SYSLOG", "LEAF-B1", "Hall B service")
 connect("BMS-SIM", "LEAF-B2", "Hall B service")
 connect("CCTV-SIM", "LEAF-B2", "Hall B service")
 
+# real Internet behind the simulated operators (GNS3 NAT nodes, libvirt virbr0 in the GNS3 VM)
+connect("ISP-A", "NAT-A", "Internet uplink (NAT)")
+connect("ISP-B", "NAT-B", "Internet uplink (NAT)")
+
 # out-of-band management (last adapter of each device)
 for n in ("EDGE-A", "EDGE-B", "FW-A", "FW-B", "CORE-A", "CORE-B",
           "LEAF-A1", "LEAF-A2", "LEAF-B1", "LEAF-B2", "SRV-BASTION"):
     connect(n, "SW-MGMT", "OOB management")
+connect("ADMIN-WS", "SW-MGMT", "Admin workstation VLAN 90")
 
 # ------------------------------------------------------------------ build JSON
 CAP = {"iosv": 8, "iosvl2": 16, "pfsense": 8}
@@ -159,14 +186,21 @@ def node_json(n):
                                     hda_disk_image=IMG_LINUX, hda_disk_interface="virtio",
                                     cdrom_image=ISO_LINUX, ram=v["ram"]))
     elif k == "docker":
+        con = v.get("console", "telnet")
         base.update(node_type="docker", port_name_format="eth{0}", port_segment_size=0, first_port_name="",
+                    console_type=con,
                     properties=dict(adapters=max(c, 1), image=v["image"], start_command="", environment="",
-                                    extra_hosts="", extra_volumes=[], console_resolution="1024x768",
-                                    console_http_port=80, console_http_path="/", console_type="telnet"))
+                                    extra_hosts="", extra_volumes=[], console_resolution="1280x800",
+                                    console_http_port=80, console_http_path="/", console_type=con))
+    elif k == "nat":
+        base.update(node_type="nat", console_type="none", port_name_format="nat{0}", port_segment_size=0,
+                    first_port_name="", properties={})
     elif k == "switch":
         base.update(node_type="ethernet_switch", console_type="none", port_name_format="Ethernet{0}",
                     port_segment_size=0, first_port_name="",
-                    properties=dict(ports_mapping=[dict(name=f"Ethernet{i}", port_number=i, type="access", vlan=1)
+                    properties=dict(ports_mapping=[dict(name=f"Ethernet{i}", port_number=i,
+                                                        type=SWITCH_VLANS[n].get(i, ("access", 999))[0],
+                                                        vlan=SWITCH_VLANS[n].get(i, ("access", 999))[1])
                                                    for i in range(v["ports"])]))
         base["console_type"] = "none"
     return base

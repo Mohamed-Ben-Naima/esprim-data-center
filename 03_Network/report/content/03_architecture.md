@@ -17,6 +17,14 @@ Table: Couches du réseau et mécanismes de redondance
 | Serveurs (EDA) | VM Ubuntu et conteneurs | Calcul, stockage, sauvegarde, services, supervision | Bonding actif/passif ; VIP VRRP entre SRV-CMP-01 et 02 |
 | Management | SW-MGMT, SRV-BASTION, ADMIN-WS | Accès hors bande, administration | Passerelle portée par le VIP CARP des pare-feux |
 
+## Topologie du laboratoire
+
+La figure suivante est produite directement depuis l'API du projet GNS3 (positions des nœuds, liens et cadres de
+zones) : elle représente exactement le laboratoire exécuté. Les cadres reprennent les espaces TIA-942 : salle
+d'entrée des opérateurs (ER/MMR), zone de distribution principale (MDA) et halls A et B (HDA/EDA).
+
+![Topologie du laboratoire GNS3 : 31 nœuds, 60 liens, regroupés par espace TIA-942](../screenshots/02_topologie_gns3.png){width=640}
+
 ## Zones de sécurité
 
 Table: Zones et VLAN associés
