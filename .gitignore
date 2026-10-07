@@ -39,3 +39,6 @@ desktop.ini
 02_Blender/04_Renders/animation/frames/
 **/_blender_stdout.txt
 **/_blender_stdout*.txt
+
+# Node
+node_modules/

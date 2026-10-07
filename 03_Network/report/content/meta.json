@@ -1,0 +1,14 @@
+{
+  "module": "Module Projet Data Center – 5ème année",
+  "title": "Réseau du Data Center Casablanca",
+  "subtitle": "Conception, configuration et validation sous GNS3 – TIA-942 Rated-3 (phases 4 et 5)",
+  "author": "Mohamed Ben Naima, ……………………………………",
+  "supervisor": "……………………………………",
+  "year": "2026 – 2027",
+  "version": "v0.x (rapport incrémental)",
+  "header_left": "Réseau du Data Center – Casablanca (GNS3)",
+  "header_right": "TIA-942 Rated-3",
+  "footer_left": "ESPRIM – Projet Data Center",
+  "cover_image": "",
+  "cover_caption": ""
+}

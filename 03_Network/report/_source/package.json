@@ -1,0 +1,7 @@
+{
+  "name": "dc-casa-network-report",
+  "private": true,
+  "description": "Builds Rapport_Reseau_GNS3_DC_Casablanca.docx from report/content/*.md",
+  "scripts": { "build": "node build.js" },
+  "dependencies": { "docx": "^9.5.1" }
+}
