@@ -1,0 +1,7 @@
+# SYSLOG – VLAN 60 MONITORING – generated from inventory/dc_casa.yaml
+auto eth0
+iface eth0 inet static
+	address 10.60.0.12
+	netmask 255.255.255.0
+	gateway 10.60.0.1
+	up echo nameserver 10.100.0.11 > /etc/resolv.conf

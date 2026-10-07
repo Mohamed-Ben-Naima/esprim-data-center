@@ -1,0 +1,14 @@
+# SRV-BASTION – VLAN 90 ADMIN – generated from inventory/dc_casa.yaml
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    {nic0}:
+      dhcp4: no
+      addresses: [10.90.0.11/24]
+      routes:
+        - to: 0.0.0.0/0
+          via: 10.90.0.1
+      nameservers:
+        addresses: [10.100.0.11]
+        search: [dc.casa.lab]

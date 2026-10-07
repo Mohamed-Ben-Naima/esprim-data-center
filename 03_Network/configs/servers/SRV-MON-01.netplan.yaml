@@ -1,0 +1,22 @@
+# SRV-MON-01 – VLAN 60 MONITORING – generated from inventory/dc_casa.yaml
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    {nic0}: {dhcp4: no, optional: true}
+    {nic1}: {dhcp4: no, optional: true}
+  bonds:
+    bond0:
+      interfaces: [{nic0}, {nic1}]
+      addresses: [10.60.0.11/24]
+      routes:
+        - to: 0.0.0.0/0
+          via: 10.60.0.1
+      nameservers:
+        addresses: [10.100.0.11]
+        search: [dc.casa.lab]
+      parameters:
+        mode: active-backup
+        primary: {nic0}
+        mii-monitor-interval: 100
+        fail-over-mac-policy: active

@@ -1,0 +1,9 @@
+# ISP-A – addresses are set by FRR/zebra; eth2 = Internet uplink (GNS3 NAT, DHCP)
+auto eth0
+iface eth0 inet manual
+
+auto eth1
+iface eth1 inet manual
+
+auto eth2
+iface eth2 inet dhcp

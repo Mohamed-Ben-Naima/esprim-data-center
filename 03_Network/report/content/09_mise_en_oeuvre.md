@@ -97,3 +97,42 @@ RESULT: OK
 ```
 
 Les seules différences avec le câblage initial sont les quatre liens Edge–pare-feu remplacés par le segment SW-OUT.
+
+## Génération des configurations
+
+Le script `automation/gen_configs.py` lit l'inventaire et produit l'ensemble des fichiers de configuration ainsi
+que les tableaux de ce rapport. Les configurations sont versionnées dans `configs/` : toute évolution du réseau est
+visible dans l'historique Git.
+
+Table: Fichiers produits par le générateur
+| Fichier | Équipements | Contenu principal |
+|---|---|---|
+| `configs/EDGE-A.cfg`, `EDGE-B.cfg` | Cisco IOSv | VRF MGMT, eBGP/iBGP et politiques, OSPF, HSRP de transit avec suivi de route, anti-usurpation |
+| `configs/CORE-A.cfg`, `CORE-B.cfg` | Cisco IOSvL2 | VLAN, Rapid PVST+, Port-channel LACP, SVI HSRPv2, ACL inter-VLAN, OSPF, route par défaut vers le pare-feu |
+| `configs/LEAF-*.cfg` | Cisco IOSvL2 | VLAN, trunks vers les deux cœurs, ports serveurs protégés, management VLAN 10 |
+| `configs/ISP-*/frr.conf` | FRR | Interfaces, eBGP vers les deux Edge, route par défaut, filtrage du préfixe client |
+| `configs/servers/*.netplan.yaml` | Ubuntu | Bond actif/passif, adresse, passerelle, DNS |
+| `configs/docker/*.interfaces` | Conteneurs | Adressage statique des conteneurs |
+| `report/content/generated/*.md` | Rapport | Tableaux d'adressage, de câblage et de filtrage |
+
+Chaque configuration Cisco intègre le même socle de durcissement : horodatage des journaux, chiffrement des mots de
+passe, authentification locale AAA, SSH v2 seul sur les lignes VTY (filtrées par liste d'accès sur les VLAN 60 et
+90), blocage après échecs de connexion, bannière légale, SNMPv3 *authPriv*, journalisation vers le serveur syslog,
+synchronisation NTP et ports inutilisés désactivés.
+
+```text title="Extrait généré – EDGE-A, politique vers ISP-B"
+route-map RM-ISP-B-IN permit 10
+ description accept default only, set provider preference
+ match ip address prefix-list PL-DEFAULT
+ set local-preference 100
+!
+route-map RM-ISP-B-OUT permit 10
+ description announce only our public prefix
+ match ip address prefix-list PL-ANNOUNCE
+ set as-path prepend 65100 65100
+```
+
+> [!INFO] Comportement en cas de double perte opérateur sur un Edge
+> Le suivi `track 10` diminue la priorité HSRP d'un Edge qui perd sa route par défaut. Comme chaque Edge reçoit
+> aussi la route par défaut de son voisin en iBGP, un Edge isolé de ses deux opérateurs continue d'acheminer le
+> trafic via l'autre Edge : le service est maintenu, au prix d'un détour par le lien inter-Edge.

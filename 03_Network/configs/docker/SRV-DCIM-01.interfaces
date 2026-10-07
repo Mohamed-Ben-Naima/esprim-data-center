@@ -1,0 +1,7 @@
+# SRV-DCIM-01 – VLAN 70 BMS-DCIM – generated from inventory/dc_casa.yaml
+auto eth0
+iface eth0 inet static
+	address 10.70.0.11
+	netmask 255.255.255.0
+	gateway 10.70.0.1
+	up echo nameserver 10.100.0.11 > /etc/resolv.conf
