@@ -1,0 +1,4 @@
+# EDGE-B – show ip ospf neighbor – 2026-10-07 18:09:40
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+10.255.0.1        1   FULL/DR         00:00:38    10.254.1.2      GigabitEthernet0/3
+10.255.0.1        0   FULL/  -        00:00:02    10.254.0.1      GigabitEthernet0/2

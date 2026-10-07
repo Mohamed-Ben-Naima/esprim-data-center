@@ -295,19 +295,36 @@ class Ios:
     def push_config(self, text, pace=0.05):
         """Paste a config in config mode; return list of (line, error) for rejected lines."""
         c = self.c
-        errors = []
+        lines = [l.rstrip() for l in text.splitlines()
+                 if l.strip() and not l.lstrip().startswith("!") and l.strip() not in ("end", "version 15.2", "version 15.9")]
+        c.read(0.3)
         c.send("configure terminal"); c.expect(r"\(config\)#\s*$", 15)
-        for raw in text.splitlines():
-            line = raw.rstrip()
-            if not line.strip() or line.lstrip().startswith("!") or line.strip() in ("end", "version 15.2", "version 15.9"):
-                continue
+        transcript = []
+        batch = 8                                   # IOS buffers pasted input; small batches avoid overruns
+        for i in range(0, len(lines), batch):
+            chunk = lines[i:i + batch]
             c.buf = ""
-            c.send(line)
-            time.sleep(pace)
-            out = c.read(0.25 if "crypto key" not in line else 8)
-            if "% " in out and ("Invalid" in out or "Incomplete" in out or "Ambiguous" in out or "Unknown" in out or "not supported" in out):
-                errors.append((line, out.strip().splitlines()[-1] if out.strip() else "?"))
+            for l in chunk:
+                c.send(l)
+                time.sleep(pace)
+            slow = any("crypto key" in l for l in chunk)
+            deadline = time.time() + (60 if slow else 20)
+            while time.time() < deadline:               # until the chunk's last line is echoed and a prompt follows
+                c.read(0.5)
+                tail = c.buf.rstrip()
+                if chunk[-1].strip()[:40] in c.buf and re.search(r"\)#\s*$|#\s*$", tail):
+                    break
+            transcript.append(c.buf)
         c.send("end"); c.expect(r"#\s*$", 30)
+        # attribute IOS error lines to the command echoed just before them
+        errors, last = [], None
+        for t in transcript:
+            for ln in t.split("\n"):
+                m = re.match(r"^[\w.\-]+\(config[^)]*\)#(.*)$", ln)
+                if m:
+                    last = m.group(1).strip() or last
+                elif ln.startswith("%") and any(k in ln for k in ("Invalid", "Incomplete", "Ambiguous", "Unknown", "not supported", "Unrecognized")):
+                    errors.append((last, ln.strip()))
         return errors
 
     def save(self):

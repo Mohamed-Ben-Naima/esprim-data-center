@@ -1,0 +1,5 @@
+# EDGE-B – ping 8.8.8.8 repeat 5 – 2026-10-07 18:12:06
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 8.8.8.8, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 33/50/72 ms

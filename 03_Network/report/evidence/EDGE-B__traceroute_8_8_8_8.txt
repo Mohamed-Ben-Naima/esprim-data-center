@@ -1,0 +1,10 @@
+# EDGE-B – traceroute 8.8.8.8 – 2026-10-07 18:12:18
+Type escape sequence to abort.
+Tracing the route to 8.8.8.8
+VRF info: (vrf in name/id, vrf out name/id)
+  1 198.51.100.5 [AS 64500] 4 msec 2 msec 1 msec
+  2  * 
+*Oct  7 18:11:50.798 MAR: %SEC-6-IPACCESSLOGDP: list ACL-WAN-IN denied icmp 192.168.42.1 -> 198.51.100.6 (0/0), 1 packet   *  * 
+  3  * 
+*Oct  7 18:11:53.798 MAR: %SEC-6-IPACCESSLOGDP: list ACL-WAN-IN denied icmp 192.168.153.2 -> 198.51.100.6 (0/0), 1 packet   *  * 
+  4  *  *  *

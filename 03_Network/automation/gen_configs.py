@@ -241,7 +241,9 @@ def gen_edge(name, d):
             continue
         L += [f"interface {port}", f" description {label(name, port, p['to'], p['role'])}", f" ip address {ipmask(p['ip'])}"]
         if p["to"].startswith("ISP"):
-            L += [" ip access-group ACL-WAN-IN in", " ip verify unicast source reachable-via any",
+            # no uRPF: the Edges only learn a default route from the ISPs and loose uRPF ignores it,
+            # which would drop every Internet reply; anti-spoofing is enforced by ACL-WAN-IN
+            L += [" ip access-group ACL-WAN-IN in",
                   " no ip redirects", " no ip unreachables", " no ip proxy-arp", " no cdp enable", " no lldp transmit"]
         elif p["to"].startswith("EDGE"):
             L += [" ip ospf network point-to-point", " ip ospf 1 area 0",

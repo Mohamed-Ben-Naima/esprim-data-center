@@ -1,0 +1,5 @@
+# EDGE-B – show standby brief – 2026-10-07 18:09:53
+                     P indicates configured to preempt.
+                     |
+Interface   Grp  Pri P State   Active          Standby         Virtual IP
+Gi0/3       1    100 P Standby 10.254.1.2      local           10.254.1.6

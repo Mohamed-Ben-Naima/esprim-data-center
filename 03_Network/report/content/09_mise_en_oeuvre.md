@@ -146,8 +146,9 @@ le laboratoire de bout en bout :
   les tests de panne, écriture de fichiers dans les conteneurs ;
 - **pilote de console** : client telnet minimal (négociation d'options, attente d'invites par expressions
   régulières), gestion des dialogues du premier démarrage IOS, authentification AAA, mode privilégié ;
-- **déploiement** : collage de la configuration générée ligne par ligne, détection des lignes refusées par
-  l'équipement (`% Invalid input`, `% Incomplete command`…), puis `write memory` ;
+- **déploiement** : collage de la configuration générée par lots de 8 lignes (IOS met en tampon la saisie
+  collée), attribution de chaque message d'erreur (`% Invalid input`, `% Incomplete command`…) à la commande qui le
+  précède dans l'écho, puis `write memory` ; un Edge complet (≈ 230 lignes) est déployé en moins de 2 minutes ;
 - **preuves** : chaque commande de vérification peut être enregistrée dans `report/evidence/` avec son horodatage,
   pour être reprise dans ce rapport.
 
@@ -172,7 +173,7 @@ Table: Incidents de plateforme et corrections
 |---|---|---|
 | Saturation CPU de la GNS3 VM (charge ≈ 8 pour 3 vCPU, 98 % d'occupation) avec les 25 nœuds démarrés | Chaque IOSvL2 consomme ≈ 34 % d'un cœur au repos (pas d'optimisation *idle-PC*), les IOSv ≈ 17 %, KSM ≈ 24 % | VM portée à **6 vCPU** (hôte i5-11400H, 12 threads) par l'API GNS3 ; KSM ralenti (200 pages / 100 ms, service `ksm-tune` persistant) ; démarrage des nœuds par étapes |
 | Plantage systématique des IOSvL2 environ une minute après le démarrage (`CPU exception occurred: Overflow(4)`, `PC/EIP = 0x8E18E9`), console muette, CPU à 100 % | Défaut connu de l'image IOSvL2 03.2017 avec les types de machine QEMU récents (QEMU 8.0.4 dans la VM) ; le disque était sain (`qemu-img check`) | Option QEMU `-machine pc-q35-4.2` appliquée aux 6 nœuds IOSvL2, au modèle GNS3 et au générateur de topologie |
-| GNS3 VM injoignable après une pause (`Cannot connect to host 192.168.75.128:80`), nœuds affichés « started » | Mise en veille de l'hôte : VMware suspend la VM (`PowerNotify: System suspend detected`) et ne la relance pas au réveil ; `vmrun` la considère alors comme éteinte | Reprise manuelle de la VM dans VMware Workstation ; veille de l'hôte désactivée pendant les sessions de laboratoire |
+| GNS3 VM injoignable après une mise en veille de l'hôte, puis arrêt brutal de VMware : `Exception 0xc0000006 (disk error while paging)` | VMware suspend la VM à la mise en veille (`PowerNotify: System suspend detected`) ; la mémoire de la VM (10 Go) est adossée à un fichier `.vmem` situé sur le disque **USB externe** H:, mis en sommeil par Windows : au réveil, la relecture des pages échoue et le processus `vmware-vmx` plante en conservant ses verrous | Fin du processus bloqué (élévation administrateur), suppression des verrous périmés, `mainMem.useNamedFile = "FALSE"` dans le `.vmx` (mémoire adossée à la RAM et au fichier d'échange de l'hôte sur le SSD NVMe interne), veille sur secteur désactivée (`powercfg`), conteneurs orphelins supprimés ; vérification : aucune erreur ext4, images Docker intactes |
 
 ![Écran VGA de CORE-A capturé par le moniteur QEMU : démarrage bloqué après le plantage IOSvL2](../screenshots/01_iosvl2_boot_hang.png){width=420}
 

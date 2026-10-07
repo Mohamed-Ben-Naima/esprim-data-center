@@ -1,0 +1,29 @@
+# EDGE-B – show ip route – 2026-10-07 18:10:08
+Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP
+       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area 
+       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2
+       E1 - OSPF external type 1, E2 - OSPF external type 2
+       i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2
+       ia - IS-IS inter area, * - candidate default, U - per-user static route
+       o - ODR, P - periodic downloaded static route, H - NHRP, l - LISP
+       a - application route
+       + - replicated route, % - next hop override, p - overrides from PfR
+
+Gateway of last resort is 198.51.100.5 to network 0.0.0.0
+
+B*    0.0.0.0/0 [20/0] via 198.51.100.5, 00:03:57
+      10.0.0.0/8 is variably subnetted, 6 subnets, 3 masks
+C        10.254.0.0/30 is directly connected, GigabitEthernet0/2
+L        10.254.0.2/32 is directly connected, GigabitEthernet0/2
+C        10.254.1.0/28 is directly connected, GigabitEthernet0/3
+L        10.254.1.3/32 is directly connected, GigabitEthernet0/3
+O        10.255.0.1/32 [110/101] via 10.254.1.2, 00:04:36, GigabitEthernet0/3
+                       [110/101] via 10.254.0.1, 00:04:36, GigabitEthernet0/2
+C        10.255.0.2/32 is directly connected, Loopback0
+S     192.0.2.0/24 [1/0] via 10.254.1.1
+      198.51.100.0/24 is variably subnetted, 2 subnets, 2 masks
+C        198.51.100.4/30 is directly connected, GigabitEthernet0/0
+L        198.51.100.6/32 is directly connected, GigabitEthernet0/0
+      203.0.113.0/24 is variably subnetted, 2 subnets, 2 masks
+C        203.0.113.0/30 is directly connected, GigabitEthernet0/1
+L        203.0.113.2/32 is directly connected, GigabitEthernet0/1
