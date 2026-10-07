@@ -11,6 +11,7 @@ outbound NAT (hybrid), port forwards, filter rules (PDF Table 18, default deny +
 HA (pfsync + XMLRPC), remote syslog, SNMP, NTP.
 """
 import copy
+import re
 import ipaddress
 import sys
 import time
@@ -39,7 +40,7 @@ CARP = [  # (interface, vhid, vip)
     ("opt3", 10, VL[10]["vip"]), ("opt4", 90, VL[90]["vip"]),
 ]
 IFNAME = {v["descr"]: k for k, v in IFACES.items()}
-TRACKER = [int(time.time())]
+TRACKER = [1700000000]          # deterministic rule trackers / alias names (stable diffs)
 
 
 def el(parent, tag, text=None, **_):
@@ -109,6 +110,7 @@ def addr(parent, tag, spec, iface):
 
 def build(baseline, fw):
     root = ET.fromstring(baseline)
+    TRACKER[0] = 1700000000                      # same rule ids / alias names on both firewalls
     peer = "FW-B" if fw == "FW-A" else "FW-A"
     advskew = INV["devices"][fw]["carp_advskew"]
 
@@ -216,6 +218,15 @@ def build(baseline, fw):
     el(rule, "poolopts"); el(rule, "source_hash_key")
     d = el(rule, "destination"); el(d, "any")
     created(rule)
+    # the firewall's own traffic (DNS, NTP, updates) leaves from its private transit address:
+    # translate it too, otherwise the operators cannot route the replies back
+    rule = el(ob, "rule")
+    s2 = el(rule, "source"); el(s2, "network", TR["ext"]["subnet"])
+    el(rule, "sourceport"); el(rule, "descr", "Firewall own traffic (transit 901) -> Internet via 192.0.2.10")
+    el(rule, "target", SITE["snat_ip"]); el(rule, "targetip"); el(rule, "targetip_subnet"); el(rule, "interface", "wan")
+    el(rule, "poolopts"); el(rule, "source_hash_key")
+    d = el(rule, "destination"); el(d, "any")
+    created(rule)
     for port in (80, 443):
         pf = el(nat, "rule")
         s = el(pf, "source"); el(s, "any")
@@ -253,8 +264,7 @@ def build(baseline, fw):
                     el(r, "os")
                     if proto != "any":
                         el(r, "protocol", proto)
-                    src = rd["src"].replace("DMZ_NET", "DMZ_NET").replace("MGMT_NET", "MGMT_NET").replace("ADMIN_NET", "ADMIN_NET").replace("SYNC_NET", "SYNC_NET")
-                    addr(r, "source", src, iface)
+                    addr(r, "source", rd["src"], iface)
                     if dst == "(self)":
                         dblk = el(r, "destination"); el(dblk, "network", "(self)")
                     else:
@@ -266,7 +276,7 @@ def build(baseline, fw):
                         elif len(ports) == 1:
                             el(dblk, "port", ports[0])
                         else:
-                            pa = f"P_{iface.upper()}_{TRACKER[0]}"
+                            pa = f"P_{iface.upper()}_{TRACKER[0] - 1700000000:03d}"
                             a = el(al, "alias"); el(a, "name", pa); el(a, "type", "port")
                             el(a, "address", " ".join(map(str, ports))); el(a, "descr", rd["descr"]); el(a, "detail", "")
                             el(dblk, "port", pa)
@@ -318,7 +328,10 @@ if __name__ == "__main__":
     OUT.mkdir(parents=True, exist_ok=True)
     for fw in ("FW-A", "FW-B"):
         xml = build(base, fw)
-        (OUT / f"{fw}.config.xml").write_text(xml, encoding="utf-8", newline="\n")
+        (OUT / f"{fw}.config.xml").write_text(xml, encoding="utf-8", newline="\n")       # deployable (secrets, gitignored)
+        red = re.sub(r"<prv>.*?</prv>", "<prv>REDACTED</prv>", xml, flags=re.S)
+        red = re.sub(r"<(bcrypt-hash|password)>[^<]*</", r"<\1>REDACTED</", red)
+        (OUT / f"{fw}.config.redacted.xml").write_text(red, encoding="utf-8", newline="\n")  # documentation copy
         root = ET.fromstring(xml)
         print(f"{fw}: {len(root.find('filter'))} filter rules, {len(root.find('virtualip'))} VIPs, "
               f"{len(root.find('aliases'))} aliases, {len(root.find('nat').findall('rule'))} port forwards")

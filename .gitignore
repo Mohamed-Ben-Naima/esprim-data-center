@@ -45,3 +45,7 @@ node_modules/
 
 # Regenerated topology (reproducibility check only; the live project is DC_Casablanca_TIA942_R3.gns3)
 03_Network/*.generated.gns3
+
+# pfSense configs with secrets (cert private key, password hashes) – redacted copies are committed
+03_Network/configs/pfsense/baseline.xml
+03_Network/configs/pfsense/FW-?.config.xml

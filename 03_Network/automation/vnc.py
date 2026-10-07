@@ -16,6 +16,22 @@ sys.path.insert(0, str(Path(__file__).parent))
 import labctl  # noqa: E402
 
 
+# QEMU's VNC server maps keysyms to US scancodes and does not add Shift by itself:
+# shifted characters must be sent as "shift-<base key>".
+SHIFTED = {"!": "1", "@": "2", "#": "3", "$": "4", "%": "5", "^": "6", "&": "7", "*": "8", "(": "9", ")": "0",
+           "_": "minus", "+": "=", "{": "[", "}": "]", "|": "bslash", ":": ";", '"': "'", "<": ",", ">": ".",
+           "?": "/", "~": "`"}
+NAMED = {" ": "space", "-": "minus", "\\": "bslash"}       # '/' is sent as itself (vncdotool 'slash' types '\')
+
+
+def key_for(ch):
+    if ch in SHIFTED:
+        return "shift-" + SHIFTED[ch]
+    if ch.isupper():
+        return "shift-" + ch
+    return NAMED.get(ch, ch)
+
+
 def connect(node_name):
     a = labctl.Gns3()
     p = a.project()
@@ -40,7 +56,7 @@ def main(argv):
                 time.sleep(0.4)
         elif op in ("type", "line"):
             for ch in args[0]:
-                c.keyPress("space" if ch == " " else ch)
+                c.keyPress(key_for(ch))
                 time.sleep(0.05)
             if op == "line":
                 c.keyPress("enter")
