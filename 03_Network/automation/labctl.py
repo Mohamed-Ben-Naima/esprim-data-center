@@ -348,6 +348,8 @@ class Linux:
     def login(self, timeout=600):
         c = self.c
         end = time.time() + timeout
+        c.sock.sendall(bytes([3]))                 # clear any stale command / open quote left by an interrupted session
+        time.sleep(0.5)
         c.send("")
         while time.time() < end:
             try:

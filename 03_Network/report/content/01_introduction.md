@@ -79,7 +79,8 @@ Table: Avancement des sous-tâches
 | 3.1 – 3.3 | WAN et bordure : FRR opérateurs, Edge (BGP, OSPF, HSRP), vérification | **Terminé** |
 | 4.1 – 4.4 | Pare-feux pfSense HA : installation, configuration générée, CARP, pfsync, NAT | **Terminé** (validation de bout en bout en phase 6) |
 | 5.1 – 5.3 | Cœur, Leaf, durcissement : HSRP, RPVST+, LACP, OSPF, ACL, VRF MGMT | **Terminé** |
-| 6.1 – 6.4 | Serveurs et conteneurs | À faire |
+| 6.1 | Serveurs : SRV-INF-01 (DNS, NTP), conteneurs de services | **Terminé** |
+| 6.2 – 6.4 | Autres serveurs (bastion, stockage, sauvegarde, calcul), matrice de flux | En cours |
 | 7.1 – 7.3 | Supervision | À faire |
 | 8.1 – 8.2 | Tests de résilience | À faire |
 | 9.1 – 9.4 | Documentation finale | À faire |

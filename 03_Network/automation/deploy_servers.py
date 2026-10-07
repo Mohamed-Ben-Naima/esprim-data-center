@@ -162,6 +162,7 @@ def deploy(api, p, name, base_only=False):
         nics = nics.split()
         netplan = tmpl.replace("{nic0}", nics[0]).replace("{nic1}", nics[1] if len(nics) > 1 else nics[0])
         lx.put_file("/etc/netplan/60-dc-casa.yaml", netplan, "600")
+        print(f"[{name}] base system ...", flush=True)
         for line in script.splitlines():
             lx.run(line)
         rc, out = lx.run("netplan apply && sleep 4 && ip -br -4 addr | grep -v lo", 90)
@@ -176,18 +177,27 @@ def deploy(api, p, name, base_only=False):
         lx.run("rm -f /etc/resolv.conf; echo 'nameserver 1.1.1.1' > /etc/resolv.conf; echo 'nameserver 8.8.8.8' >> /etc/resolv.conf")
         # archive/security.ubuntu.com are unreachable from the site's upstream: use the kernel.org mirror, IPv4 only
         lx.put_file("/etc/apt/sources.list", "\n".join(
-            f"deb http://mirrors.edge.kernel.org/ubuntu focal{suite} main restricted universe multiverse"
-            for suite in ("", "-updates", "-security", "-backports")) + "\n")
-        lx.run("echo 'Acquire::ForceIPv4 \"true\";' > /etc/apt/apt.conf.d/99force-ipv4")
-        rc, out = lx.run("DEBIAN_FRONTEND=noninteractive apt-get update -q > /root/apt.log 2>&1; echo apt-update-rc=$?; grep -c '^Err' /root/apt.log", 600)
+            f"deb http://mirrors.edge.kernel.org/ubuntu focal{suite} main universe"
+            for suite in ("", "-security")) + "\n")
+        # the lab path (IOSv / pfSense software forwarding) gives a few hundred KB/s: keep the indexes small
+        lx.put_file("/etc/apt/apt.conf.d/99dc-lab",
+                    'Acquire::ForceIPv4 "true";\nAcquire::Languages "none";\nAcquire::Retries "3";\nDPkg::Lock::Timeout "900";\n')
+        # automatic upgrades would hold the dpkg lock for a long time over the slow lab path
+        # (--no-block: never wait for an upgrade in progress; installs below wait for the dpkg lock instead)
+        lx.run("systemctl disable --now --no-block unattended-upgrades apt-daily.timer apt-daily-upgrade.timer >/dev/null 2>&1; true")
+        # an upgrade already started at boot keeps the dpkg lock for a long time: SIGTERM makes it finish the
+        # current package and exit cleanly (checked afterwards with dpkg --audit)
+        lx.run("pkill -TERM -f unattended-upgrade; for i in $(seq 1 30); do pgrep -f unattended-upgrade >/dev/null || break; sleep 5; done; dpkg --audit", 200)
+        rc, out = lx.run("DEBIAN_FRONTEND=noninteractive apt-get update -q > /root/apt.log 2>&1; echo apt-update-rc=$?; grep -c '^Err' /root/apt.log", 1500)
         print(f"[{name}] {out}")
         for role in s["roles"]:
+            print(f"[{name}] role {role} ...", flush=True)
             if role.startswith("keepalived"):
                 body = keepalived(150 if role.endswith("master") else 100)
             else:
                 body = ROLE_SCRIPTS.get(role, "true")
             lx.put_file("/root/role.sh", "set -e\n" + body + "\n", "700")
-            rc, out = lx.run("bash /root/role.sh > /root/role.log 2>&1; r=$?; tail -4 /root/role.log; (exit $r)", 900)
+            rc, out = lx.run("bash /root/role.sh > /root/role.log 2>&1; r=$?; tail -4 /root/role.log; (exit $r)", 1500)
             print(f"[{name}] role {role}: rc={rc} {out[-300:]}")
         # final resolver: internal DNS (dnsmasq on SRV-INF-01 manages its own resolv.conf)
         if "dns" not in s["roles"]:
