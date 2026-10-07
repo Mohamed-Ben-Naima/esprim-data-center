@@ -543,56 +543,56 @@
 			<detail />
 		</alias>
 		<alias>
-			<name>P_LAN_004</name>
+			<name>P_LAN_010</name>
 			<type>port</type>
 			<address>53 80 443 123</address>
 			<descr>Interne -&gt; Internet DNS/HTTP(S)/NTP via NAT</descr>
 			<detail />
 		</alias>
 		<alias>
-			<name>P_LAN_005</name>
+			<name>P_LAN_011</name>
 			<type>port</type>
 			<address>53 80 443 123</address>
 			<descr>Interne -&gt; Internet DNS/HTTP(S)/NTP via NAT</descr>
 			<detail />
 		</alias>
 		<alias>
-			<name>P_OPT2_014</name>
+			<name>P_OPT2_020</name>
 			<type>port</type>
 			<address>53 123</address>
 			<descr>DMZ -&gt; DNS/NTP internes</descr>
 			<detail />
 		</alias>
 		<alias>
-			<name>P_OPT3_022</name>
+			<name>P_OPT3_028</name>
 			<type>port</type>
 			<address>53 123</address>
 			<descr>Équipements -&gt; DNS/NTP</descr>
 			<detail />
 		</alias>
 		<alias>
-			<name>P_OPT4_024</name>
+			<name>P_OPT4_030</name>
 			<type>port</type>
 			<address>443 22</address>
 			<descr>Administration -&gt; webGUI/SSH du pare-feu (anti-lockout explicite)</descr>
 			<detail />
 		</alias>
 		<alias>
-			<name>P_OPT4_027</name>
+			<name>P_OPT4_033</name>
 			<type>port</type>
 			<address>3000 80</address>
 			<descr>Administration -&gt; Zabbix/Grafana</descr>
 			<detail />
 		</alias>
 		<alias>
-			<name>P_OPT4_030</name>
+			<name>P_OPT4_036</name>
 			<type>port</type>
 			<address>53 80 443 123</address>
 			<descr>Administration -&gt; Internet (mises à jour)</descr>
 			<detail />
 		</alias>
 		<alias>
-			<name>P_OPT4_031</name>
+			<name>P_OPT4_037</name>
 			<type>port</type>
 			<address>53 80 443 123</address>
 			<descr>Administration -&gt; Internet (mises à jour)</descr>
@@ -618,7 +618,7 @@
 					<any />
 				</destination>
 				<created>
-					<time>1791393518</time>
+					<time>1791398992</time>
 					<username>gen_pfsense.py</username>
 				</created>
 			</rule>
@@ -638,7 +638,7 @@
 					<any />
 				</destination>
 				<created>
-					<time>1791393518</time>
+					<time>1791398992</time>
 					<username>gen_pfsense.py</username>
 				</created>
 			</rule>
@@ -659,7 +659,7 @@
 			<descr>Publication web 80/tcp -&gt; SRV-WEB-01 (T18-1)</descr>
 			<associated-rule-id>pass</associated-rule-id>
 			<created>
-				<time>1791393518</time>
+				<time>1791398992</time>
 				<username>gen_pfsense.py</username>
 			</created>
 		</rule>
@@ -679,7 +679,7 @@
 			<descr>Publication web 443/tcp -&gt; SRV-WEB-01 (T18-1)</descr>
 			<associated-rule-id>pass</associated-rule-id>
 			<created>
-				<time>1791393518</time>
+				<time>1791398992</time>
 				<username>gen_pfsense.py</username>
 			</created>
 		</rule>
@@ -687,6 +687,61 @@
 	<filter>
 		<rule>
 			<tracker>1700000001</tracker>
+			<type>block</type>
+			<interface>wan</interface>
+			<ipprotocol>inet</ipprotocol>
+			<protocol>udp</protocol>
+			<source>
+				<any />
+			</source>
+			<destination>
+				<address>224.0.0.102</address>
+				<port>1985</port>
+			</destination>
+			<descr>[BRUIT] HSRPv2 des routeurs voisins - rejet non journalise</descr>
+			<created>
+				<time>1791398992</time>
+				<username>gen_pfsense.py</username>
+			</created>
+		</rule>
+		<rule>
+			<tracker>1700000002</tracker>
+			<type>block</type>
+			<interface>wan</interface>
+			<ipprotocol>inet</ipprotocol>
+			<protocol>ospf</protocol>
+			<source>
+				<any />
+			</source>
+			<destination>
+				<address>224.0.0.5</address>
+			</destination>
+			<descr>[BRUIT] OSPF des routeurs voisins - rejet non journalise</descr>
+			<created>
+				<time>1791398992</time>
+				<username>gen_pfsense.py</username>
+			</created>
+		</rule>
+		<rule>
+			<tracker>1700000003</tracker>
+			<type>block</type>
+			<interface>wan</interface>
+			<ipprotocol>inet</ipprotocol>
+			<protocol>ospf</protocol>
+			<source>
+				<any />
+			</source>
+			<destination>
+				<address>224.0.0.6</address>
+			</destination>
+			<descr>[BRUIT] OSPF DR des routeurs voisins - rejet non journalise</descr>
+			<created>
+				<time>1791398992</time>
+				<username>gen_pfsense.py</username>
+			</created>
+		</rule>
+		<rule>
+			<tracker>1700000004</tracker>
 			<type>block</type>
 			<interface>wan</interface>
 			<ipprotocol>inet</ipprotocol>
@@ -699,13 +754,68 @@
 			<log />
 			<descr>[T18] Refus par défaut WAN (journalisé)</descr>
 			<created>
-				<time>1791393518</time>
+				<time>1791398992</time>
+				<username>gen_pfsense.py</username>
+			</created>
+		</rule>
+		<rule>
+			<tracker>1700000005</tracker>
+			<type>block</type>
+			<interface>lan</interface>
+			<ipprotocol>inet</ipprotocol>
+			<protocol>udp</protocol>
+			<source>
+				<any />
+			</source>
+			<destination>
+				<address>224.0.0.102</address>
+				<port>1985</port>
+			</destination>
+			<descr>[BRUIT] HSRPv2 des routeurs voisins - rejet non journalise</descr>
+			<created>
+				<time>1791398992</time>
+				<username>gen_pfsense.py</username>
+			</created>
+		</rule>
+		<rule>
+			<tracker>1700000006</tracker>
+			<type>block</type>
+			<interface>lan</interface>
+			<ipprotocol>inet</ipprotocol>
+			<protocol>ospf</protocol>
+			<source>
+				<any />
+			</source>
+			<destination>
+				<address>224.0.0.5</address>
+			</destination>
+			<descr>[BRUIT] OSPF des routeurs voisins - rejet non journalise</descr>
+			<created>
+				<time>1791398992</time>
+				<username>gen_pfsense.py</username>
+			</created>
+		</rule>
+		<rule>
+			<tracker>1700000007</tracker>
+			<type>block</type>
+			<interface>lan</interface>
+			<ipprotocol>inet</ipprotocol>
+			<protocol>ospf</protocol>
+			<source>
+				<any />
+			</source>
+			<destination>
+				<address>224.0.0.6</address>
+			</destination>
+			<descr>[BRUIT] OSPF DR des routeurs voisins - rejet non journalise</descr>
+			<created>
+				<time>1791398992</time>
 				<username>gen_pfsense.py</username>
 			</created>
 		</rule>
 		<rule>
 			<id />
-			<tracker>1700000002</tracker>
+			<tracker>1700000008</tracker>
 			<type>pass</type>
 			<interface>lan</interface>
 			<ipprotocol>inet</ipprotocol>
@@ -728,13 +838,13 @@
 			</destination>
 			<descr>[T18-7] Supervision -&gt; SNMP du pare-feu</descr>
 			<created>
-				<time>1791393518</time>
+				<time>1791398992</time>
 				<username>gen_pfsense.py</username>
 			</created>
 		</rule>
 		<rule>
 			<id />
-			<tracker>1700000003</tracker>
+			<tracker>1700000009</tracker>
 			<type>pass</type>
 			<interface>lan</interface>
 			<ipprotocol>inet</ipprotocol>
@@ -756,13 +866,13 @@
 			</destination>
 			<descr>[T18-7] Supervision -&gt; ICMP du pare-feu</descr>
 			<created>
-				<time>1791393518</time>
+				<time>1791398992</time>
 				<username>gen_pfsense.py</username>
 			</created>
 		</rule>
 		<rule>
 			<id />
-			<tracker>1700000004</tracker>
+			<tracker>1700000010</tracker>
 			<type>pass</type>
 			<interface>lan</interface>
 			<ipprotocol>inet</ipprotocol>
@@ -782,17 +892,17 @@
 			<destination>
 				<not />
 				<address>RFC1918</address>
-				<port>P_LAN_004</port>
+				<port>P_LAN_010</port>
 			</destination>
 			<descr>[T18-5] Interne -&gt; Internet DNS/HTTP(S)/NTP via NAT</descr>
 			<created>
-				<time>1791393518</time>
+				<time>1791398992</time>
 				<username>gen_pfsense.py</username>
 			</created>
 		</rule>
 		<rule>
 			<id />
-			<tracker>1700000005</tracker>
+			<tracker>1700000011</tracker>
 			<type>pass</type>
 			<interface>lan</interface>
 			<ipprotocol>inet</ipprotocol>
@@ -812,17 +922,17 @@
 			<destination>
 				<not />
 				<address>RFC1918</address>
-				<port>P_LAN_005</port>
+				<port>P_LAN_011</port>
 			</destination>
 			<descr>[T18-5] Interne -&gt; Internet DNS/HTTP(S)/NTP via NAT</descr>
 			<created>
-				<time>1791393518</time>
+				<time>1791398992</time>
 				<username>gen_pfsense.py</username>
 			</created>
 		</rule>
 		<rule>
 			<id />
-			<tracker>1700000006</tracker>
+			<tracker>1700000012</tracker>
 			<type>pass</type>
 			<interface>lan</interface>
 			<ipprotocol>inet</ipprotocol>
@@ -845,13 +955,13 @@
 			</destination>
 			<descr>[EXT-2] Interne -&gt; Internet ICMP (diagnostic)</descr>
 			<created>
-				<time>1791393518</time>
+				<time>1791398992</time>
 				<username>gen_pfsense.py</username>
 			</created>
 		</rule>
 		<rule>
 			<id />
-			<tracker>1700000007</tracker>
+			<tracker>1700000013</tracker>
 			<type>pass</type>
 			<interface>lan</interface>
 			<ipprotocol>inet</ipprotocol>
@@ -874,13 +984,13 @@
 			</destination>
 			<descr>[T18-7] Supervision -&gt; équipements SNMP</descr>
 			<created>
-				<time>1791393518</time>
+				<time>1791398992</time>
 				<username>gen_pfsense.py</username>
 			</created>
 		</rule>
 		<rule>
 			<id />
-			<tracker>1700000008</tracker>
+			<tracker>1700000014</tracker>
 			<type>pass</type>
 			<interface>lan</interface>
 			<ipprotocol>inet</ipprotocol>
@@ -902,13 +1012,13 @@
 			</destination>
 			<descr>[T18-7] Supervision -&gt; équipements ICMP</descr>
 			<created>
-				<time>1791393518</time>
+				<time>1791398992</time>
 				<username>gen_pfsense.py</username>
 			</created>
 		</rule>
 		<rule>
 			<id />
-			<tracker>1700000009</tracker>
+			<tracker>1700000015</tracker>
 			<type>pass</type>
 			<interface>lan</interface>
 			<ipprotocol>inet</ipprotocol>
@@ -931,12 +1041,12 @@
 			</destination>
 			<descr>[EXT-3] Interne -&gt; site web DMZ</descr>
 			<created>
-				<time>1791393518</time>
+				<time>1791398992</time>
 				<username>gen_pfsense.py</username>
 			</created>
 		</rule>
 		<rule>
-			<tracker>1700000010</tracker>
+			<tracker>1700000016</tracker>
 			<type>block</type>
 			<interface>lan</interface>
 			<ipprotocol>inet</ipprotocol>
@@ -949,13 +1059,13 @@
 			<log />
 			<descr>[T18] Refus par défaut LAN (journalisé)</descr>
 			<created>
-				<time>1791393518</time>
+				<time>1791398992</time>
 				<username>gen_pfsense.py</username>
 			</created>
 		</rule>
 		<rule>
 			<id />
-			<tracker>1700000011</tracker>
+			<tracker>1700000017</tracker>
 			<type>pass</type>
 			<interface>opt1</interface>
 			<ipprotocol>inet</ipprotocol>
@@ -976,12 +1086,12 @@
 			</destination>
 			<descr>[HA] pfsync + XMLRPC entre pairs</descr>
 			<created>
-				<time>1791393518</time>
+				<time>1791398992</time>
 				<username>gen_pfsense.py</username>
 			</created>
 		</rule>
 		<rule>
-			<tracker>1700000012</tracker>
+			<tracker>1700000018</tracker>
 			<type>block</type>
 			<interface>opt1</interface>
 			<ipprotocol>inet</ipprotocol>
@@ -994,13 +1104,13 @@
 			<log />
 			<descr>[T18] Refus par défaut SYNC (journalisé)</descr>
 			<created>
-				<time>1791393518</time>
+				<time>1791398992</time>
 				<username>gen_pfsense.py</username>
 			</created>
 		</rule>
 		<rule>
 			<id />
-			<tracker>1700000013</tracker>
+			<tracker>1700000019</tracker>
 			<type>pass</type>
 			<interface>opt2</interface>
 			<ipprotocol>inet</ipprotocol>
@@ -1023,13 +1133,13 @@
 			</destination>
 			<descr>[T18-2] DMZ -&gt; applicatif interne 8443</descr>
 			<created>
-				<time>1791393518</time>
+				<time>1791398992</time>
 				<username>gen_pfsense.py</username>
 			</created>
 		</rule>
 		<rule>
 			<id />
-			<tracker>1700000014</tracker>
+			<tracker>1700000020</tracker>
 			<type>pass</type>
 			<interface>opt2</interface>
 			<ipprotocol>inet</ipprotocol>
@@ -1048,17 +1158,17 @@
 			</source>
 			<destination>
 				<address>INF_SERVER</address>
-				<port>P_OPT2_014</port>
+				<port>P_OPT2_020</port>
 			</destination>
 			<descr>[EXT-1] DMZ -&gt; DNS/NTP internes</descr>
 			<created>
-				<time>1791393518</time>
+				<time>1791398992</time>
 				<username>gen_pfsense.py</username>
 			</created>
 		</rule>
 		<rule>
 			<id />
-			<tracker>1700000015</tracker>
+			<tracker>1700000021</tracker>
 			<type>block</type>
 			<interface>opt2</interface>
 			<ipprotocol>inet</ipprotocol>
@@ -1080,13 +1190,13 @@
 			<log />
 			<descr>[T18-9] DMZ -&gt; MGMT/ADMIN/STOCKAGE/BACKUP interdit</descr>
 			<created>
-				<time>1791393518</time>
+				<time>1791398992</time>
 				<username>gen_pfsense.py</username>
 			</created>
 		</rule>
 		<rule>
 			<id />
-			<tracker>1700000016</tracker>
+			<tracker>1700000022</tracker>
 			<type>block</type>
 			<interface>opt2</interface>
 			<ipprotocol>inet</ipprotocol>
@@ -1108,13 +1218,13 @@
 			<log />
 			<descr>[T18-9] DMZ -&gt; MGMT/ADMIN/STOCKAGE/BACKUP interdit</descr>
 			<created>
-				<time>1791393518</time>
+				<time>1791398992</time>
 				<username>gen_pfsense.py</username>
 			</created>
 		</rule>
 		<rule>
 			<id />
-			<tracker>1700000017</tracker>
+			<tracker>1700000023</tracker>
 			<type>block</type>
 			<interface>opt2</interface>
 			<ipprotocol>inet</ipprotocol>
@@ -1136,13 +1246,13 @@
 			<log />
 			<descr>[T18-9] DMZ -&gt; MGMT/ADMIN/STOCKAGE/BACKUP interdit</descr>
 			<created>
-				<time>1791393518</time>
+				<time>1791398992</time>
 				<username>gen_pfsense.py</username>
 			</created>
 		</rule>
 		<rule>
 			<id />
-			<tracker>1700000018</tracker>
+			<tracker>1700000024</tracker>
 			<type>block</type>
 			<interface>opt2</interface>
 			<ipprotocol>inet</ipprotocol>
@@ -1164,12 +1274,12 @@
 			<log />
 			<descr>[T18-9] DMZ -&gt; MGMT/ADMIN/STOCKAGE/BACKUP interdit</descr>
 			<created>
-				<time>1791393518</time>
+				<time>1791398992</time>
 				<username>gen_pfsense.py</username>
 			</created>
 		</rule>
 		<rule>
-			<tracker>1700000019</tracker>
+			<tracker>1700000025</tracker>
 			<type>block</type>
 			<interface>opt2</interface>
 			<ipprotocol>inet</ipprotocol>
@@ -1182,13 +1292,13 @@
 			<log />
 			<descr>[T18] Refus par défaut DMZ (journalisé)</descr>
 			<created>
-				<time>1791393518</time>
+				<time>1791398992</time>
 				<username>gen_pfsense.py</username>
 			</created>
 		</rule>
 		<rule>
 			<id />
-			<tracker>1700000020</tracker>
+			<tracker>1700000026</tracker>
 			<type>pass</type>
 			<interface>opt3</interface>
 			<ipprotocol>inet</ipprotocol>
@@ -1211,13 +1321,13 @@
 			</destination>
 			<descr>[T18-8] Équipements -&gt; syslog</descr>
 			<created>
-				<time>1791393518</time>
+				<time>1791398992</time>
 				<username>gen_pfsense.py</username>
 			</created>
 		</rule>
 		<rule>
 			<id />
-			<tracker>1700000021</tracker>
+			<tracker>1700000027</tracker>
 			<type>pass</type>
 			<interface>opt3</interface>
 			<ipprotocol>inet</ipprotocol>
@@ -1240,13 +1350,13 @@
 			</destination>
 			<descr>[T18-8] Équipements -&gt; traps SNMP</descr>
 			<created>
-				<time>1791393518</time>
+				<time>1791398992</time>
 				<username>gen_pfsense.py</username>
 			</created>
 		</rule>
 		<rule>
 			<id />
-			<tracker>1700000022</tracker>
+			<tracker>1700000028</tracker>
 			<type>pass</type>
 			<interface>opt3</interface>
 			<ipprotocol>inet</ipprotocol>
@@ -1265,16 +1375,16 @@
 			</source>
 			<destination>
 				<address>INF_SERVER</address>
-				<port>P_OPT3_022</port>
+				<port>P_OPT3_028</port>
 			</destination>
 			<descr>[EXT-4] Équipements -&gt; DNS/NTP</descr>
 			<created>
-				<time>1791393518</time>
+				<time>1791398992</time>
 				<username>gen_pfsense.py</username>
 			</created>
 		</rule>
 		<rule>
-			<tracker>1700000023</tracker>
+			<tracker>1700000029</tracker>
 			<type>block</type>
 			<interface>opt3</interface>
 			<ipprotocol>inet</ipprotocol>
@@ -1287,180 +1397,7 @@
 			<log />
 			<descr>[T18] Refus par défaut MGMT (journalisé)</descr>
 			<created>
-				<time>1791393518</time>
-				<username>gen_pfsense.py</username>
-			</created>
-		</rule>
-		<rule>
-			<id />
-			<tracker>1700000024</tracker>
-			<type>pass</type>
-			<interface>opt4</interface>
-			<ipprotocol>inet</ipprotocol>
-			<tag />
-			<tagged />
-			<max />
-			<max-src-nodes />
-			<max-src-conn />
-			<max-src-states />
-			<statetimeout />
-			<statetype>keep state</statetype>
-			<os />
-			<protocol>tcp</protocol>
-			<source>
-				<network>opt4</network>
-			</source>
-			<destination>
-				<network>(self)</network>
-				<port>P_OPT4_024</port>
-			</destination>
-			<descr>[T18-6] Administration -&gt; webGUI/SSH du pare-feu (anti-lockout explicite)</descr>
-			<created>
-				<time>1791393518</time>
-				<username>gen_pfsense.py</username>
-			</created>
-		</rule>
-		<rule>
-			<id />
-			<tracker>1700000025</tracker>
-			<type>pass</type>
-			<interface>opt4</interface>
-			<ipprotocol>inet</ipprotocol>
-			<tag />
-			<tagged />
-			<max />
-			<max-src-nodes />
-			<max-src-conn />
-			<max-src-states />
-			<statetimeout />
-			<statetype>keep state</statetype>
-			<os />
-			<protocol>tcp</protocol>
-			<source>
-				<network>opt4</network>
-			</source>
-			<destination>
-				<address>ALL_INTERNAL</address>
-				<port>P_ADMIN_SVC</port>
-			</destination>
-			<descr>[T18-6] Administration -&gt; tous équipements SSH/HTTPS</descr>
-			<created>
-				<time>1791393518</time>
-				<username>gen_pfsense.py</username>
-			</created>
-		</rule>
-		<rule>
-			<id />
-			<tracker>1700000026</tracker>
-			<type>pass</type>
-			<interface>opt4</interface>
-			<ipprotocol>inet</ipprotocol>
-			<tag />
-			<tagged />
-			<max />
-			<max-src-nodes />
-			<max-src-conn />
-			<max-src-states />
-			<statetimeout />
-			<statetype>keep state</statetype>
-			<os />
-			<protocol>udp</protocol>
-			<source>
-				<network>opt4</network>
-			</source>
-			<destination>
-				<address>ALL_INTERNAL</address>
-				<port>P_SNMP</port>
-			</destination>
-			<descr>[T18-6] Administration -&gt; SNMP</descr>
-			<created>
-				<time>1791393518</time>
-				<username>gen_pfsense.py</username>
-			</created>
-		</rule>
-		<rule>
-			<id />
-			<tracker>1700000027</tracker>
-			<type>pass</type>
-			<interface>opt4</interface>
-			<ipprotocol>inet</ipprotocol>
-			<tag />
-			<tagged />
-			<max />
-			<max-src-nodes />
-			<max-src-conn />
-			<max-src-states />
-			<statetimeout />
-			<statetype>keep state</statetype>
-			<os />
-			<protocol>tcp</protocol>
-			<source>
-				<network>opt4</network>
-			</source>
-			<destination>
-				<address>MON_SERVER</address>
-				<port>P_OPT4_027</port>
-			</destination>
-			<descr>[T18-6] Administration -&gt; Zabbix/Grafana</descr>
-			<created>
-				<time>1791393518</time>
-				<username>gen_pfsense.py</username>
-			</created>
-		</rule>
-		<rule>
-			<id />
-			<tracker>1700000028</tracker>
-			<type>pass</type>
-			<interface>opt4</interface>
-			<ipprotocol>inet</ipprotocol>
-			<tag />
-			<tagged />
-			<max />
-			<max-src-nodes />
-			<max-src-conn />
-			<max-src-states />
-			<statetimeout />
-			<statetype>keep state</statetype>
-			<os />
-			<protocol>tcp</protocol>
-			<source>
-				<network>opt4</network>
-			</source>
-			<destination>
-				<address>10.70.0.0/24</address>
-				<port>8080</port>
-			</destination>
-			<descr>[T18-6] Administration -&gt; DCIM/BMS</descr>
-			<created>
-				<time>1791393518</time>
-				<username>gen_pfsense.py</username>
-			</created>
-		</rule>
-		<rule>
-			<id />
-			<tracker>1700000029</tracker>
-			<type>pass</type>
-			<interface>opt4</interface>
-			<ipprotocol>inet</ipprotocol>
-			<tag />
-			<tagged />
-			<max />
-			<max-src-nodes />
-			<max-src-conn />
-			<max-src-states />
-			<statetimeout />
-			<statetype>keep state</statetype>
-			<os />
-			<protocol>icmp</protocol>
-			<source>
-				<network>opt4</network>
-			</source>
-			<destination>
-				<address>ALL_INTERNAL</address>
-			</destination>
-			<descr>[T18-6] Administration -&gt; ICMP</descr>
-			<created>
-				<time>1791393518</time>
+				<time>1791398992</time>
 				<username>gen_pfsense.py</username>
 			</created>
 		</rule>
@@ -1484,19 +1421,192 @@
 				<network>opt4</network>
 			</source>
 			<destination>
-				<not />
-				<address>RFC1918</address>
+				<network>(self)</network>
 				<port>P_OPT4_030</port>
 			</destination>
-			<descr>[EXT-5] Administration -&gt; Internet (mises à jour)</descr>
+			<descr>[T18-6] Administration -&gt; webGUI/SSH du pare-feu (anti-lockout explicite)</descr>
 			<created>
-				<time>1791393518</time>
+				<time>1791398992</time>
 				<username>gen_pfsense.py</username>
 			</created>
 		</rule>
 		<rule>
 			<id />
 			<tracker>1700000031</tracker>
+			<type>pass</type>
+			<interface>opt4</interface>
+			<ipprotocol>inet</ipprotocol>
+			<tag />
+			<tagged />
+			<max />
+			<max-src-nodes />
+			<max-src-conn />
+			<max-src-states />
+			<statetimeout />
+			<statetype>keep state</statetype>
+			<os />
+			<protocol>tcp</protocol>
+			<source>
+				<network>opt4</network>
+			</source>
+			<destination>
+				<address>ALL_INTERNAL</address>
+				<port>P_ADMIN_SVC</port>
+			</destination>
+			<descr>[T18-6] Administration -&gt; tous équipements SSH/HTTPS</descr>
+			<created>
+				<time>1791398992</time>
+				<username>gen_pfsense.py</username>
+			</created>
+		</rule>
+		<rule>
+			<id />
+			<tracker>1700000032</tracker>
+			<type>pass</type>
+			<interface>opt4</interface>
+			<ipprotocol>inet</ipprotocol>
+			<tag />
+			<tagged />
+			<max />
+			<max-src-nodes />
+			<max-src-conn />
+			<max-src-states />
+			<statetimeout />
+			<statetype>keep state</statetype>
+			<os />
+			<protocol>udp</protocol>
+			<source>
+				<network>opt4</network>
+			</source>
+			<destination>
+				<address>ALL_INTERNAL</address>
+				<port>P_SNMP</port>
+			</destination>
+			<descr>[T18-6] Administration -&gt; SNMP</descr>
+			<created>
+				<time>1791398992</time>
+				<username>gen_pfsense.py</username>
+			</created>
+		</rule>
+		<rule>
+			<id />
+			<tracker>1700000033</tracker>
+			<type>pass</type>
+			<interface>opt4</interface>
+			<ipprotocol>inet</ipprotocol>
+			<tag />
+			<tagged />
+			<max />
+			<max-src-nodes />
+			<max-src-conn />
+			<max-src-states />
+			<statetimeout />
+			<statetype>keep state</statetype>
+			<os />
+			<protocol>tcp</protocol>
+			<source>
+				<network>opt4</network>
+			</source>
+			<destination>
+				<address>MON_SERVER</address>
+				<port>P_OPT4_033</port>
+			</destination>
+			<descr>[T18-6] Administration -&gt; Zabbix/Grafana</descr>
+			<created>
+				<time>1791398992</time>
+				<username>gen_pfsense.py</username>
+			</created>
+		</rule>
+		<rule>
+			<id />
+			<tracker>1700000034</tracker>
+			<type>pass</type>
+			<interface>opt4</interface>
+			<ipprotocol>inet</ipprotocol>
+			<tag />
+			<tagged />
+			<max />
+			<max-src-nodes />
+			<max-src-conn />
+			<max-src-states />
+			<statetimeout />
+			<statetype>keep state</statetype>
+			<os />
+			<protocol>tcp</protocol>
+			<source>
+				<network>opt4</network>
+			</source>
+			<destination>
+				<address>10.70.0.0/24</address>
+				<port>8080</port>
+			</destination>
+			<descr>[T18-6] Administration -&gt; DCIM/BMS</descr>
+			<created>
+				<time>1791398992</time>
+				<username>gen_pfsense.py</username>
+			</created>
+		</rule>
+		<rule>
+			<id />
+			<tracker>1700000035</tracker>
+			<type>pass</type>
+			<interface>opt4</interface>
+			<ipprotocol>inet</ipprotocol>
+			<tag />
+			<tagged />
+			<max />
+			<max-src-nodes />
+			<max-src-conn />
+			<max-src-states />
+			<statetimeout />
+			<statetype>keep state</statetype>
+			<os />
+			<protocol>icmp</protocol>
+			<source>
+				<network>opt4</network>
+			</source>
+			<destination>
+				<address>ALL_INTERNAL</address>
+			</destination>
+			<descr>[T18-6] Administration -&gt; ICMP</descr>
+			<created>
+				<time>1791398992</time>
+				<username>gen_pfsense.py</username>
+			</created>
+		</rule>
+		<rule>
+			<id />
+			<tracker>1700000036</tracker>
+			<type>pass</type>
+			<interface>opt4</interface>
+			<ipprotocol>inet</ipprotocol>
+			<tag />
+			<tagged />
+			<max />
+			<max-src-nodes />
+			<max-src-conn />
+			<max-src-states />
+			<statetimeout />
+			<statetype>keep state</statetype>
+			<os />
+			<protocol>tcp</protocol>
+			<source>
+				<network>opt4</network>
+			</source>
+			<destination>
+				<not />
+				<address>RFC1918</address>
+				<port>P_OPT4_036</port>
+			</destination>
+			<descr>[EXT-5] Administration -&gt; Internet (mises à jour)</descr>
+			<created>
+				<time>1791398992</time>
+				<username>gen_pfsense.py</username>
+			</created>
+		</rule>
+		<rule>
+			<id />
+			<tracker>1700000037</tracker>
 			<type>pass</type>
 			<interface>opt4</interface>
 			<ipprotocol>inet</ipprotocol>
@@ -1516,16 +1626,16 @@
 			<destination>
 				<not />
 				<address>RFC1918</address>
-				<port>P_OPT4_031</port>
+				<port>P_OPT4_037</port>
 			</destination>
 			<descr>[EXT-5] Administration -&gt; Internet (mises à jour)</descr>
 			<created>
-				<time>1791393518</time>
+				<time>1791398992</time>
 				<username>gen_pfsense.py</username>
 			</created>
 		</rule>
 		<rule>
-			<tracker>1700000032</tracker>
+			<tracker>1700000038</tracker>
 			<type>block</type>
 			<interface>opt4</interface>
 			<ipprotocol>inet</ipprotocol>
@@ -1538,7 +1648,7 @@
 			<log />
 			<descr>[T18] Refus par défaut ADMIN (journalisé)</descr>
 			<created>
-				<time>1791393518</time>
+				<time>1791398992</time>
 				<username>gen_pfsense.py</username>
 			</created>
 		</rule>
@@ -1586,7 +1696,7 @@
 		</modules>
 	</snmpd>
 	<revision>
-		<time>1791393518</time>
+		<time>1791398992</time>
 		<description>gen_pfsense.py – FW-A from inventory/dc_casa.yaml</description>
 		<username>gen_pfsense.py</username>
 	</revision>

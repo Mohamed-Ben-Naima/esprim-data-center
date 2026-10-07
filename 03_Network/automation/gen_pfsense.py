@@ -249,6 +249,21 @@ def build(baseline, fw):
     }
     for itf in order:
         iface = IFNAME[itf]
+        if itf in ("WAN", "LAN"):
+            # neighbours' control-plane multicast (HSRP 224.0.0.102, OSPF 224.0.0.5/6): drop without logging,
+            # otherwise the logged default deny floods the central syslog
+            for proto, dst, port, what in (("udp", "224.0.0.102", 1985, "HSRPv2"), ("ospf", "224.0.0.5", None, "OSPF"),
+                                           ("ospf", "224.0.0.6", None, "OSPF DR")):
+                r = el(flt, "rule")
+                TRACKER[0] += 1
+                el(r, "tracker", TRACKER[0]); el(r, "type", "block"); el(r, "interface", iface)
+                el(r, "ipprotocol", "inet"); el(r, "protocol", proto)
+                s_ = el(r, "source"); el(s_, "any")
+                d_ = el(r, "destination"); el(d_, "address", dst)
+                if port:
+                    el(d_, "port", port)
+                el(r, "descr", f"[BRUIT] {what} des routeurs voisins - rejet non journalise")
+                created(r)
         for rd in extra.get(itf, []) + INV["firewall_rules"].get(itf, []):
             if itf == "WAN":
                 continue            # WAN publication handled by NAT port forwards with associated pass rules

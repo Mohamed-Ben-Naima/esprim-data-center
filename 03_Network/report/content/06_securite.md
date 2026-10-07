@@ -99,3 +99,28 @@ Table: Synthèse de la vérification des pare-feux
 >   service (matrice de flux, phase 6).
 > - Le trafic propre de FW-B vers Internet n'aboutit que lorsqu'il est maître : la traduction vers 192.0.2.10, VIP
 >   détenu par le maître, est le comportement attendu d'une grappe actif/passif.
+
+## Journalisation et synchronisation de la configuration
+
+Une fois le cœur en service, le collecteur syslog central (10.60.0.12) reçoit les journaux de tous les équipements :
+routeurs Edge, cœurs et Leaf (au travers de leur VRF de management, du pare-feu et du VLAN 60), pare-feux
+(`filterlog`), serveurs et simulateurs. Cette première exploitation a révélé un bruit important : la règle de refus
+journalisée du pare-feu enregistrait chaque annonce HSRP (224.0.0.102, UDP 1985) et OSPF (224.0.0.5/6) émise par les
+Edge et les cœurs, soit plusieurs mégaoctets de journaux par heure. Des règles de rejet **non journalisées** ont été
+ajoutées pour ce trafic de contrôle multicast, avant la règle de refus par défaut, afin que les journaux ne
+contiennent que des refus significatifs.
+
+Ces règles ont été déployées sur FW-A seul puis répliquées vers FW-B par la synchronisation **XMLRPC**
+(`rc.filter_synchronize`) : contrôle de version des deux pairs (23.3), transfert de la configuration vers
+`https://10.254.3.2/xmlrpc.php`, puis rechargement automatique des règles sur FW-B.
+
+![Synchronisation XMLRPC : FW-A pousse sa configuration (haut), FW-B applique les 6 nouvelles règles (bas)](../screenshots/18_fw_xmlrpc_sync.png){width=420}
+
+Table: Sources reçues par le collecteur syslog central
+| Source | Adresse | Chemin |
+|---|---|---|
+| EDGE-A, EDGE-B | 10.10.0.1, 10.10.0.2 | VRF MGMT → pare-feu (MGMT) → LAN → cœur → VLAN 60 |
+| CORE-A, CORE-B | 10.10.0.21, 10.10.0.22 | VRF MGMT → pare-feu → VLAN 60 |
+| LEAF-A1, A2, B1, B2 | 10.10.0.31 à 10.10.0.34 | SVI VLAN 10 → pare-feu → VLAN 60 |
+| FW-A, FW-B | 10.10.0.11, 10.10.0.12 | Interface MGMT |
+| SRV-INF-01, SRV-DCIM-01, CCTV-SIM | VLAN 100, 70, 80 | Routage inter-VLAN par le cœur (ACL : syslog autorisé) |

@@ -37,8 +37,8 @@ EOF
 systemctl disable --now systemd-resolved >/dev/null 2>&1; rm -f /etc/resolv.conf; echo 'nameserver 127.0.0.1' > /etc/resolv.conf
 systemctl enable --now dnsmasq && systemctl restart dnsmasq""",
     "ntp": f"""DEBIAN_FRONTEND=noninteractive apt-get install -y -q chrony >/dev/null
-cat > /etc/chrony/conf.d/dc-casa.conf <<'EOF'
-# SRV-INF-01 – NTP server for the whole lab (ISO/IEC 27001 A.8.17)
+grep -q 'dc-casa' /etc/chrony/chrony.conf || cat >> /etc/chrony/chrony.conf <<'EOF'
+# dc-casa: SRV-INF-01 is the NTP server of the whole lab (ISO/IEC 27001 A.8.17)
 allow 10.0.0.0/8
 local stratum 8
 EOF
@@ -172,8 +172,14 @@ def deploy(api, p, name, base_only=False):
             return
         rc, inet = lx.run("ping -c 2 -W 3 8.8.8.8 | tail -1")
         print(f"[{name}] internet: {inet}")
-        lx.run("echo 'nameserver 1.1.1.1' > /run/systemd/resolve/resolv.conf 2>/dev/null; true")
-        rc, out = lx.run("DEBIAN_FRONTEND=noninteractive apt-get update -q >/dev/null 2>&1; echo apt-update-rc=$?", 600)
+        # bootstrap resolvers while installing packages (SRV-INF-01 cannot resolve through itself yet)
+        lx.run("rm -f /etc/resolv.conf; echo 'nameserver 1.1.1.1' > /etc/resolv.conf; echo 'nameserver 8.8.8.8' >> /etc/resolv.conf")
+        # archive/security.ubuntu.com are unreachable from the site's upstream: use the kernel.org mirror, IPv4 only
+        lx.put_file("/etc/apt/sources.list", "\n".join(
+            f"deb http://mirrors.edge.kernel.org/ubuntu focal{suite} main restricted universe multiverse"
+            for suite in ("", "-updates", "-security", "-backports")) + "\n")
+        lx.run("echo 'Acquire::ForceIPv4 \"true\";' > /etc/apt/apt.conf.d/99force-ipv4")
+        rc, out = lx.run("DEBIAN_FRONTEND=noninteractive apt-get update -q > /root/apt.log 2>&1; echo apt-update-rc=$?; grep -c '^Err' /root/apt.log", 600)
         print(f"[{name}] {out}")
         for role in s["roles"]:
             if role.startswith("keepalived"):
@@ -181,8 +187,13 @@ def deploy(api, p, name, base_only=False):
             else:
                 body = ROLE_SCRIPTS.get(role, "true")
             lx.put_file("/root/role.sh", "set -e\n" + body + "\n", "700")
-            rc, out = lx.run("bash /root/role.sh 2>&1 | tail -5", 900)
+            rc, out = lx.run("bash /root/role.sh > /root/role.log 2>&1; r=$?; tail -4 /root/role.log; (exit $r)", 900)
             print(f"[{name}] role {role}: rc={rc} {out[-300:]}")
+        # final resolver: internal DNS (dnsmasq on SRV-INF-01 manages its own resolv.conf)
+        if "dns" not in s["roles"]:
+            lx.run("ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf")
+        rc, out = lx.run("getent hosts deb.debian.org >/dev/null && echo dns-ok; timedatectl show -p NTPSynchronized --value")
+        print(f"[{name}] final: {out}")
 
 
 if __name__ == "__main__":
