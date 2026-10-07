@@ -3,10 +3,14 @@
 import json, uuid, csv, sys
 
 # ---- EDIT THESE to match the image filenames in your GNS3 installation ----
-IMG_IOSV   = "vios-adventerprisek9-m.vmdk"      # Cisco IOSv   (Edge)
-IMG_IOSVL2 = "vios_l2-adventerprisek9-m.vmdk"   # Cisco IOSvL2 (Core / Leaf)
-IMG_PFSENSE = "pfSense-CE.qcow2"                # pfSense
-IMG_LINUX  = "debian-12-genericcloud.qcow2"     # Linux server VM
+# (names below match /opt/gns3/images/QEMU inside the GNS3 VM)
+IMG_IOSV   = "vios-adventerprisek9-m.spa.159-3.m6.qcow2"  # Cisco IOSv   (Edge)
+IMG_IOSVL2 = "vios_l2-adventerprisek9-m.03.2017.qcow2"    # Cisco IOSvL2 (Core / Leaf)
+IMG_PFSENSE = "empty100G.qcow2"                           # pfSense install disk
+ISO_PFSENSE = "pfSense-CE-2.7.2-RELEASE-amd64.iso"        # pfSense installer (cdrom)
+IMG_LINUX  = "ubuntu-20.04-server-cloudimg-amd64.img"     # Linux server VM (ubuntu/ubuntu)
+ISO_LINUX  = "ubuntu-cloud-init-data.iso"                 # cloud-init seed (cdrom)
+COMPUTE    = "vm"                                         # run everything on the GNS3 VM
 IMG_FRR    = "frrouting/frr:latest"
 IMG_TERM   = "gns3/ipterm:latest"
 IMG_WEB    = "nginx:alpine"
@@ -123,33 +127,36 @@ for n, v in nodes.items():
 
 def node_json(n):
     v, c = nodes[n], counter[n]
-    base = dict(compute_id="local", console_auto_start=False, console_type="telnet",
+    base = dict(compute_id=COMPUTE, console_auto_start=False, console_type="telnet",
                 height=45, width=66, locked=False, name=n, node_id=v["id"],
                 x=v["x"], y=v["y"], z=1,
                 label=dict(rotation=0, style="font-family: TypeWriter;font-size: 10.0;font-weight: bold;",
                            text=n, x=-5, y=-25),
                 symbol=f":/symbols/classic/{v['sym']}.svg")
     k = v["kind"]
-    qemu_common = dict(platform="x86_64", qemu_path="", cpus=1, linked_clone=True, on_close="power_off",
+    qemu_common = dict(platform="x86_64", qemu_path="/usr/bin/qemu-system-x86_64", cpus=1, linked_clone=True, on_close="power_off",
                        options="", boot_priority="c", cpu_throttling=0, process_priority="normal",
                        replicate_network_connection_state=True)
     if k == "iosv":
         base.update(node_type="qemu", first_port_name="", port_name_format="Gi0/{0}", port_segment_size=0,
                     properties=dict(qemu_common, adapters=CAP[k], adapter_type="e1000",
-                                    hda_disk_image=IMG_IOSV, hda_disk_interface="virtio", ram=1024))
+                                    hda_disk_image=IMG_IOSV, hda_disk_interface="virtio", ram=512))
     elif k == "iosvl2":
-        ram = 1024 if n.startswith("CORE") else 768
-        base.update(node_type="qemu", first_port_name="", port_name_format="Gi{0}/{1}", port_segment_size=4,
+        ram = 768
+        base.update(node_type="qemu", first_port_name="", port_name_format="Gi{1}/{0}", port_segment_size=4,
                     properties=dict(qemu_common, adapters=CAP[k], adapter_type="e1000",
                                     hda_disk_image=IMG_IOSVL2, hda_disk_interface="virtio", ram=ram))
     elif k == "pfsense":
         base.update(node_type="qemu", first_port_name="", port_name_format="em{0}", port_segment_size=0,
                     properties=dict(qemu_common, adapters=CAP[k], adapter_type="e1000", cpus=2,
-                                    hda_disk_image=IMG_PFSENSE, hda_disk_interface="virtio", ram=1536))
+                                    hda_disk_image=IMG_PFSENSE, hda_disk_interface="virtio",
+                                    cdrom_image=ISO_PFSENSE, ram=1024))
+        base["console_type"] = "vnc"
     elif k == "linux":
         base.update(node_type="qemu", first_port_name="", port_name_format="eth{0}", port_segment_size=0,
                     properties=dict(qemu_common, adapters=max(c, 1), adapter_type="virtio-net-pci",
-                                    hda_disk_image=IMG_LINUX, hda_disk_interface="virtio", ram=v["ram"]))
+                                    hda_disk_image=IMG_LINUX, hda_disk_interface="virtio",
+                                    cdrom_image=ISO_LINUX, ram=v["ram"]))
     elif k == "docker":
         base.update(node_type="docker", port_name_format="eth{0}", port_segment_size=0, first_port_name="",
                     properties=dict(adapters=max(c, 1), image=v["image"], start_command="", environment="",
