@@ -51,3 +51,49 @@ La procédure a été généralisée dans le script `03_Network/fixgns3.ps1`, ut
 même défaut : il découvre la VM, les réseaux VMware et leurs passerelles, applique l'adressage adapté (DHCP lorsqu'il
 est disponible, statique sinon), corrige Docker, réactive la VM par l'API et peut rattacher un projet à la VM.
 Un mode `-DryRun` permet un diagnostic sans aucune modification.
+
+## Source unique de vérité
+
+L'ensemble du réseau est décrit dans un seul fichier, `inventory/dc_casa.yaml`. Les générateurs de configuration,
+les scripts de pilotage et les tableaux de ce rapport lisent ce fichier : une modification du réseau se fait à un
+seul endroit et se propage partout, ce qui évite les divergences entre documentation et équipements.
+
+Table: Structure de l'inventaire
+| Section | Contenu |
+|---|---|
+| `site`, `services` | Domaine, fuseau horaire, AS 65100, préfixe public, serveurs DNS/NTP/syslog/supervision |
+| `vlans`, `transit` | Plan de VLAN (sous-réseau, passerelle, VIP, zone) et segments de transit |
+| `isps` | Opérateurs : AS, préférence locale, liens et adresses |
+| `devices` | Équipements réseau : rôle, plateforme, espace TIA-942, loopback, management, ports et voisins |
+| `lab_switches` | Commutateurs GNS3 (SW-OUT, SW-DMZ, SW-MGMT) : VLAN par port, trunks 802.1Q |
+| `servers` | Serveurs et conteneurs : VLAN, adresse, bonding, rôles |
+| `firewall_rules`, `core_acl` | Politique de filtrage par interface et ACL inter-VLAN, avec renvoi au tableau 18 du dossier |
+| `tests` | Scénarios de panne T1 à T6 et M1, actions et objectifs |
+
+```yaml title="Extrait de inventory/dc_casa.yaml"
+  CORE-A:
+    role: core
+    platform: iosvl2
+    tia: MDA
+    loopback: 10.255.0.21
+    mgmt: {ip: 10.10.0.21, port: Gi2/0}
+    ports:
+      Gi0/0: {to: "FW-A:em3", mode: access, vlan: 902, role: "Vers FW-A lagg0"}
+      Gi0/2: {to: "CORE-B:Gi0/2", mode: portchannel, channel: 1, role: "ISL Po1 LACP #1"}
+      Gi1/0: {to: "LEAF-A1:Gi0/0", mode: trunk, role: "Uplink Hall A"}
+```
+
+Un contrôle automatique (`automation/validate_inventory.py`) vérifie la cohérence avant toute génération : symétrie
+de chaque lien déclaré aux deux extrémités, appartenance de chaque adresse à son sous-réseau, absence de doublon et
+conformité au plan de câblage GNS3.
+
+```text title="Résultat du contrôle de l'inventaire"
+links checked: 98, IPs checked: 92
+  note: re-cabled (SW-OUT): EDGE-A:Gi0/3 <-> FW-A:em0
+  note: re-cabled (SW-OUT): EDGE-A:Gi0/4 <-> FW-B:em0
+  note: re-cabled (SW-OUT): EDGE-B:Gi0/3 <-> FW-A:em1
+  note: re-cabled (SW-OUT): EDGE-B:Gi0/4 <-> FW-B:em1
+RESULT: OK
+```
+
+Les seules différences avec le câblage initial sont les quatre liens Edge–pare-feu remplacés par le segment SW-OUT.

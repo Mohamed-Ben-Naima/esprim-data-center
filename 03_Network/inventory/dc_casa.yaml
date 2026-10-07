@@ -1,0 +1,374 @@
+# =====================================================================================================
+#  DC Casablanca – TIA-942 Rated-3 – GNS3 lab
+#  SINGLE SOURCE OF TRUTH. Device configs (configs/), report tables (report/content/generated/) and
+#  automation all read this file. Change the network here, then re-run automation/gen_configs.py.
+#  Spec: 05_Report/Datacenter_Casablanca_TIA942_GNS3_detaille.pdf (Tables 15, 16, 17, 18, 25, 27)
+# =====================================================================================================
+
+site:
+  name: DC-CASA
+  domain: dc.casa.lab
+  timezone: Africa/Casablanca          # UTC+1 (IOS: clock timezone WET 1)
+  asn: 65100
+  public_prefix: 192.0.2.0/24          # RFC 5737 documentation prefix announced to both ISPs
+  snat_ip: 192.0.2.10                  # outbound NAT address (pfSense)
+  web_public_ip: 192.0.2.80            # DNAT -> SRV-WEB-01
+
+# Central services every device uses (ISO 27001 A.8.15 logging, A.8.17 clock sync)
+services:
+  dns: 10.100.0.11
+  ntp: 10.100.0.11
+  syslog: 10.60.0.12
+  monitoring: 10.60.0.11
+  snmp_trap: 10.60.0.11
+
+# Lab-only credentials (documented in the report annex; never reuse outside the lab)
+credentials:
+  admin_user: netadmin
+  admin_password: "Esprim-DC-2026!"
+  enable_secret: "Esprim-Enable-2026!"
+  snmpv3_user: zbxmon
+  snmpv3_auth: "Zbx-Auth-2026!"        # SHA
+  snmpv3_priv: "Zbx-Priv-2026!"        # AES-128
+  snmp_ro_community: "dc-casa-ro"      # pfSense bsnmpd (v2c, restricted to VLAN 60)
+  hsrp_key: "Hsrp-DC-2026"
+  ospf_key: "Ospf-DC-2026"
+  bgp_password: "Bgp-DC-2026"
+  carp_password: "Carp-DC-2026"
+
+# ---------------------------------------------------------------------------------------------------
+# VLANs (PDF Table 15 + technical VLANs). gw_type: core = HSRP on CORE-A/B, fw = CARP on FW-A/B
+# ---------------------------------------------------------------------------------------------------
+vlans:
+  10:  {name: MGMT,          subnet: 10.10.0.0/24,  gw_type: fw,   vip: 10.10.0.254, fw_a: 10.10.0.11,  fw_b: 10.10.0.12,  zone: MANAGEMENT,     purpose: "Management hors bande (OOB) des équipements"}
+  20:  {name: SERVEURS,      subnet: 10.20.0.0/24,  gw_type: core, vip: 10.20.0.1,   active: CORE-A, zone: INTERNE,        purpose: "Serveurs de calcul / applicatifs"}
+  30:  {name: STOCKAGE,      subnet: 10.30.0.0/24,  gw_type: core, vip: 10.30.0.1,   active: CORE-B, zone: INTERNE,        purpose: "Stockage (NFS, iSCSI)"}
+  40:  {name: BACKUP,        subnet: 10.40.0.0/24,  gw_type: core, vip: 10.40.0.1,   active: CORE-A, zone: INTERNE,        purpose: "Sauvegarde"}
+  50:  {name: DMZ,           subnet: 10.50.0.0/24,  gw_type: fw,   vip: 10.50.0.1,   fw_a: 10.50.0.2,   fw_b: 10.50.0.3,   zone: DMZ,            purpose: "Services exposés à Internet"}
+  60:  {name: MONITORING,    subnet: 10.60.0.0/24,  gw_type: core, vip: 10.60.0.1,   active: CORE-A, zone: INTERNE,        purpose: "Supervision et journalisation"}
+  70:  {name: BMS-DCIM,      subnet: 10.70.0.0/24,  gw_type: core, vip: 10.70.0.1,   active: CORE-B, zone: INTERNE,        purpose: "GTB / DCIM"}
+  80:  {name: SECURITE-CCTV, subnet: 10.80.0.0/24,  gw_type: core, vip: 10.80.0.1,   active: CORE-B, zone: INTERNE,        purpose: "Vidéosurveillance, contrôle d'accès"}
+  90:  {name: ADMIN,         subnet: 10.90.0.0/24,  gw_type: fw,   vip: 10.90.0.1,   fw_a: 10.90.0.2,   fw_b: 10.90.0.3,   zone: ADMINISTRATION, purpose: "Poste d'administration, bastion"}
+  100: {name: SERVICES-INT,  subnet: 10.100.0.0/24, gw_type: core, vip: 10.100.0.1,  active: CORE-A, zone: INTERNE,        purpose: "DNS, NTP, DHCP, services internes"}
+  901: {name: TRANSIT-EXT,   subnet: 10.254.1.0/28, gw_type: none, zone: TRANSIT, purpose: "Transit Edge – pare-feux (SW-OUT)"}
+  902: {name: TRANSIT-INT,   subnet: 10.254.2.0/28, gw_type: none, zone: TRANSIT, purpose: "Transit pare-feux – cœur"}
+  998: {name: OSPF-CORE,     subnet: 10.254.4.0/30, gw_type: none, zone: TRANSIT, purpose: "Adjacence OSPF entre cœurs"}
+  999: {name: PARKING,       subnet: null,          gw_type: none, zone: NONE,    purpose: "Ports inutilisés (désactivés)"}
+
+data_vlans: [20, 30, 40, 60, 70, 80, 100]     # routed by the Cores, trunked to the Leafs
+core_vlans: [20, 30, 40, 60, 70, 80, 100, 902, 998]
+
+transit:
+  ext:  {subnet: 10.254.1.0/28, fw_vip: 10.254.1.1, EDGE-A: 10.254.1.2, EDGE-B: 10.254.1.3, FW-A: 10.254.1.4, FW-B: 10.254.1.5, edge_vip: 10.254.1.6}
+  int:  {subnet: 10.254.2.0/28, fw_vip: 10.254.2.1, CORE-A: 10.254.2.2, CORE-B: 10.254.2.3, FW-A: 10.254.2.4, FW-B: 10.254.2.5, core_vip: 10.254.2.6}
+  sync: {subnet: 10.254.3.0/30, FW-A: 10.254.3.1, FW-B: 10.254.3.2}
+  ospf_core: {subnet: 10.254.4.0/30, CORE-A: 10.254.4.1, CORE-B: 10.254.4.2}
+  edge_isl:  {subnet: 10.254.0.0/30, EDGE-A: 10.254.0.1, EDGE-B: 10.254.0.2}
+
+# ---------------------------------------------------------------------------------------------------
+# WAN (RFC 5737 / RFC 5398). Primary pairs follow PDF Table 16; cross links add a 2nd path per Edge.
+# ---------------------------------------------------------------------------------------------------
+isps:
+  ISP-A: {asn: 64500, lp_in: 200, prepend_out: 0, nat_uplink: eth2, links: {eth0: {peer: EDGE-A, net: 198.51.100.0/30, ip: 198.51.100.1, peer_ip: 198.51.100.2}, eth1: {peer: EDGE-B, net: 198.51.100.4/30, ip: 198.51.100.5, peer_ip: 198.51.100.6}}}
+  ISP-B: {asn: 64501, lp_in: 100, prepend_out: 2, nat_uplink: eth2, links: {eth0: {peer: EDGE-A, net: 203.0.113.4/30, ip: 203.0.113.5, peer_ip: 203.0.113.6}, eth1: {peer: EDGE-B, net: 203.0.113.0/30, ip: 203.0.113.1, peer_ip: 203.0.113.2}}}
+
+# ---------------------------------------------------------------------------------------------------
+# Network devices. tia = TIA-942 space; ports = adapter -> link (used for TIA-606 descriptions)
+# ---------------------------------------------------------------------------------------------------
+devices:
+  EDGE-A:
+    role: edge
+    platform: iosv
+    tia: ER          # Entrance Room / Main Meet-Me Room
+    loopback: 10.255.0.1
+    mgmt: {ip: 10.10.0.1, port: Gi0/5}
+    hsrp_ext_priority: 110
+    ports:
+      Gi0/0: {to: "ISP-A:eth0", mode: routed, ip: 198.51.100.2/30, role: "WAN eBGP ISP-A (primaire)"}
+      Gi0/1: {to: "ISP-B:eth0", mode: routed, ip: 203.0.113.6/30, role: "WAN eBGP ISP-B (secours)"}
+      Gi0/2: {to: "EDGE-B:Gi0/2", mode: routed, ip: 10.254.0.1/30, role: "ISL iBGP/OSPF"}
+      Gi0/3: {to: "SW-OUT:Ethernet0", mode: routed, ip: 10.254.1.2/28, role: "Transit externe VLAN 901"}
+      Gi0/5: {to: "SW-MGMT:Ethernet0", mode: mgmt, role: "OOB VLAN 10"}
+  EDGE-B:
+    role: edge
+    platform: iosv
+    tia: ER
+    loopback: 10.255.0.2
+    mgmt: {ip: 10.10.0.2, port: Gi0/5}
+    hsrp_ext_priority: 100
+    ports:
+      Gi0/0: {to: "ISP-A:eth1", mode: routed, ip: 198.51.100.6/30, role: "WAN eBGP ISP-A (primaire)"}
+      Gi0/1: {to: "ISP-B:eth1", mode: routed, ip: 203.0.113.2/30, role: "WAN eBGP ISP-B (secours)"}
+      Gi0/2: {to: "EDGE-A:Gi0/2", mode: routed, ip: 10.254.0.2/30, role: "ISL iBGP/OSPF"}
+      Gi0/3: {to: "SW-OUT:Ethernet1", mode: routed, ip: 10.254.1.3/28, role: "Transit externe VLAN 901"}
+      Gi0/5: {to: "SW-MGMT:Ethernet1", mode: mgmt, role: "OOB VLAN 10"}
+
+  FW-A:
+    role: firewall
+    platform: pfsense
+    tia: MDA
+    loopback: 10.255.0.11
+    mgmt: {ip: 10.10.0.11, port: em6.10}
+    carp_advskew: 0
+    ports:
+      em0: {to: "SW-OUT:Ethernet2", role: "WAN – transit externe VLAN 901"}
+      em2: {to: "FW-B:em2", role: "SYNC – pfsync / XMLRPC"}
+      em3: {to: "CORE-A:Gi0/0", role: "LAN – lagg0 membre primaire (VLAN 902)"}
+      em4: {to: "CORE-B:Gi0/0", role: "LAN – lagg0 membre secours (VLAN 902)"}
+      em5: {to: "SW-DMZ:Ethernet0", role: "DMZ VLAN 50"}
+      em6: {to: "SW-MGMT:Ethernet2", role: "Trunk 802.1Q VLAN 10 (MGMT) + 90 (ADMIN)"}
+  FW-B:
+    role: firewall
+    platform: pfsense
+    tia: MDA
+    loopback: 10.255.0.12
+    mgmt: {ip: 10.10.0.12, port: em6.10}
+    carp_advskew: 100
+    ports:
+      em0: {to: "SW-OUT:Ethernet3", role: "WAN – transit externe VLAN 901"}
+      em2: {to: "FW-A:em2", role: "SYNC – pfsync / XMLRPC"}
+      em3: {to: "CORE-A:Gi0/1", role: "LAN – lagg0 membre primaire (VLAN 902)"}
+      em4: {to: "CORE-B:Gi0/1", role: "LAN – lagg0 membre secours (VLAN 902)"}
+      em5: {to: "SW-DMZ:Ethernet1", role: "DMZ VLAN 50"}
+      em6: {to: "SW-MGMT:Ethernet3", role: "Trunk 802.1Q VLAN 10 (MGMT) + 90 (ADMIN)"}
+
+  CORE-A:
+    role: core
+    platform: iosvl2
+    tia: MDA
+    loopback: 10.255.0.21
+    mgmt: {ip: 10.10.0.21, port: Gi2/0}
+    svi_host: 2            # SVI address = .2 in every core VLAN
+    hsrp_active_priority: 110
+    hsrp_standby_priority: 90
+    ports:
+      Gi0/0: {to: "FW-A:em3", mode: access, vlan: 902, role: "Vers FW-A lagg0"}
+      Gi0/1: {to: "FW-B:em3", mode: access, vlan: 902, role: "Vers FW-B lagg0"}
+      Gi0/2: {to: "CORE-B:Gi0/2", mode: portchannel, channel: 1, role: "ISL Po1 LACP #1"}
+      Gi0/3: {to: "CORE-B:Gi0/3", mode: portchannel, channel: 1, role: "ISL Po1 LACP #2"}
+      Gi1/0: {to: "LEAF-A1:Gi0/0", mode: trunk, role: "Uplink Hall A"}
+      Gi1/1: {to: "LEAF-A2:Gi0/0", mode: trunk, role: "Uplink Hall A"}
+      Gi1/2: {to: "LEAF-B1:Gi0/0", mode: trunk, role: "Uplink Hall B"}
+      Gi1/3: {to: "LEAF-B2:Gi0/0", mode: trunk, role: "Uplink Hall B"}
+      Gi2/0: {to: "SW-MGMT:Ethernet4", mode: mgmt, role: "OOB VLAN 10"}
+  CORE-B:
+    role: core
+    platform: iosvl2
+    tia: MDA
+    loopback: 10.255.0.22
+    mgmt: {ip: 10.10.0.22, port: Gi2/0}
+    svi_host: 3
+    hsrp_active_priority: 110
+    hsrp_standby_priority: 90
+    ports:
+      Gi0/0: {to: "FW-A:em4", mode: access, vlan: 902, role: "Vers FW-A lagg0"}
+      Gi0/1: {to: "FW-B:em4", mode: access, vlan: 902, role: "Vers FW-B lagg0"}
+      Gi0/2: {to: "CORE-A:Gi0/2", mode: portchannel, channel: 1, role: "ISL Po1 LACP #1"}
+      Gi0/3: {to: "CORE-A:Gi0/3", mode: portchannel, channel: 1, role: "ISL Po1 LACP #2"}
+      Gi1/0: {to: "LEAF-A1:Gi0/1", mode: trunk, role: "Uplink Hall A"}
+      Gi1/1: {to: "LEAF-A2:Gi0/1", mode: trunk, role: "Uplink Hall A"}
+      Gi1/2: {to: "LEAF-B1:Gi0/1", mode: trunk, role: "Uplink Hall B"}
+      Gi1/3: {to: "LEAF-B2:Gi0/1", mode: trunk, role: "Uplink Hall B"}
+      Gi2/0: {to: "SW-MGMT:Ethernet5", mode: mgmt, role: "OOB VLAN 10"}
+
+  LEAF-A1:
+    role: leaf
+    platform: iosvl2
+    tia: HDA-A
+    hall: A
+    loopback: 10.255.0.31
+    mgmt: {ip: 10.10.0.31, port: Gi1/2}
+    ports:
+      Gi0/0: {to: "CORE-A:Gi1/0", mode: trunk, role: "Uplink CORE-A"}
+      Gi0/1: {to: "CORE-B:Gi1/0", mode: trunk, role: "Uplink CORE-B"}
+      Gi0/2: {to: "SRV-CMP-01:eth0", mode: access, vlan: 20, role: "Serveur NIC0"}
+      Gi0/3: {to: "SRV-CMP-02:eth0", mode: access, vlan: 20, role: "Serveur NIC0"}
+      Gi1/0: {to: "SRV-CMP-03:eth0", mode: access, vlan: 20, role: "Serveur NIC0"}
+      Gi1/1: {to: "SRV-STO-01:eth0", mode: access, vlan: 30, role: "Serveur NIC0"}
+      Gi1/2: {to: "SW-MGMT:Ethernet6", mode: mgmt, role: "OOB VLAN 10"}
+  LEAF-A2:
+    role: leaf
+    platform: iosvl2
+    tia: HDA-A
+    hall: A
+    loopback: 10.255.0.32
+    mgmt: {ip: 10.10.0.32, port: Gi1/2}
+    ports:
+      Gi0/0: {to: "CORE-A:Gi1/1", mode: trunk, role: "Uplink CORE-A"}
+      Gi0/1: {to: "CORE-B:Gi1/1", mode: trunk, role: "Uplink CORE-B"}
+      Gi0/2: {to: "SRV-CMP-01:eth1", mode: access, vlan: 20, role: "Serveur NIC1"}
+      Gi0/3: {to: "SRV-CMP-02:eth1", mode: access, vlan: 20, role: "Serveur NIC1"}
+      Gi1/0: {to: "SRV-CMP-03:eth1", mode: access, vlan: 20, role: "Serveur NIC1"}
+      Gi1/1: {to: "SRV-STO-01:eth1", mode: access, vlan: 30, role: "Serveur NIC1"}
+      Gi1/2: {to: "SW-MGMT:Ethernet7", mode: mgmt, role: "OOB VLAN 10"}
+  LEAF-B1:
+    role: leaf
+    platform: iosvl2
+    tia: HDA-B
+    hall: B
+    loopback: 10.255.0.33
+    mgmt: {ip: 10.10.0.33, port: Gi1/3}
+    ports:
+      Gi0/0: {to: "CORE-A:Gi1/2", mode: trunk, role: "Uplink CORE-A"}
+      Gi0/1: {to: "CORE-B:Gi1/2", mode: trunk, role: "Uplink CORE-B"}
+      Gi0/2: {to: "SRV-BCK-01:eth0", mode: access, vlan: 40, role: "Serveur NIC0"}
+      Gi0/3: {to: "SRV-INF-01:eth0", mode: access, vlan: 100, role: "Serveur NIC0"}
+      Gi1/0: {to: "SRV-MON-01:eth0", mode: access, vlan: 60, role: "Serveur NIC0"}
+      Gi1/1: {to: "SRV-DCIM-01:eth0", mode: access, vlan: 70, role: "Serveur NIC0"}
+      Gi1/2: {to: "SYSLOG:eth0", mode: access, vlan: 60, role: "Service syslog"}
+      Gi1/3: {to: "SW-MGMT:Ethernet8", mode: mgmt, role: "OOB VLAN 10"}
+  LEAF-B2:
+    role: leaf
+    platform: iosvl2
+    tia: HDA-B
+    hall: B
+    loopback: 10.255.0.34
+    mgmt: {ip: 10.10.0.34, port: Gi2/0}
+    ports:
+      Gi0/0: {to: "CORE-A:Gi1/3", mode: trunk, role: "Uplink CORE-A"}
+      Gi0/1: {to: "CORE-B:Gi1/3", mode: trunk, role: "Uplink CORE-B"}
+      Gi0/2: {to: "SRV-BCK-01:eth1", mode: access, vlan: 40, role: "Serveur NIC1"}
+      Gi0/3: {to: "SRV-INF-01:eth1", mode: access, vlan: 100, role: "Serveur NIC1"}
+      Gi1/0: {to: "SRV-MON-01:eth1", mode: access, vlan: 60, role: "Serveur NIC1"}
+      Gi1/1: {to: "SRV-DCIM-01:eth1", mode: access, vlan: 70, role: "Serveur NIC1"}
+      Gi1/2: {to: "BMS-SIM:eth0", mode: access, vlan: 70, role: "Simulateur GTB"}
+      Gi1/3: {to: "CCTV-SIM:eth0", mode: access, vlan: 80, role: "Simulateur CCTV"}
+      Gi2/0: {to: "SW-MGMT:Ethernet9", mode: mgmt, role: "OOB VLAN 10"}
+
+# GNS3 built-in switches (zero RAM). type: access | dot1q (vlan = native/access VLAN, carried VLANs listed)
+lab_switches:
+  SW-OUT:  {tia: ER,  ports: {Ethernet0: {vlan: 901, to: "EDGE-A:Gi0/3"}, Ethernet1: {vlan: 901, to: "EDGE-B:Gi0/3"}, Ethernet2: {vlan: 901, to: "FW-A:em0"}, Ethernet3: {vlan: 901, to: "FW-B:em0"}}}
+  SW-DMZ:  {tia: MDA, ports: {Ethernet0: {vlan: 50, to: "FW-A:em5"}, Ethernet1: {vlan: 50, to: "FW-B:em5"}, Ethernet2: {vlan: 50, to: "SRV-WEB-01:eth0"}}}
+  SW-MGMT:
+    tia: MDA
+    ports:
+      Ethernet0:  {vlan: 10, to: "EDGE-A:Gi0/5"}
+      Ethernet1:  {vlan: 10, to: "EDGE-B:Gi0/5"}
+      Ethernet2:  {type: dot1q, vlan: 1, carries: [10, 90], to: "FW-A:em6"}
+      Ethernet3:  {type: dot1q, vlan: 1, carries: [10, 90], to: "FW-B:em6"}
+      Ethernet4:  {vlan: 10, to: "CORE-A:Gi2/0"}
+      Ethernet5:  {vlan: 10, to: "CORE-B:Gi2/0"}
+      Ethernet6:  {vlan: 10, to: "LEAF-A1:Gi1/2"}
+      Ethernet7:  {vlan: 10, to: "LEAF-A2:Gi1/2"}
+      Ethernet8:  {vlan: 10, to: "LEAF-B1:Gi1/3"}
+      Ethernet9:  {vlan: 10, to: "LEAF-B2:Gi2/0"}
+      Ethernet10: {vlan: 90, to: "SRV-BASTION:eth0"}
+      Ethernet11: {vlan: 90, to: "ADMIN-WS:eth0"}
+
+# ---------------------------------------------------------------------------------------------------
+# Servers & containers (PDF Table 25; attachments follow the GNS3 cabling)
+# ---------------------------------------------------------------------------------------------------
+servers:
+  SRV-CMP-01:  {kind: vm,     tia: EDA-A, vlan: 20,  ip: 10.20.0.11,  bond: true,  roles: [app-8443, keepalived-master, iperf3], vip: 10.20.0.10}
+  SRV-CMP-02:  {kind: vm,     tia: EDA-A, vlan: 20,  ip: 10.20.0.12,  bond: true,  roles: [app-8443, keepalived-backup, iperf3], vip: 10.20.0.10}
+  SRV-CMP-03:  {kind: vm,     tia: EDA-A, vlan: 20,  ip: 10.20.0.13,  bond: true,  roles: [app-8443, iperf3]}
+  SRV-STO-01:  {kind: vm,     tia: EDA-A, vlan: 30,  ip: 10.30.0.11,  bond: true,  roles: [nfs, iscsi]}
+  SRV-BCK-01:  {kind: vm,     tia: EDA-B, vlan: 40,  ip: 10.40.0.11,  bond: true,  roles: [backup-rsyncd]}
+  SRV-INF-01:  {kind: vm,     tia: EDA-B, vlan: 100, ip: 10.100.0.11, bond: true,  roles: [dns, ntp, dhcp]}
+  SRV-MON-01:  {kind: vm,     tia: EDA-B, vlan: 60,  ip: 10.60.0.11,  bond: true,  roles: [zabbix, grafana], ram: 1536}
+  SRV-DCIM-01: {kind: docker, tia: EDA-B, vlan: 70,  ip: 10.70.0.11,  bond: true,  roles: [dcim], image: "dc/dcim:1.0"}
+  SYSLOG:      {kind: docker, tia: EDA-B, vlan: 60,  ip: 10.60.0.12,  bond: false, roles: [syslog], image: "dc/syslog:1.0"}
+  BMS-SIM:     {kind: docker, tia: EDA-B, vlan: 70,  ip: 10.70.0.12,  bond: false, roles: [bms-sim], image: "dc/bms-sim:1.0"}
+  CCTV-SIM:    {kind: docker, tia: EDA-B, vlan: 80,  ip: 10.80.0.11,  bond: false, roles: [cctv-sim], image: "dc/cctv-sim:1.0"}
+  SRV-WEB-01:  {kind: docker, tia: DMZ,   vlan: 50,  ip: 10.50.0.11,  bond: false, roles: [web], image: "nginx:alpine"}
+  SRV-BASTION: {kind: vm,     tia: MDA,   vlan: 90,  ip: 10.90.0.11,  bond: false, roles: [bastion, mfa]}
+  ADMIN-WS:    {kind: docker, tia: MDA,   vlan: 90,  ip: 10.90.0.12,  bond: false, roles: [admin-desktop], image: "gns3/webterm:latest"}
+
+# Uplink to the real Internet (lab convenience, GNS3 NAT nodes – libvirt virbr0 in the GNS3 VM)
+internet_uplinks:
+  NAT-A: {to: "ISP-A:eth2"}
+  NAT-B: {to: "ISP-B:eth2"}
+
+# ---------------------------------------------------------------------------------------------------
+# Security policy (PDF Table 18). Ports: alias names resolved in `port_aliases`.
+# ---------------------------------------------------------------------------------------------------
+port_aliases:
+  WEB: [80, 443]
+  APP: [8443]
+  STORAGE: [2049, 3260, 111]
+  BACKUP_AGENT: [873]
+  DNS: [53]
+  NTP: [123]
+  ADMIN_SVC: [22, 443]
+  SNMP: [161]
+  SYSLOG: [514]
+  SNMP_TRAP: [162]
+  ZABBIX_AGENT: [10050]
+  ZABBIX_TRAPPER: [10051]
+  BMS_API: [8080]
+
+host_aliases:
+  APP_SERVERS: [10.20.0.11, 10.20.0.12, 10.20.0.13, 10.20.0.10]
+  WEB_SERVER: [10.50.0.11]
+  INF_SERVER: [10.100.0.11]
+  SYSLOG_SERVER: [10.60.0.12]
+  MON_SERVER: [10.60.0.11]
+  INTERNAL_NETS: [10.20.0.0/24, 10.30.0.0/24, 10.40.0.0/24, 10.60.0.0/24, 10.70.0.0/24, 10.80.0.0/24, 10.100.0.0/24]
+  RFC1918: [10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16]
+
+# Firewall (pfSense) – evaluated top-down per interface, implicit "block + log" at the end.
+firewall_rules:
+  WAN:
+    - {action: pass, proto: tcp, src: any, dst: WEB_SERVER, ports: WEB, descr: "Internet -> DMZ web (DNAT 192.0.2.80)", ref: "T18-1"}
+  DMZ:
+    - {action: pass,  proto: tcp, src: DMZ_NET, dst: APP_SERVERS, ports: APP, descr: "DMZ -> applicatif interne 8443", ref: "T18-2"}
+    - {action: pass,  proto: udp, src: DMZ_NET, dst: INF_SERVER, ports: [53, 123], descr: "DMZ -> DNS/NTP internes", ref: "EXT-1"}
+    - {action: block, proto: any, src: DMZ_NET, dst: [10.10.0.0/24, 10.90.0.0/24, 10.30.0.0/24, 10.40.0.0/24], descr: "DMZ -> MGMT/ADMIN/STOCKAGE/BACKUP interdit", ref: "T18-9", log: true}
+  LAN:
+    - {action: pass,  proto: tcp/udp, src: INTERNAL_NETS, dst: "!RFC1918", ports: [53, 80, 443, 123], descr: "Interne -> Internet DNS/HTTP(S)/NTP via NAT", ref: "T18-5"}
+    - {action: pass,  proto: icmp,    src: INTERNAL_NETS, dst: "!RFC1918", descr: "Interne -> Internet ICMP (diagnostic)", ref: "EXT-2"}
+    - {action: pass,  proto: udp,     src: 10.60.0.0/24, dst: 10.10.0.0/24, ports: SNMP, descr: "Supervision -> équipements SNMP", ref: "T18-7"}
+    - {action: pass,  proto: icmp,    src: 10.60.0.0/24, dst: 10.10.0.0/24, descr: "Supervision -> équipements ICMP", ref: "T18-7"}
+    - {action: pass,  proto: tcp,     src: INTERNAL_NETS, dst: WEB_SERVER, ports: WEB, descr: "Interne -> site web DMZ", ref: "EXT-3"}
+  MGMT:
+    - {action: pass, proto: udp, src: MGMT_NET, dst: SYSLOG_SERVER, ports: SYSLOG, descr: "Équipements -> syslog", ref: "T18-8"}
+    - {action: pass, proto: udp, src: MGMT_NET, dst: MON_SERVER, ports: SNMP_TRAP, descr: "Équipements -> traps SNMP", ref: "T18-8"}
+    - {action: pass, proto: udp, src: MGMT_NET, dst: INF_SERVER, ports: [53, 123], descr: "Équipements -> DNS/NTP", ref: "EXT-4"}
+  ADMIN:
+    - {action: pass, proto: tcp,  src: ADMIN_NET, dst: any_internal, ports: ADMIN_SVC, descr: "Administration -> tous équipements SSH/HTTPS", ref: "T18-6"}
+    - {action: pass, proto: udp,  src: ADMIN_NET, dst: any_internal, ports: SNMP, descr: "Administration -> SNMP", ref: "T18-6"}
+    - {action: pass, proto: tcp,  src: ADMIN_NET, dst: MON_SERVER, ports: [3000, 80], descr: "Administration -> Zabbix/Grafana", ref: "T18-6"}
+    - {action: pass, proto: tcp,  src: ADMIN_NET, dst: 10.70.0.0/24, ports: [8080], descr: "Administration -> DCIM/BMS", ref: "T18-6"}
+    - {action: pass, proto: icmp, src: ADMIN_NET, dst: any_internal, descr: "Administration -> ICMP", ref: "T18-6"}
+    - {action: pass, proto: tcp/udp, src: ADMIN_NET, dst: "!RFC1918", ports: [53, 80, 443, 123], descr: "Administration -> Internet (mises à jour)", ref: "EXT-5"}
+  SYNC:
+    - {action: pass, proto: any, src: SYNC_NET, dst: SYNC_NET, descr: "pfsync + XMLRPC entre pairs", ref: "HA"}
+
+# Inter-VLAN filtering on the Cores (stateless ACL inbound on each SVI). "est" = TCP established replies.
+# Each VLAN may: reach the default route (FW, filtered there), use the listed flows, and answer requests.
+core_acl:
+  common_out:      # allowed from every data VLAN
+    - {proto: udp, dst: 10.100.0.11, ports: [53, 123], descr: "DNS/NTP"}
+    - {proto: tcp, dst: 10.100.0.11, ports: [53], descr: "DNS TCP"}
+    - {proto: udp, dst: 10.60.0.12, ports: [514], descr: "syslog"}
+    - {proto: tcp, dst: 10.60.0.11, ports: [10051], descr: "Zabbix actif"}
+    - {proto: udp, dst: 10.60.0.11, ports: [162], descr: "traps SNMP"}
+  per_vlan:
+    20:  [{proto: tcp, dst: 10.30.0.0/24, ports: [2049, 3260, 111], descr: "Serveurs -> stockage NFS/iSCSI", ref: "T18-3"},
+          {proto: udp, dst: 10.30.0.0/24, ports: [2049, 111], descr: "NFS UDP", ref: "T18-3"},
+          {proto: tcp, dst: 10.40.0.0/24, ports: [873], descr: "Serveurs -> agent de sauvegarde", ref: "T18-4"},
+          {proto: 112, dst: 224.0.0.18, descr: "VRRP keepalived", ref: "HA"}]
+    30:  [{proto: tcp, dst: 10.40.0.0/24, ports: [873], descr: "Stockage -> sauvegarde", ref: "T18-4"}]
+    40:  []
+    60:  [{proto: udp, dst: any, ports: [161], descr: "Supervision -> SNMP", ref: "T18-7"},
+          {proto: tcp, dst: any, ports: [10050], descr: "Supervision -> agents Zabbix", ref: "T18-7"},
+          {proto: tcp, dst: 10.70.0.0/24, ports: [8080], descr: "Supervision -> API BMS/DCIM", ref: "T18-7"},
+          {proto: icmp, dst: any, descr: "Supervision -> ICMP", ref: "T18-7"}]
+    70:  [{proto: tcp, dst: 10.70.0.0/24, ports: [8080], descr: "DCIM -> BMS-SIM", ref: "EXT-6"}]
+    80:  []
+    100: []
+  deny_log:
+    - {dst: 10.10.0.0/24, descr: "jamais de routage vers le management OOB"}
+    - {dst: 10.90.0.0/24, descr: "administration uniquement via pare-feu"}
+
+# ---------------------------------------------------------------------------------------------------
+# Resilience scenarios (PDF Table 27)
+# ---------------------------------------------------------------------------------------------------
+tests:
+  T1: {fault: "ISP-A arrêté",            action: {stop_node: ISP-A}, target: "≤ 10 s, bascule vers ISP-B"}
+  T2: {fault: "FW-A arrêté",             action: {stop_node: FW-A},  target: "≤ 5 s, FW-B MASTER, sessions conservées"}
+  T3: {fault: "CORE-A arrêté",           action: {stop_node: CORE-A}, target: "≤ 5 s, passerelles reprises par CORE-B"}
+  T4: {fault: "LEAF-A1 arrêté",          action: {stop_node: LEAF-A1}, target: "≈ 1 s, serveurs dual-homed sans coupure"}
+  T5: {fault: "SRV-CMP-01 arrêté",       action: {stop_node: SRV-CMP-01}, target: "service repris par SRV-CMP-02, alerte ≤ 1 min"}
+  T6: {fault: "Perte du chemin A (BMS)", action: {bms: {UTILITY-A: DOWN, UPS-A: DOWN, GENERATOR: DOWN}}, target: "alarme ≤ 30 s, chemin B seul actif"}
+  M1: {fault: "Maintenance CORE-A + perte lien ISP-A", action: {stop_node: CORE-A, suspend_link: "EDGE-A:Gi0/0"}, target: "service maintenu (double événement)"}
