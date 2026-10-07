@@ -1,0 +1,15 @@
+# ISP – interfaces nat internet – 2026-10-07 13:23:15
+=== ISP-A
+eth0             UNKNOWN        198.51.100.1/30 
+eth1             UNKNOWN        198.51.100.5/30 
+eth2             UNKNOWN        192.168.42.223/24 
+-A POSTROUTING -o eth2 -j MASQUERADE
+3 packets transmitted, 3 packets received, 0% packet loss
+round-trip min/avg/max = 35.303/44.601/61.580 ms
+=== ISP-B
+eth0             UNKNOWN        203.0.113.5/30 
+eth1             UNKNOWN        203.0.113.1/30 
+eth2             UNKNOWN        192.168.42.45/24 
+-A POSTROUTING -o eth2 -j MASQUERADE
+3 packets transmitted, 3 packets received, 0% packet loss
+round-trip min/avg/max = 29.442/36.918/44.635 ms

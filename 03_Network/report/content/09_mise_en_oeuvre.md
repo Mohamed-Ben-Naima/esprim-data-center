@@ -205,3 +205,47 @@ le bon VLAN.
 live links: 60  inventory links: 60  nodes: 31
 RESULT: OK - GNS3 topology matches the inventory
 ```
+
+## Services conteneurisés
+
+Conformément à la stratégie de ressources du dossier (§11.3), les services légers sont des **conteneurs Docker**
+construits pour le laboratoire. Leurs sources sont versionnées dans `03_Network/docker/` ; le script
+`automation/build_images.py` les construit dans la GNS3 VM et exécute un test de fumée pour chacune, puis
+`automation/deploy_containers.py` les affecte aux nœuds GNS3 avec leur environnement, leurs volumes persistants et
+leur configuration réseau générée.
+
+Table: Images Docker du laboratoire
+| Image | Nœud(s) | Base | Fonction |
+|---|---|---|---|
+| `dc/frr-isp:1.0` | ISP-A, ISP-B | FRR 8.4 (Alpine) | Routeur opérateur : configuration générée choisie par `ISP_NAME`, routage, NAT vers Internet (`eth2`) |
+| `dc/syslog:1.0` | SYSLOG | Alpine 3.20 + rsyslog | Collecteur central UDP/TCP 514, un fichier par source, volume persistant `/var/log/remote` |
+| `dc/bms-sim:1.0` | BMS-SIM | Python 3.12 (bibliothèque standard) | GTB : états UTILITY-A/B, UPS-A/B, GENERATOR, règle de chemin (§13.3), charges, autonomie, alarmes (tableau 22), API HTTP, syslog |
+| `dc/cctv-sim:1.0` | CCTV-SIM | Python 3.12 | Vidéosurveillance et contrôle d'accès : caméras, mouvements, badges acceptés/refusés, sas (§9.2) |
+| `dc/dcim:1.0` | SRV-DCIM-01 | Python 3.12 | DCIM / jumeau numérique : 96 baies (§13.1), état d'alimentation dérivé de la GTB, tableau de bord |
+| `dc/web:1.0` | SRV-WEB-01 | nginx (Alpine) | Site public HTTP→HTTPS, TLS 1.2/1.3, en-têtes de sécurité (HSTS, CSP, X-Frame-Options) |
+| `gns3/webterm` | ADMIN-WS | Image GNS3 | Poste d'administration graphique (navigateur), console VNC |
+
+> [!NOTE] Particularité de GNS3
+> L'image d'un nœud Docker existant ne peut pas être modifiée (ni par l'interface, ni par l'API). Le script de
+> déploiement recrée donc le nœud à l'identique (nom, position, console) avec la nouvelle image, puis rétablit ses
+> liens sur les mêmes ports ; le contrôle de topologie confirme ensuite 60 liens sur 60.
+
+Table: Tests de fumée des images (exécutés à la construction)
+| Image | Test | Résultat |
+|---|---|---|
+| `dc/bms-sim` | Passage de UTILITY-A, UPS-A et GENERATOR à DOWN | Chemin A DOWN, chemin B seul actif, état CRITICAL, alarmes `PATH-A-LOST`, `PATH-B-LOAD`, `UPS-B-LOAD`, `GENERATOR` |
+| `dc/dcim` | Chargement du modèle | 96 baies, 892 kW IT (60 calcul, 16 stockage, 8 réseau, 8 GPU, 4 sauvegarde) |
+| `dc/syslog` | `rsyslogd -N1` | Configuration valide |
+| `dc/web` | `nginx -t` | Configuration valide |
+| `dc/frr-isp` | Présence des configurations, syntaxe du script | Conforme |
+
+```text title="ISP-A / ISP-B au démarrage – adressage, NAT et accès Internet"
+=== ISP-A
+eth0  198.51.100.1/30    eth1  198.51.100.5/30    eth2  192.168.42.223/24 (DHCP, nœud NAT-A)
+-A POSTROUTING -o eth2 -j MASQUERADE
+2 packets transmitted, 2 packets received, 0% packet loss  (8.8.8.8, ~37 ms)
+=== ISP-B
+eth0  203.0.113.5/30     eth1  203.0.113.1/30     eth2  192.168.42.45/24 (DHCP, nœud NAT-B)
+-A POSTROUTING -o eth2 -j MASQUERADE
+2 packets transmitted, 2 packets received, 0% packet loss  (8.8.8.8, ~33 ms)
+```
