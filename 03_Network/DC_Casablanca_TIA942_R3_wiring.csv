@@ -1,0 +1,58 @@
+role,node_a,if_a,node_b,if_b
+WAN eBGP,ISP-A,eth0,EDGE-A,Gi0/0
+WAN eBGP,ISP-A,eth1,EDGE-B,Gi0/0
+WAN eBGP,ISP-B,eth0,EDGE-A,Gi0/1
+WAN eBGP,ISP-B,eth1,EDGE-B,Gi0/1
+iBGP,EDGE-A,Gi0/2,EDGE-B,Gi0/2
+Edge-FW (outside),EDGE-A,Gi0/3,FW-A,em0
+Edge-FW (outside),EDGE-A,Gi0/4,FW-B,em0
+Edge-FW (outside),EDGE-B,Gi0/3,FW-A,em1
+Edge-FW (outside),EDGE-B,Gi0/4,FW-B,em1
+FW HA sync 10.254.3.0/30,FW-A,em2,FW-B,em2
+FW-Core (inside),FW-A,em3,CORE-A,Gi0/0
+FW-Core (inside),FW-A,em4,CORE-B,Gi0/0
+FW-Core (inside),FW-B,em3,CORE-A,Gi0/1
+FW-Core (inside),FW-B,em4,CORE-B,Gi0/1
+Core ISL #1,CORE-A,Gi0/2,CORE-B,Gi0/2
+Core ISL #2,CORE-A,Gi0/3,CORE-B,Gi0/3
+Core-Leaf uplink,CORE-A,Gi1/0,LEAF-A1,Gi0/0
+Core-Leaf uplink,CORE-A,Gi1/1,LEAF-A2,Gi0/0
+Core-Leaf uplink,CORE-A,Gi1/2,LEAF-B1,Gi0/0
+Core-Leaf uplink,CORE-A,Gi1/3,LEAF-B2,Gi0/0
+Core-Leaf uplink,CORE-B,Gi1/0,LEAF-A1,Gi0/1
+Core-Leaf uplink,CORE-B,Gi1/1,LEAF-A2,Gi0/1
+Core-Leaf uplink,CORE-B,Gi1/2,LEAF-B1,Gi0/1
+Core-Leaf uplink,CORE-B,Gi1/3,LEAF-B2,Gi0/1
+FW-DMZ,FW-A,em5,SW-DMZ,Ethernet0
+FW-DMZ,FW-B,em5,SW-DMZ,Ethernet1
+DMZ web,SRV-WEB-01,eth0,SW-DMZ,Ethernet2
+Hall A server NIC0,SRV-CMP-01,eth0,LEAF-A1,Gi0/2
+Hall A server NIC1,SRV-CMP-01,eth1,LEAF-A2,Gi0/2
+Hall A server NIC0,SRV-CMP-02,eth0,LEAF-A1,Gi0/3
+Hall A server NIC1,SRV-CMP-02,eth1,LEAF-A2,Gi0/3
+Hall A server NIC0,SRV-CMP-03,eth0,LEAF-A1,Gi1/0
+Hall A server NIC1,SRV-CMP-03,eth1,LEAF-A2,Gi1/0
+Hall A server NIC0,SRV-STO-01,eth0,LEAF-A1,Gi1/1
+Hall A server NIC1,SRV-STO-01,eth1,LEAF-A2,Gi1/1
+Hall B server NIC0,SRV-BCK-01,eth0,LEAF-B1,Gi0/2
+Hall B server NIC1,SRV-BCK-01,eth1,LEAF-B2,Gi0/2
+Hall B server NIC0,SRV-INF-01,eth0,LEAF-B1,Gi0/3
+Hall B server NIC1,SRV-INF-01,eth1,LEAF-B2,Gi0/3
+Hall B server NIC0,SRV-MON-01,eth0,LEAF-B1,Gi1/0
+Hall B server NIC1,SRV-MON-01,eth1,LEAF-B2,Gi1/0
+Hall B server NIC0,SRV-DCIM-01,eth0,LEAF-B1,Gi1/1
+Hall B server NIC1,SRV-DCIM-01,eth1,LEAF-B2,Gi1/1
+Hall B service,SYSLOG,eth0,LEAF-B1,Gi1/2
+Hall B service,BMS-SIM,eth0,LEAF-B2,Gi1/2
+Hall B service,CCTV-SIM,eth0,LEAF-B2,Gi1/3
+OOB management,EDGE-A,Gi0/5,SW-MGMT,Ethernet0
+OOB management,EDGE-B,Gi0/5,SW-MGMT,Ethernet1
+OOB management,FW-A,em6,SW-MGMT,Ethernet2
+OOB management,FW-B,em6,SW-MGMT,Ethernet3
+OOB management,CORE-A,Gi2/0,SW-MGMT,Ethernet4
+OOB management,CORE-B,Gi2/0,SW-MGMT,Ethernet5
+OOB management,LEAF-A1,Gi1/2,SW-MGMT,Ethernet6
+OOB management,LEAF-A2,Gi1/2,SW-MGMT,Ethernet7
+OOB management,LEAF-B1,Gi1/3,SW-MGMT,Ethernet8
+OOB management,LEAF-B2,Gi2/0,SW-MGMT,Ethernet9
+OOB management,SRV-BASTION,eth0,SW-MGMT,Ethernet10
