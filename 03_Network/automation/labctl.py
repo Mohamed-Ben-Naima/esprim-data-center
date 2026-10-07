@@ -235,21 +235,30 @@ class Ios:
         self.user, self.password, self.enable = user, password, enable
 
     def login(self, timeout=600):
-        """Bring the console to privileged EXEC, handling first-boot dialogs and AAA login."""
+        """Bring the console to privileged EXEC, handling first-boot dialogs and AAA login.
+
+        The console is nudged with <Enter> whenever it stays silent for 10 s (booting device,
+        prompt already consumed, banner scrolled), so the loop never waits blindly.
+        """
         c = self.c
         end = time.time() + timeout
+        pats = [
+            r"initial configuration dialog\? \[yes/no\]:",      # 0
+            r"terminate autoinstall\? \[yes\]:",                   # 1
+            r"Press RETURN to get started",                        # 2
+            r"Username:\s*$",                                      # 3
+            r"Password:\s*$",                                      # 4
+            r"^[\w.\-]+>\s*$",                                     # 5
+            r"^[\w.\-]+\(config[^)]*\)#\s*$",                      # 6
+            r"^[\w.\-]+#\s*$",                                     # 7
+        ]
         c.send("")
         while time.time() < end:
-            k, m, _ = c.expect([
-                r"initial configuration dialog\? \[yes/no\]:",      # 0
-                r"terminate autoinstall\? \[yes\]:",                   # 1
-                r"Press RETURN to get started",                        # 2
-                r"Username:\s*$",                                      # 3
-                r"Password:\s*$",                                      # 4
-                r"^[\w.\-]+>\s*$",                                     # 5
-                r"^[\w.\-]+\(config[^)]*\)#\s*$",                      # 6
-                r"^[\w.\-]+#\s*$",                                     # 7
-            ], timeout=max(5, end - time.time()))
+            try:
+                k, _, _ = c.expect(pats, timeout=10)
+            except TimeoutError:
+                c.send("")
+                continue
             if k == 0:
                 c.send("no")
             elif k == 1:
@@ -265,6 +274,8 @@ class Ios:
                 k2, _, _ = c.expect([r"Password:\s*$", r"#\s*$"], 15)
                 if k2 == 0:
                     c.send(self.enable or "")
+                else:
+                    c.send("")              # the '#' prompt was consumed: ask for a fresh one
             elif k == 6:
                 c.send("end")
             elif k == 7:

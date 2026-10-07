@@ -1,0 +1,5 @@
+stage,nodes,vm_total_mb,vm_used_mb,vm_avail_mb,swap_used_mb,ksm_shared_mb,load1,qemu_vms,containers,host_free_gb
+1 WAN / bordure,7,9905,1182,8456,0,114,1.95,2,2,5.9
+2 Sécurité / management,6,9905,3351,6279,0,460,1.74,4,4,3.1
+3 Cœur / distribution,6,9905,6154,3449,0,463,12.69,10,4,0.2
+4 Conteneurs de services seuls (VM serveurs arrêtées),4,9905,6197,3403,46,464,17.92,10,8,0.1
