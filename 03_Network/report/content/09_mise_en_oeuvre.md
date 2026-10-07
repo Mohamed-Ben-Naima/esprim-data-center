@@ -172,6 +172,7 @@ Table: Incidents de plateforme et corrections
 |---|---|---|
 | Saturation CPU de la GNS3 VM (charge ≈ 8 pour 3 vCPU, 98 % d'occupation) avec les 25 nœuds démarrés | Chaque IOSvL2 consomme ≈ 34 % d'un cœur au repos (pas d'optimisation *idle-PC*), les IOSv ≈ 17 %, KSM ≈ 24 % | VM portée à **6 vCPU** (hôte i5-11400H, 12 threads) par l'API GNS3 ; KSM ralenti (200 pages / 100 ms, service `ksm-tune` persistant) ; démarrage des nœuds par étapes |
 | Plantage systématique des IOSvL2 environ une minute après le démarrage (`CPU exception occurred: Overflow(4)`, `PC/EIP = 0x8E18E9`), console muette, CPU à 100 % | Défaut connu de l'image IOSvL2 03.2017 avec les types de machine QEMU récents (QEMU 8.0.4 dans la VM) ; le disque était sain (`qemu-img check`) | Option QEMU `-machine pc-q35-4.2` appliquée aux 6 nœuds IOSvL2, au modèle GNS3 et au générateur de topologie |
+| GNS3 VM injoignable après une pause (`Cannot connect to host 192.168.75.128:80`), nœuds affichés « started » | Mise en veille de l'hôte : VMware suspend la VM (`PowerNotify: System suspend detected`) et ne la relance pas au réveil ; `vmrun` la considère alors comme éteinte | Reprise manuelle de la VM dans VMware Workstation ; veille de l'hôte désactivée pendant les sessions de laboratoire |
 
 ![Écran VGA de CORE-A capturé par le moniteur QEMU : démarrage bloqué après le plantage IOSvL2](../screenshots/01_iosvl2_boot_hang.png){width=420}
 
@@ -249,3 +250,38 @@ eth0  203.0.113.5/30     eth1  203.0.113.1/30     eth2  192.168.42.45/24 (DHCP, 
 -A POSTROUTING -o eth2 -j MASQUERADE
 2 packets transmitted, 2 packets received, 0% packet loss  (8.8.8.8, ~33 ms)
 ```
+
+
+## Budget de ressources et démarrage par étapes
+
+Le dossier de conception dimensionne le laboratoire pour un PC de 32 Go. Le poste utilisé n'en dispose que de 15,7 Go,
+dont 10 Go alloués à la GNS3 VM. Le script `automation/lab_up.py` démarre le laboratoire par couches successives et
+mesure, après stabilisation (150 s), l'occupation de la VM, la déduplication KSM, la charge CPU et la mémoire libre
+de l'hôte.
+
+Table: Mesures lors du démarrage par étapes (report/evidence/resources_stages.csv)
+| Étape | Nœuds ajoutés | VM QEMU / conteneurs | Mémoire VM utilisée | KSM partagé | Charge (1 min) | Mémoire libre hôte |
+|---|---|---|---|---|---|---|
+| 1 – WAN / bordure (NAT, ISP, SW-OUT, EDGE) | 7 | 2 / 2 | 1,2 Go | 0,1 Go | 1,9 | 5,9 Go |
+| 2 – Sécurité / management (FW, SW-DMZ, SW-MGMT, WEB, ADMIN-WS) | 6 | 4 / 4 | 3,4 Go | 0,5 Go | 1,7 | 3,1 Go |
+| 3 – Cœur / distribution (CORE, LEAF) | 6 | 10 / 4 | 6,2 Go | 0,5 Go | 12,7 | **0,2 Go** |
+| 4 – Conteneurs de services (SYSLOG, BMS, CCTV, DCIM) | 4 | 10 / 8 | 6,2 Go | 0,5 Go | 17,9 | 0,1 Go |
+
+> [!WARN] Limite constatée
+> À partir de l'étape 3, la mémoire libre de l'hôte tombe à 0,2 Go : VMware commence à paginer la VM et la charge
+> CPU de la VM dépasse 12 (démarrage simultané de six IOSvL2 et de deux installations pfSense). Démarrer en plus
+> les huit VM Ubuntu (≈ 4,5 Go dont 1,5 Go pour la supervision) saturerait l'hôte. Les conteneurs, eux, ne coûtent
+> presque rien (moins de 50 Mo pour les quatre services).
+
+Le laboratoire est donc exploité **par couches**, ce qui correspond d'ailleurs à la démarche de mise en service par
+niveaux du dossier (§15.1) :
+
+Table: Profils d'exécution retenus
+| Profil | Nœuds démarrés | Usage |
+|---|---|---|
+| Réseau | WAN, bordure, pare-feux, cœur, Leaf, commutateurs GNS3, conteneurs de services | Phases 3 à 5 : configuration et vérification du réseau |
+| Services | Profil réseau + SRV-INF-01, SRV-MON-01, SRV-BASTION ; Leaf du hall A arrêtés si nécessaire | Phases 6 et 7 : DNS/NTP, supervision, bastion |
+| Test | Profil réseau + serveurs concernés par le scénario (par exemple SRV-CMP-01/02 pour T4/T5) | Phase 8 : scénarios de résilience |
+
+Les démarrages sont échelonnés (une couche à la fois) afin d'éviter les pics de CPU au boot des IOSvL2, et la
+déduplication KSM reste active en permanence.

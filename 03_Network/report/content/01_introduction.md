@@ -75,7 +75,7 @@ Table: Avancement des sous-tâches
 | 1.3 | Pilotage du laboratoire (API GNS3, consoles) et correctifs de plateforme | **Terminé** |
 | 2.1 | Évolutions de topologie (SW-OUT, NAT, ADMIN-WS, VLAN, disposition) | **Terminé** |
 | 2.2 | Images Docker des services (ISP, syslog, GTB, CCTV, DCIM, web) | **Terminé** |
-| 2.3 | Budget de ressources et démarrage par étapes | À faire |
+| 2.3 | Budget de ressources et démarrage par étapes | **Terminé** |
 | 3.1 – 3.3 | WAN et bordure | À faire |
 | 4.1 – 4.4 | Pare-feux pfSense HA | À faire |
 | 5.1 – 5.3 | Cœur, Leaf, durcissement | À faire |
