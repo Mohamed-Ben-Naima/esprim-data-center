@@ -1,0 +1,6 @@
+#!/bin/sh
+# List the SSH aliases of the administration webterm (read from the generated client configuration).
+echo "DC-CASA administration webterm - equipment reachable by SSH:"
+awk '/^Host / && $2 != "*" && NF == 2 { a = $2 } /^Host / && NF == 3 { a = $2 " (" $3 ")" }
+     /HostName/ && a != "" { h = $2 } /User/ && a != "" { printf "  ssh %-22s %s@%s\n", a, $2, h; a = "" }' /etc/ssh/ssh_config.d/dc-casa.conf
+echo "Web interfaces: open the browser (portal page). Sessions are logged on the central collector."

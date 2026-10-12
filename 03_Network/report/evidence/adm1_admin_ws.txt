@@ -1,0 +1,41 @@
+# ADM.1 - administration webterm dc/admin-ws:1.0 - 2026-10-12 18:01
+# tools, SSH by alias (password supplied by SSH_ASKPASS for the test), dc-hosts
+ADMIN-WS
+/usr/local/bin/ssh /usr/bin/firefox-esr /usr/bin/curl /usr/bin/snmpget /usr/bin/dig /usr/bin/nc 
+SYSLOG_HOST=10.60.0.12
+--- ssh core-a
+*  est journalisee (ISO/IEC 27001 A.8.15). Deconnectez-vous si vous *
+*  n'etes pas autorise.                                             *
+*******************************************************************
+CORE-A uptime is 1 hour, 2 minutes
+--- ssh edge-a
+*  n'etes pas autorise.                                             *
+*******************************************************************
+EDGE-A uptime is 1 hour, 34 minutes
+--- ssh leaf-b1
+*  est journalisee (ISO/IEC 27001 A.8.15). Deconnectez-vous si vous *
+*  n'etes pas autorise.                                             *
+*******************************************************************
+LEAF-B1 uptime is 1 hour, 6 minutes
+--- ssh fw-a
+fw-a.dc.casa.lab
+     165
+--- dc-hosts
+DC-CASA administration webterm - equipment reachable by SSH:
+  ssh edge-a                 netadmin@10.10.0.1
+  ssh edge-b                 netadmin@10.10.0.2
+  ssh fw-a                   admin@10.90.0.2
+  ssh fw-b                   admin@10.90.0.3
+  ssh core-a                 netadmin@10.10.0.21
+# clock
+Mon Oct 12 17:02:01 +00 2026
+Africa/Casablanca
+# sessions recorded on the collector
+2026-10-12T18:01:48.505968+01:00 10.90.0.12 ADMIN-WS admin-ssh session start user=root target=[-o NumberOfPasswordPrompts=1 core-a show version | include uptime]
+2026-10-12T18:01:51.597845+01:00 10.90.0.12 ADMIN-WS admin-ssh session end user=root target=[-o NumberOfPasswordPrompts=1 core-a show version | include uptime] rc=0
+2026-10-12T18:01:51.704592+01:00 10.90.0.12 ADMIN-WS admin-ssh session start user=root target=[-o NumberOfPasswordPrompts=1 edge-a show version | include uptime]
+2026-10-12T18:01:53.679831+01:00 10.90.0.12 ADMIN-WS admin-ssh session end user=root target=[-o NumberOfPasswordPrompts=1 edge-a show version | include uptime] rc=0
+2026-10-12T18:01:53.781880+01:00 10.90.0.12 ADMIN-WS admin-ssh session start user=root target=[-o NumberOfPasswordPrompts=1 leaf-b1 show version | include uptime]
+2026-10-12T18:01:56.154085+01:00 10.90.0.12 ADMIN-WS admin-ssh session end user=root target=[-o NumberOfPasswordPrompts=1 leaf-b1 show version | include uptime] rc=0
+2026-10-12T18:01:56.247241+01:00 10.90.0.12 ADMIN-WS admin-ssh session start user=root target=[-o NumberOfPasswordPrompts=1 fw-a hostname; pfctl -sr | wc -l]
+2026-10-12T18:01:56.781396+01:00 10.90.0.12 ADMIN-WS admin-ssh session end user=root target=[-o NumberOfPasswordPrompts=1 fw-a hostname; pfctl -sr | wc -l] rc=0

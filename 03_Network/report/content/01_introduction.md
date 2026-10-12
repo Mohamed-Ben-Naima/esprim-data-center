@@ -81,6 +81,12 @@ Table: Avancement des sous-tâches
 | 5.1 – 5.3 | Cœur, Leaf, durcissement : HSRP, RPVST+, LACP, OSPF, ACL, VRF MGMT | **Terminé** |
 | 6.1 | Serveurs : SRV-INF-01 (DNS, NTP), conteneurs de services | **Terminé** |
 | 6.2 – 6.4 | Autres serveurs (bastion, stockage, sauvegarde, calcul), matrice de flux | En cours |
-| 7.1 – 7.3 | Supervision | À faire |
+| P0 (plan 02) | Base Git propre, profil de travail mesuré, rapport « Test the Lab » | **Terminé** (SRV-MON-01 démarré seulement pour la supervision) |
+| ADM.1 | Poste d'administration `dc/admin-ws:1.0` : portail, alias SSH, sessions journalisées | **Terminé** |
+| ADM.2 – ADM.3 | Matrice d'accès, règles d'accès privilégié | À faire |
+| FW.1 – FW.5 | Pare-feux : audit, règles de supervision, bascule côté LAN, matrice de flux | À faire |
+| LOG.1 – LOG.6 | Collecte des journaux : sources, horloges, rétention, consultation | À faire |
+| 7.1 – 7.3 | Supervision (ZBX.1 – ZBX.7, GRF.1 – GRF.5 du plan 02) | À faire |
+| ISO.1 – ISO.2 | Matrice d'accès et de conformité ISO/IEC 27001, sauvegarde des configurations | À faire |
 | 8.1 – 8.2 | Tests de résilience | À faire |
 | 9.1 – 9.4 | Documentation finale | À faire |

@@ -14,4 +14,4 @@ Table: Serveurs et conteneurs (source : inventaire)
 | **CCTV-SIM** | Conteneur | 80 | `10.80.0.11` | LEAF-B2 Gi1/3 | simple | cctv-sim |
 | **SRV-WEB-01** | Conteneur | 50 | `10.50.0.11` | SW-DMZ Ethernet2 | simple | web |
 | **SRV-BASTION** | VM | 90 | `10.90.0.11` | SW-MGMT Ethernet10 | simple | bastion, mfa |
-| **ADMIN-WS** | Conteneur | 90 | `10.90.0.12` | SW-MGMT Ethernet11 | simple | admin-desktop |
+| **ADMIN-WS** | Conteneur | 90 | `10.90.0.12` | SW-MGMT Ethernet11 | simple | admin-desktop, admin-bastion |

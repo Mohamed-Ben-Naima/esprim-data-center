@@ -5,6 +5,8 @@ Outputs
   configs/ISP-A/frr.conf, daemons     FRR for the operator containers
   configs/servers/<SRV>.netplan.yaml  Ubuntu netplan (bond active-backup)
   configs/docker/<NODE>.interfaces    /etc/network/interfaces for GNS3 docker nodes
+  configs/docker/ADMIN-WS.ssh_config  SSH aliases of the administration webterm (one per equipment)
+  configs/docker/ADMIN-WS.portal.html start page of its browser (every web interface)
   report/content/generated/*.md       tables included by the report
 
 Usage: python automation/gen_configs.py   (idempotent; re-run after editing the inventory)
@@ -604,6 +606,70 @@ iface eth0 inet static
 """
 
 
+def ssh_targets():
+    """[(alias, address, user, family, node name)] for every equipment an administrator reaches by SSH."""
+    out = []
+    for name, d in DEV.items():
+        if d["platform"] in ("iosv", "iosvl2"):
+            out.append((name.lower(), d["mgmt"]["ip"], C["admin_user"], "cisco", name))
+        elif d["platform"] == "pfsense":       # reached on its own address in the administration VLAN
+            out.append((name.lower(), VL[90]["fw_a" if name.endswith("A") else "fw_b"], "admin", "pfsense", name))
+    for name, s in INV["servers"].items():
+        if s["kind"] == "vm":
+            out.append((name.lower(), s["ip"], "ubuntu", "linux", name))
+    return out
+
+
+def gen_admin_ssh():
+    L = ["# ADMIN-WS - SSH client configuration - generated from inventory/dc_casa.yaml, do not edit by hand",
+         '# One alias per equipment ("ssh core-a"). /usr/local/bin/ssh announces every session to the log collector.',
+         "", "Host *", "    StrictHostKeyChecking accept-new", "    ServerAliveInterval 60", "    ServerAliveCountMax 3",
+         "    ConnectTimeout 10", ""]
+    for alias, ip, user, family, name in ssh_targets():
+        L += [f"Host {alias}" + (" bastion" if name == "SRV-BASTION" else ""), f"    HostName {ip}", f"    User {user}", ""]
+    cisco = " ".join(a for a, _, _, f, _ in ssh_targets() if f == "cisco")
+    L += ["# Cisco IOSv / IOSvL2 images only speak an old SSH: legacy algorithms are enabled for these hosts and no other",
+          f"Host {cisco}", "    KexAlgorithms +diffie-hellman-group14-sha1,diffie-hellman-group-exchange-sha1",
+          "    HostKeyAlgorithms +ssh-rsa", "    PubkeyAcceptedAlgorithms +ssh-rsa", "    Ciphers +aes128-cbc,aes256-cbc",
+          "    MACs +hmac-sha1"]
+    return "\n".join(L)
+
+
+def gen_admin_portal():
+    import html
+    web = "".join(
+        f'<tr><td><a href="{w["url"]}">{html.escape(w["name"])}</a></td><td><code>{w["url"]}</code></td>'
+        f'<td>{html.escape(w["node"])}</td><td>{html.escape(w.get("login") or "-")}</td><td>{html.escape(w["descr"])}</td></tr>'
+        for w in INV["web_interfaces"])
+    ssh = "".join(f"<tr><td><code>ssh {a}</code></td><td>{n}</td><td><code>{u}@{ip}</code></td></tr>" for a, ip, u, _, n in ssh_targets())
+    return f"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>{SITE['name']} - administration portal</title>
+<style>
+body {{ font: 14px/1.45 "DejaVu Sans", Arial, sans-serif; color: #1c2733; margin: 0; background: #f3f6f9; }}
+header {{ background: #0f4c5c; color: #fff; padding: 18px 28px; }}
+header h1 {{ margin: 0; font-size: 22px; }} header p {{ margin: 4px 0 0; opacity: .85; }}
+main {{ padding: 18px 28px; display: grid; grid-template-columns: 3fr 2fr; gap: 24px; }}
+h2 {{ font-size: 16px; color: #0f4c5c; margin: 0 0 8px; }}
+table {{ border-collapse: collapse; width: 100%; background: #fff; }}
+th {{ background: #0f4c5c; color: #fff; text-align: left; padding: 6px 9px; font-weight: 600; }}
+td {{ padding: 6px 9px; border-bottom: 1px solid #d5dbe3; vertical-align: top; }}
+code {{ font-family: "DejaVu Sans Mono", monospace; font-size: 12.5px; }}
+.note {{ background: #fff1d6; border-left: 4px solid #c98300; padding: 8px 12px; margin: 0 28px 20px; }}
+</style></head><body>
+<header><h1>{SITE['name']} - administration portal</h1>
+<p>ADMIN-WS, VLAN 90. Every equipment of the data center is administered from here and from nowhere else.</p></header>
+<main>
+<section><h2>Web interfaces</h2>
+<table><tr><th>Interface</th><th>Address</th><th>Served by</th><th>Account</th><th>Use</th></tr>{web}</table></section>
+<section><h2>Command line (open the terminal from the desktop menu)</h2>
+<table><tr><th>Command</th><th>Equipment</th><th>Target</th></tr>{ssh}</table></section>
+</main>
+<p class="note">Access is reserved to authorised administrators. Every SSH session opened from this workstation is
+recorded on the central log collector (ISO/IEC 27001 A.8.15). Certificates are self-signed in the lab: the browser
+asks for a confirmation the first time.</p>
+</body></html>"""
+
+
 def gen_isp_if(name, i):
     L = [f"# {name} – addresses are set by FRR/zebra; eth2 = Internet uplink (GNS3 NAT, DHCP)"]
     for port in i["links"]:
@@ -738,6 +804,8 @@ def main():
         elif s["image"] not in ("gns3/webterm:latest",) or True:
             write(CFG / "docker" / f"{name}.interfaces", gen_docker_if(name, s))
         count += 1
+    write(CFG / "docker" / "ADMIN-WS.ssh_config", gen_admin_ssh())
+    write(CFG / "docker" / "ADMIN-WS.portal.html", gen_admin_portal())
     T = gen_tables()
     print(f"generated {count} device/server configs, {len(T)} report tables")
 

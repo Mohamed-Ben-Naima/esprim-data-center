@@ -1,7 +1,8 @@
 """Build the lab's custom Docker images inside the GNS3 VM and smoke-test them.
 
   python automation/build_images.py [name ...]      (default: all images under docker/)
-Images are tagged dc/<name>:1.0. The frr-isp context embeds configs/ISP-A and configs/ISP-B (generated).
+Images are tagged dc/<name>:1.0. The frr-isp context embeds configs/ISP-A and configs/ISP-B (generated);
+the admin-ws context embeds configs/docker/ADMIN-WS.ssh_config and ADMIN-WS.portal.html (generated).
 """
 import io
 import sys
@@ -17,6 +18,9 @@ DOCKER = NET / "docker"
 TAG = "1.0"
 
 SMOKE = {
+    "admin-ws": ("docker run --rm --entrypoint sh dc/admin-ws:1.0 -c 'for b in ssh firefox-esr curl snmpget dig nc logger; do "
+                 "command -v $b >/dev/null || { echo MISSING $b; exit 1; }; done; ssh -G core-a | grep -E \"^(hostname|user) \"; "
+                 "test -s /usr/share/dc-portal/index.html && sh -n /usr/local/bin/ssh && echo SMOKE-OK'"),
     "frr-isp": "docker run --rm --entrypoint sh dc/frr-isp:1.0 -c 'ls /config/*/frr.conf && bash -n /usr/local/bin/isp-start.sh && echo SMOKE-OK'",
     "syslog": "docker run --rm dc/syslog:1.0 rsyslogd -N1 -f /etc/rsyslog.conf 2>&1 | tail -2 && echo SMOKE-OK",
     "web": "docker run --rm dc/web:1.0 nginx -t 2>&1 | tail -2 && echo SMOKE-OK",
@@ -39,6 +43,12 @@ def context_tar(name):
                 data = f.read_bytes().replace(b"\r\n", b"\n")
                 info = tarfile.TarInfo(str(f.relative_to(DOCKER / name)).replace("\\", "/"))
                 info.size, info.mode = len(data), 0o755 if f.suffix in (".sh",) else 0o644
+                tar.addfile(info, io.BytesIO(data))
+        if name == "admin-ws":
+            for src, dst in (("ADMIN-WS.ssh_config", "ssh_config"), ("ADMIN-WS.portal.html", "portal.html")):
+                data = (NET / "configs" / "docker" / src).read_bytes().replace(b"\r\n", b"\n")
+                info = tarfile.TarInfo(dst)
+                info.size, info.mode = len(data), 0o644
                 tar.addfile(info, io.BytesIO(data))
         if name == "frr-isp":
             for isp in ("ISP-A", "ISP-B"):

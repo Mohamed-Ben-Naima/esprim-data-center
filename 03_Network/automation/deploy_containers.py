@@ -5,6 +5,10 @@ its links are recorded, the node is deleted and created again (same name, positi
 with the new image/environment/volumes, then its links are restored on the same ports.
 Finally /etc/network/interfaces is written through the node-files API
 (persisted under project-files/docker/<node-id>/etc/network/).
+
+  python automation/deploy_containers.py              (only what differs from SPEC)
+  python automation/deploy_containers.py ADMIN-WS     (also re-create the named nodes: needed after an image was
+                                                       rebuilt under the same tag)
 """
 import sys
 from pathlib import Path
@@ -22,7 +26,7 @@ SPEC = {   # node: (image, extra env, volumes, adapters, interfaces file)
     "CCTV-SIM":    ("dc/cctv-sim:1.0", "SYSLOG_HOST=10.60.0.12", [], 1, "docker/CCTV-SIM.interfaces"),
     "SRV-DCIM-01": ("dc/dcim:1.0", "SYSLOG_HOST=10.60.0.12\nBMS_URL=http://10.70.0.12:8080/api/state", [], 2, "docker/SRV-DCIM-01.interfaces"),
     "SRV-WEB-01":  ("dc/web:1.0", "", [], 1, "docker/SRV-WEB-01.interfaces"),
-    "ADMIN-WS":    ("gns3/webterm:latest", "", ["/root"], 1, "docker/ADMIN-WS.interfaces"),
+    "ADMIN-WS":    ("dc/admin-ws:1.0", "SYSLOG_HOST=10.60.0.12", ["/root"], 1, "docker/ADMIN-WS.interfaces"),
 }
 
 api = labctl.Gns3()
@@ -49,8 +53,9 @@ def recreate(n, image, environment, vols, adapters):
         api.stop(P, n)
     api.req("DELETE", f"/projects/{PID}/nodes/{n['node_id']}")
     body = {"name": n["name"], "node_type": "docker", "compute_id": n["compute_id"], "x": n["x"], "y": n["y"],
-            "symbol": n["symbol"], "console_type": n["console_type"], "label": n["label"],
+            "symbol": n["symbol"], "console_type": n["console_type"], "console": n["console"], "label": n["label"],
             "properties": {"image": image, "environment": environment, "extra_volumes": vols, "adapters": adapters,
+                           "aux": n["properties"].get("aux"),      # keep the documented console ports
                            "console_resolution": n["properties"].get("console_resolution", "1280x800"),
                            "start_command": "", "extra_hosts": ""}}
     new = api.req("POST", f"/projects/{PID}/nodes", body)
@@ -67,7 +72,7 @@ for name, (image, env, vols, adapters, ifile) in SPEC.items():
     pr = n["properties"]
     environment = "\n".join(x for x in (ENV_COMMON, env) if x)
     action = "unchanged"
-    if pr.get("image") != image:
+    if pr.get("image") != image or name in sys.argv[1:]:
         n, k = recreate(n, image, environment, vols, adapters)
         action = f"re-created ({k} link(s) restored)"
     else:

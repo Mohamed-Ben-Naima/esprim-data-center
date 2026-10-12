@@ -1,0 +1,17 @@
+{
+  "policies": {
+    "Homepage": {
+      "URL": "file:///usr/share/dc-portal/index.html",
+      "Locked": true,
+      "StartPage": "homepage"
+    },
+    "OverrideFirstRunPage": "",
+    "OverridePostUpdatePage": "",
+    "DisableTelemetry": true,
+    "DisableFirefoxStudies": true,
+    "DisablePocket": true,
+    "DontCheckDefaultBrowser": true,
+    "PasswordManagerEnabled": false,
+    "OfferToSaveLogins": false
+  }
+}

@@ -1,0 +1,11 @@
+#!/bin/sh
+# Installed as /usr/local/bin/ssh, ahead of /usr/bin/ssh in PATH.
+# Every SSH session opened from the administration webterm is announced to the log collector, start and end
+# (ISO/IEC 27001 A.8.15). The command line and the result are logged, never what is typed in the session.
+target="$*"
+note() { logger -n "${SYSLOG_HOST:-10.60.0.12}" -P 514 -d -t admin-ssh "$1" 2>/dev/null || true; }
+note "session start user=$(id -un) target=[$target]"
+/usr/bin/ssh "$@"
+rc=$?
+note "session end user=$(id -un) target=[$target] rc=$rc"
+exit $rc

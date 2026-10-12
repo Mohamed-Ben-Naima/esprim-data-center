@@ -136,16 +136,21 @@ Files: `report/tests/tests.yaml` (one entry per test), `report/_source/test_the_
 ADMIN-WS (webterm container, VLAN 90, `10.90.0.12`) becomes the single place from which an administrator reaches every
 equipment: browser for the web interfaces, SSH for the command line. It already has Firefox, `ssh`, `curl`, `telnet`.
 
-### ADM.1 Image `dc/admin-ws:1.0`
+### ADM.1 Image `dc/admin-ws:1.0` — done 12 Oct 2026
 Files: `docker/admin-ws/Dockerfile` (FROM `gns3/webterm`), `docker/admin-ws/portal.html.tpl`,
 `automation/gen_configs.py` (generates `configs/docker/ADMIN-WS.ssh_config` and `ADMIN-WS.portal.html` from the
 inventory), `inventory/dc_casa.yaml` (image name), `automation/deploy_containers.py`.
-- [ ] Adds `snmp`, `dnsutils`, `netcat-openbsd`; SSH client configuration with one alias per equipment
+- [x] Adds `snmp`, `dnsutils`, `netcat-openbsd`; SSH client configuration with one alias per equipment
       (`ssh core-a` → `netadmin@10.10.0.21`), SSH protocol 2 only, host keys recorded on first use.
-- [ ] Firefox opens on a local portal page listing every web interface (pfSense × 3, Zabbix, Grafana, BMS, DCIM, web
+- [x] Firefox opens on a local portal page listing every web interface (pfSense × 3, Zabbix, Grafana, BMS, DCIM, web
       site, log viewer) with its role; generated, so TrueNAS appears when it is added to the inventory.
-- [ ] Every SSH session opened from the webterm is announced to the log collector (who, target, start, end) — A.8.15.
-- [ ] Node re-created by `deploy_containers.py`; then `python automation/lab_proxy.py start`.
+- [x] Every SSH session opened from the webterm is announced to the log collector (who, target, start, end) — A.8.15.
+- [x] Node re-created by `deploy_containers.py`; then `python automation/lab_proxy.py start`.
+- [x] Found on the way: `deploy_containers.py` lost the console ports when it re-created a node (fixed: ports kept)
+      and could not redeploy an image rebuilt under the same tag (added: `deploy_containers.py <NODE>`).
+      Web interfaces are listed once in the inventory (`web_interfaces`); report chapter `07_administration.md` created.
+- [ ] Open, moved to LOG.1: ADMIN-WS shows local time +00 while SYSLOG shows +01 for the same zone name
+      (`Africa/Casablanca`): the two images carry different time-zone databases. Decide the lab's reference offset.
 
 | Test | Command | From | Expected |
 |---|---|---|---|
@@ -271,6 +276,8 @@ rotation, files readable by everyone in the container, no way to read the logs e
 Files: `automation/log_audit.py` (new), `report/evidence/log_audit.txt`.
 - [ ] Expected sources come from the inventory (10 network devices, 2 firewalls, servers, simulators, ADMIN-WS).
       Report the silent ones.
+- [ ] Time zone: ADMIN-WS (+00) and SYSLOG (+01) disagree on the offset of `Africa/Casablanca` (found in ADM.1); the
+      Cisco devices are configured `clock timezone MAR 1 0`. Fix one reference and align every image.
 - [ ] Clock check: on 12 Oct the devices stamped their messages about 5 minutes behind the collector. Check
       `show ntp status` on every Cisco device and the NTP state of the firewalls; fix the cause (SRV-INF-01 must run;
       management rule EXT-4 carries NTP).

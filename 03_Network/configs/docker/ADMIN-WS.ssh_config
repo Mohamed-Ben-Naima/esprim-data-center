@@ -1,0 +1,88 @@
+# ADMIN-WS - SSH client configuration - generated from inventory/dc_casa.yaml, do not edit by hand
+# One alias per equipment ("ssh core-a"). /usr/local/bin/ssh announces every session to the log collector.
+
+Host *
+    StrictHostKeyChecking accept-new
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+    ConnectTimeout 10
+
+Host edge-a
+    HostName 10.10.0.1
+    User netadmin
+
+Host edge-b
+    HostName 10.10.0.2
+    User netadmin
+
+Host fw-a
+    HostName 10.90.0.2
+    User admin
+
+Host fw-b
+    HostName 10.90.0.3
+    User admin
+
+Host core-a
+    HostName 10.10.0.21
+    User netadmin
+
+Host core-b
+    HostName 10.10.0.22
+    User netadmin
+
+Host leaf-a1
+    HostName 10.10.0.31
+    User netadmin
+
+Host leaf-a2
+    HostName 10.10.0.32
+    User netadmin
+
+Host leaf-b1
+    HostName 10.10.0.33
+    User netadmin
+
+Host leaf-b2
+    HostName 10.10.0.34
+    User netadmin
+
+Host srv-cmp-01
+    HostName 10.20.0.11
+    User ubuntu
+
+Host srv-cmp-02
+    HostName 10.20.0.12
+    User ubuntu
+
+Host srv-cmp-03
+    HostName 10.20.0.13
+    User ubuntu
+
+Host srv-sto-01
+    HostName 10.30.0.11
+    User ubuntu
+
+Host srv-bck-01
+    HostName 10.40.0.11
+    User ubuntu
+
+Host srv-inf-01
+    HostName 10.100.0.11
+    User ubuntu
+
+Host srv-mon-01
+    HostName 10.60.0.11
+    User ubuntu
+
+Host srv-bastion bastion
+    HostName 10.90.0.11
+    User ubuntu
+
+# Cisco IOSv / IOSvL2 images only speak an old SSH: legacy algorithms are enabled for these hosts and no other
+Host edge-a edge-b core-a core-b leaf-a1 leaf-a2 leaf-b1 leaf-b2
+    KexAlgorithms +diffie-hellman-group14-sha1,diffie-hellman-group-exchange-sha1
+    HostKeyAlgorithms +ssh-rsa
+    PubkeyAcceptedAlgorithms +ssh-rsa
+    Ciphers +aes128-cbc,aes256-cbc
+    MACs +hmac-sha1

@@ -293,6 +293,53 @@ sections:
         expected: active, active
         verified: 2026-10-12
 
+  - id: WT
+    title: Administration webterm (ADMIN-WS)
+    needs: "SW-MGMT, FW-A, FW-B, ADMIN-WS and the target; SYSLOG, LEAF-B1 and the cores for WT-05"
+    tests:
+      - id: WT-01
+        proves: The webterm has the administration tools
+        from: ADMIN-WS auxiliary console (telnet 192.168.75.128 5053)
+        command: command -v ssh firefox-esr curl snmpget dig nc
+        expected: six paths; ssh is /usr/local/bin/ssh (the logging wrapper)
+        verified: 2026-10-12
+      - id: WT-02
+        proves: An administrator opens a real SSH session on a network device by its alias
+        from: ADMIN-WS terminal (VNC 192.168.75.128:5904, desktop menu > Terminal)
+        command: ssh core-a "show version | include uptime"
+        expected: legal banner, password prompt, then "CORE-A uptime is ...". Same for edge-a and leaf-b1.
+        verified: 2026-10-12
+      - id: WT-03
+        proves: The firewalls are administered by SSH from the same place
+        from: ADMIN-WS terminal (VNC 5904)
+        command: ssh fw-a "hostname; pfctl -sr | wc -l"
+        expected: fw-a.dc.casa.lab and the number of loaded rules (165 on 12 Oct)
+        verified: 2026-10-12
+      - id: WT-04
+        proves: The browser opens on the portal that lists every web interface and SSH alias
+        from: ADMIN-WS desktop (VNC 5904)
+        command: open Firefox (it starts with the desktop)
+        expected: 'page "DC-CASA - administration portal" with 8 web interfaces and one SSH line per equipment'
+        verified: 2026-10-12
+      - id: WT-05
+        proves: Every SSH session from the webterm is recorded on the log collector
+        from: SYSLOG auxiliary console (5041)
+        command: grep admin-ssh /var/log/remote/all.log | tail -2
+        expected: 'a "session start" and a "session end ... rc=0" line with the target'
+        verified: 2026-10-12
+      - id: WT-06
+        proves: The list of aliases is at hand in the terminal
+        from: ADMIN-WS terminal or auxiliary console (5053)
+        command: dc-hosts
+        expected: one line "ssh <alias>  <user>@<address>" per equipment
+        verified: 2026-10-12
+      - id: WT-07
+        proves: The webterm shows the same local time as the log collector
+        from: ADMIN-WS auxiliary console (5053), then SYSLOG auxiliary console (5041)
+        command: date
+        expected: 'same hour on both. On 12 Oct 2026 it FAILED: zone Africa/Casablanca on both, but ADMIN-WS shows +00 and SYSLOG +01 (different time-zone databases in the two images). To be settled in LOG.1.'
+        verified: null
+
   - id: PWR
     title: Power simulator and DCIM (scenario T6)
     needs: "BMS-SIM, SRV-DCIM-01, SYSLOG, LEAF-B1/B2, cores, firewalls, SRV-BASTION (or the proxy)"

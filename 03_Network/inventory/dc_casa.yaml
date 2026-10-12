@@ -274,12 +274,24 @@ servers:
   CCTV-SIM:    {kind: docker, tia: EDA-B, vlan: 80,  ip: 10.80.0.11,  bond: false, roles: [cctv-sim], image: "dc/cctv-sim:1.0"}
   SRV-WEB-01:  {kind: docker, tia: DMZ,   vlan: 50,  ip: 10.50.0.11,  bond: false, roles: [web], image: "nginx:alpine"}
   SRV-BASTION: {kind: vm,     tia: MDA,   vlan: 90,  ip: 10.90.0.11,  bond: false, roles: [bastion, mfa]}
-  ADMIN-WS:    {kind: docker, tia: MDA,   vlan: 90,  ip: 10.90.0.12,  bond: false, roles: [admin-desktop], image: "gns3/webterm:latest"}
+  ADMIN-WS:    {kind: docker, tia: MDA,   vlan: 90,  ip: 10.90.0.12,  bond: false, roles: [admin-desktop, admin-bastion], image: "dc/admin-ws:1.0"}
 
 # Uplink to the real Internet (lab convenience, GNS3 NAT nodes – libvirt virbr0 in the GNS3 VM)
 internet_uplinks:
   NAT-A: {to: "ISP-A:eth2"}
   NAT-B: {to: "ISP-B:eth2"}
+
+# Web interfaces an administrator opens from ADMIN-WS (portal page of the webterm, access matrix).
+# node = equipment that serves the page (it must be running); login = account name, the secret is in `credentials`.
+web_interfaces:
+  - {name: "pfSense - cluster", node: FW-A, url: "https://10.90.0.1/", login: admin, descr: "Firewall that is master now: rules, NAT, CARP status, logs"}
+  - {name: "pfSense - FW-A", node: FW-A, url: "https://10.90.0.2/", login: admin, descr: "First firewall, whatever its role"}
+  - {name: "pfSense - FW-B", node: FW-B, url: "https://10.90.0.3/", login: admin, descr: "Second firewall, whatever its role"}
+  - {name: "Zabbix", node: SRV-MON-01, url: "http://10.60.0.11/", login: Admin, descr: "Supervision: hosts, problems, latest data"}
+  - {name: "Grafana", node: SRV-MON-01, url: "http://10.60.0.11:3000/", login: admin, descr: "NOC dashboard"}
+  - {name: "BMS-SIM", node: BMS-SIM, url: "http://10.70.0.12:8080/", login: "", descr: "Power paths A and B, load, alarms"}
+  - {name: "DCIM", node: SRV-DCIM-01, url: "http://10.70.0.11:8080/", login: "", descr: "State of the 96 racks"}
+  - {name: "Web site (DMZ)", node: SRV-WEB-01, url: "https://10.50.0.11/", login: "", descr: "Public site as served inside the DMZ"}
 
 # ---------------------------------------------------------------------------------------------------
 # Security policy (PDF Table 18). Ports: alias names resolved in `port_aliases`.
