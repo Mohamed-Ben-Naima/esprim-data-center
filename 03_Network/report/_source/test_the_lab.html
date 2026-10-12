@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>DC Casablanca - Test the Lab</title>
+<!--STYLE-->
+<style>
+@page :first { margin: 16mm 14mm 17mm 14mm; }
+table.t td:first-child { white-space: nowrap; font-weight: 600; }
+table.t td code { white-space: pre-wrap; word-break: break-word; display: block; padding: .6mm 1mm; }
+.needs { font-size: 8.2pt; color: var(--mute); margin: 0 0 1.5mm; }
+.head { background: linear-gradient(160deg, #0b3640 0%, #0f4c5c 60%, #1b7f8c 100%); color: #fff; border-radius: 4px; padding: 9mm 9mm 7mm; margin-bottom: 6mm; }
+.head .tag { font-size: 8.5pt; letter-spacing: .16em; text-transform: uppercase; opacity: .8; }
+.head .title { font-size: 26pt; font-weight: 700; margin: 2mm 0 2mm; }
+.head .sub { font-size: 10.5pt; opacity: .92; }
+.head .counts { margin-top: 5mm; display: flex; gap: 4mm; }
+.head .counts div { background: rgba(255,255,255,.12); border-radius: 4px; padding: 2.5mm 4mm; font-size: 8.4pt; }
+.head .counts b { font-size: 15pt; display: block; line-height: 1.1; }
+</style>
+</head>
+<body>
+
+<div class="head">
+  <div class="tag">ESPRIM - Data Center Casablanca - 03_Network</div>
+  <div class="title">Test the Lab</div>
+  <div class="sub">For each equipment: the command that proves it works, where to type it, and what you must see.</div>
+  <div class="counts"><!--COUNTS--></div>
+</div>
+
+<h2 style="margin-top:0">How to use this document</h2>
+<ul>
+  <li>Each test has an identifier, the command, <b>where to run it</b> (node and console port) and the expected result.</li>
+  <li><b>Last passed</b> is the date the test was really run and gave the expected result. "not run yet" means exactly that.</li>
+  <li>Each section says which nodes must be running. A test fails for the wrong reason if its path is not started.</li>
+  <li>Passwords are not printed here: they are in <code>inventory/dc_casa.yaml</code> (section <code>credentials</code>) and in appendix B of the lab guide.</li>
+  <li>Source of this document: <code>report/tests/tests.yaml</code>. Rebuild with <code>python report/_source/build_lab_guide.py test_the_lab</code>.</li>
+</ul>
+
+<h2>Before you test</h2>
+<div class="cols">
+<div>
+<h3>Start what the test needs</h3>
+<pre><span class="c"># from the folder 03_Network, tier by tier, waiting for each tier</span>
+python automation/labctl.py start NAT-A NAT-B ISP-A ISP-B SW-OUT EDGE-A EDGE-B
+python automation/labctl.py start SW-DMZ SW-MGMT FW-A FW-B SRV-WEB-01 ADMIN-WS
+python automation/labctl.py start CORE-A CORE-B LEAF-B1 LEAF-B2
+python automation/labctl.py start SYSLOG BMS-SIM CCTV-SIM SRV-DCIM-01 SRV-INF-01
+python automation/labctl.py status</pre>
+<p>The PC cannot run everything at once. Leave hall A (LEAF-A1/A2) and the undeployed servers off, and check the host has free memory before starting SRV-MON-01.</p>
+</div>
+<div>
+<h3>Where to type</h3>
+<table>
+<thead><tr><th>Equipment</th><th>How to open</th></tr></thead>
+<tbody>
+<tr><td>Cisco (EDGE, CORE, LEAF)</td><td><code>telnet 192.168.75.128 &lt;port&gt;</code>, login <code>netadmin</code></td></tr>
+<tr><td>Containers</td><td><b>auxiliary</b> console: ISP-A 5037, ISP-B 5039, SYSLOG 5041, BMS-SIM 5043, CCTV-SIM 5045, SRV-DCIM-01 5047, SRV-WEB-01 5052. Never Ctrl-C on the main console.</td></tr>
+<tr><td>Ubuntu servers</td><td><code>telnet 192.168.75.128 &lt;port&gt;</code>, login <code>ubuntu</code>, then <code>sudo -i</code></td></tr>
+<tr><td>pfSense</td><td>VNC <code>192.168.75.128:5900</code> (FW-A) or <code>:5901</code> (FW-B), option 8</td></tr>
+<tr><td>Web interfaces</td><td><code>python automation/lab_proxy.py start</code> then <code>open</code></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<!--TESTS-->
+
+<div class="keep">
+<h1>Tests still to be written</h1>
+<p>These parts of plan <code>plans/PLAN_02_Admin_Firewall_Logs_Supervision.md</code> add their tests here when they are executed. Nothing below has been run.</p>
+<table>
+<thead><tr><th style="width:18%">Grand task</th><th>Tests that will be added</th></tr></thead>
+<tbody>
+<tr><td><b>ADM</b> administration webterm</td><td>SSH from ADMIN-WS to every device by alias, portal page, session logging, access matrix (reachable from the bastion, refused from elsewhere), idle timeout, login lockout</td></tr>
+<tr><td><b>FW</b> firewall</td><td>Live rules against the generated configuration, supervision rule on both firewalls, behaviour when a core stops, flow matrix, blocks visible in the logs</td></tr>
+<tr><td><b>LOG</b> log collection</td><td>Missing sources, clock synchronisation of every device, rotation and permissions, log viewer from the administration zone, security events (failed login, configuration change, firewall block)</td></tr>
+<tr><td><b>ZBX</b> Zabbix</td><td>SNMPv3 to the Cisco devices, SNMP to the firewalls, agents, power and rack checks, BGP alarm, alert delays</td></tr>
+<tr><td><b>GRF</b> Grafana</td><td>Plugin, data source, NOC dashboard values, reaction to the power test, state after a restart</td></tr>
+<tr><td><b>ISO</b> compliance</td><td>Access and compliance matrix per equipment, configuration export and restore</td></tr>
+</tbody>
+</table>
+</div>
+
+</body>
+</html>

@@ -77,11 +77,17 @@ Files: `automation/lab_up.py` (add profile `supervision`), `report/content/09_mi
       LEAF-B1/B2, SRV-WEB-01, ADMIN-WS, SYSLOG, BMS-SIM, CCTV-SIM, SRV-DCIM-01, SRV-INF-01, SRV-MON-01 (24 nodes).
       Not started: LEAF-A1/A2, SRV-CMP-01/02/03, SRV-STO-01, SRV-BCK-01, SRV-BASTION.
       ADMIN-WS is the administration entry point of this profile (see ADM); SRV-BASTION is started only for its own tests.
+- [x] Host power settings on mains (12 Oct 2026): hard-disk turn-off was 30 s and USB selective suspend was on, while the
+      VM disk is on the external USB drive H:, which dropped three times that day (12:32, 13:07, 13:56) and froze the VM
+      twice. Both set to off: `powercfg /setacvalueindex SCHEME_CURRENT SUB_DISK DISKIDLE 0` and the USB
+      selective-suspend index to 0. Check again after an Armoury Crate update, which resets the power plan.
 - [ ] Start it tier by tier, then leave it idle 10 minutes and measure.
 - [ ] **Gate:** if the cores flap, drop SRV-INF-01, then EDGE-B, and record the profile that holds.
 
 | Test | Command | From | Expected |
 |---|---|---|---|
+| Disk stays awake | `powercfg /query SCHEME_CURRENT SUB_DISK DISKIDLE` | host | AC index `0x00000000` |
+| No disk error | `Get-WinEvent -FilterHashtable @{LogName='System';Id=51;StartTime=(Get-Date).AddHours(-1)}` | host PowerShell | no event |
 | Host memory | `powershell "(Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1MB"` | host | ≥ 0.5 GB |
 | VM load | `python automation/gns3vm.py "cat /proc/loadavg; free -m"` | host | load < 8, swap < 300 MB |
 | Gateways stable | `python automation/labctl.py show CORE-B "show logging \| count HSRP-5-STATECHANGE"` twice, 10 min apart | host | same number |
@@ -91,9 +97,9 @@ Files: `automation/lab_up.py` (add profile `supervision`), `report/content/09_mi
 A separate document that answers one question: *how do I check that this equipment works, and from where?*
 Files: `report/tests/tests.yaml` (one entry per test), `report/_source/test_the_lab.html` (layout),
 `report/_source/build_lab_guide.py` (builds both PDFs), `report/Test_the_Lab.pdf`.
-- [ ] One entry per test: id, what it proves, command, where to run it (node and console port), expected result, date
+- [x] One entry per test: id, what it proves, command, where to run it (node and console port), expected result, date
       of the last successful run. A test never run is shown as "not run yet", never as passed.
-- [ ] Seeded with the tests that passed on 12 Oct 2026; every later sub-task appends its own.
+- [x] Seeded with the tests that passed on 12 Oct 2026 (48 dated, 1 not run yet); every later sub-task appends its own.
 
 | Test | Command | From | Expected |
 |---|---|---|---|
