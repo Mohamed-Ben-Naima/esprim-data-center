@@ -1,0 +1,1081 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>DC Casablanca - GNS3 Lab Guide</title>
+<style>
+@page { size: A4; margin: 16mm 14mm 17mm 14mm;
+        @bottom-left  { content: "DC Casablanca - GNS3 Network Lab Guide"; font: 7.5pt "Segoe UI", Arial, sans-serif; color: #7a8594; }
+        @bottom-right { content: "Page " counter(page) " / " counter(pages); font: 7.5pt "Segoe UI", Arial, sans-serif; color: #7a8594; } }
+@page :first { margin: 0; @bottom-left { content: "" } @bottom-right { content: "" } }
+:root { --ink:#1c2733; --mute:#5b6775; --line:#d5dbe3; --soft:#f3f6f9; --brand:#0f4c5c; --brand2:#1b7f8c;
+        --ok:#1f7a3d; --okbg:#e3f4e8; --wip:#9a5b00; --wipbg:#fff1d6; --todo:#56606d; --todobg:#e9edf1; --bad:#a32020; --badbg:#fde5e5; }
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { font: 9.2pt/1.42 "Segoe UI", Arial, sans-serif; color: var(--ink); margin: 0; }
+h1 { font-size: 17pt; color: var(--brand); margin: 9mm 0 3mm; padding-bottom: 2mm; border-bottom: 2.5px solid var(--brand); break-after: avoid; }
+h1.pb { break-before: page; margin-top: 0; }
+h1 .n { color: var(--brand2); margin-right: 2mm; }
+h2 { font-size: 11.5pt; color: var(--brand); margin: 5mm 0 1.5mm; break-after: avoid; }
+h3 { font-size: 9.6pt; margin: 3.5mm 0 1mm; break-after: avoid; }
+p { margin: 0 0 2mm; }
+h2 + p, h3 + p { break-after: avoid; }
+ul, ol { margin: 0 0 2mm; padding-left: 5mm; }
+li { margin-bottom: .6mm; }
+code, pre, .mono { font-family: Consolas, "Cascadia Mono", monospace; }
+code { font-size: 8.2pt; background: #eef1f5; padding: 0 1mm; border-radius: 2px; }
+pre { font-size: 7.3pt; line-height: 1.32; background: #14202b; color: #e4ecf2; padding: 2.2mm 2.8mm; border-radius: 3px; margin: 1mm 0 2.5mm;
+      white-space: pre-wrap; word-break: break-word; break-inside: avoid; }
+pre .c { color: #8fb7c4; } pre .g { color: #9be29b; }
+table { border-collapse: collapse; width: 100%; margin: 1mm 0 3mm; font-size: 7.9pt; line-height: 1.3; }
+thead { display: table-header-group; }
+tr { break-inside: avoid; }
+th { background: var(--brand); color: #fff; text-align: left; padding: 1.3mm 1.6mm; font-weight: 600; vertical-align: bottom; }
+td { padding: 1.1mm 1.6mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+tbody tr:nth-child(even) td { background: var(--soft); }
+td code { font-size: 7.4pt; background: #e6ebf0; }
+td:first-child b { white-space: nowrap; }
+table.fw td:last-child, table.fw td:first-child { white-space: nowrap; }
+pre.cap { white-space: pre; overflow: hidden; }
+.nw { white-space: nowrap; }
+.pill { display: inline-block; padding: 0 1.8mm; border-radius: 8px; font-size: 7.3pt; font-weight: 700; white-space: nowrap; }
+.ok { background: var(--okbg); color: var(--ok); } .wip { background: var(--wipbg); color: var(--wip); }
+.todo { background: var(--todobg); color: var(--todo); } .bad { background: var(--badbg); color: var(--bad); }
+.box { border-left: 3.5px solid var(--brand2); background: #eaf5f6; padding: 2mm 3mm; margin: 1.5mm 0 3mm; border-radius: 0 3px 3px 0; break-inside: avoid; }
+.box.warn { border-color: #c98300; background: var(--wipbg); } .box.good { border-color: var(--ok); background: var(--okbg); }
+.box b.t { display: block; margin-bottom: .6mm; }
+.box p:last-child, .box ul:last-child { margin-bottom: 0; }
+.cols { display: flex; gap: 4mm; } .cols > div { flex: 1; min-width: 0; }
+figure { margin: 2mm 0 3mm; break-inside: avoid; text-align: center; }
+figure img { max-width: 100%; border: 1px solid var(--line); border-radius: 3px; }
+figcaption { font-size: 7.6pt; color: var(--mute); margin-top: 1mm; }
+.keep { break-inside: avoid; }
+/* cover */
+.cover { height: 297mm; padding: 34mm 22mm 20mm; background: linear-gradient(160deg, #0b3640 0%, #0f4c5c 55%, #1b7f8c 100%); color: #fff; display: flex; flex-direction: column; }
+.cover .tag { font-size: 9.5pt; letter-spacing: .18em; text-transform: uppercase; opacity: .8; }
+.cover .title { font-size: 33pt; font-weight: 700; line-height: 1.12; margin: 7mm 0 4mm; }
+.cover .sub { font-size: 13pt; opacity: .92; max-width: 135mm; }
+.cover .facts { margin-top: 16mm; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4mm; }
+.cover .fact { background: rgba(255,255,255,.11); border-radius: 4px; padding: 4mm 3mm; }
+.cover .fact b { display: block; font-size: 19pt; line-height: 1.1; } .cover .fact span { font-size: 8pt; opacity: .85; }
+.cover .state { margin-top: 9mm; background: rgba(255,255,255,.11); border-radius: 4px; padding: 4mm 5mm; font-size: 9.6pt; }
+.cover .state b { font-size: 10.5pt; }
+.cover .meta { margin-top: auto; font-size: 8.6pt; opacity: .85; line-height: 1.6; }
+/* path diagram */
+.path { display: flex; align-items: stretch; gap: 0; margin: 1.5mm 0 3mm; break-inside: avoid; }
+.hop { flex: 1; border: 1.2px solid var(--brand2); background: #fff; border-radius: 3px; padding: 1.4mm 1mm; text-align: center; font-size: 7.3pt; line-height: 1.25; }
+.hop b { display: block; font-size: 8pt; color: var(--brand); } .hop i { color: var(--mute); font-style: normal; }
+.arr { flex: 0 0 5mm; display: flex; align-items: center; justify-content: center; color: var(--brand2); font-size: 11pt; font-weight: 700; }
+.toc { columns: 2; column-gap: 9mm; font-size: 9.4pt; } .toc div { margin-bottom: 1.4mm; break-inside: avoid; } .toc b { color: var(--brand2); display: inline-block; width: 7mm; }
+.toc small { display: block; color: var(--mute); margin-left: 7mm; font-size: 8pt; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ COVER -->
+<div class="cover">
+  <div class="tag">ESPRIM - Data Center Casablanca - 03_Network</div>
+  <div class="title">GNS3 Network Lab<br>Complete Guide</div>
+  <div class="sub">Every device, its role and configuration, how to test each link and service, and where the project stands today.</div>
+  <div class="facts">
+    <div class="fact"><b>31</b><span>nodes in the GNS3 project</span></div>
+    <div class="fact"><b>60</b><span>links, all doubled A / B</span></div>
+    <div class="fact"><b>14</b><span>VLANs (10 business + 4 technical)</span></div>
+    <div class="fact"><b>2</b><span>Internet providers, BGP AS 65100</span></div>
+  </div>
+  <div class="state">
+    <b>Status in one sentence</b><br>
+    The whole network (providers, edge routers, firewalls, core, leaf switches) is configured and verified. Servers are partly deployed.
+    Monitoring, the resilience tests and the final report are still to do.
+  </div>
+  <div class="meta">
+    Document date: 12 October 2026<br>
+    Built from the repository at commit <span class="mono">3ca4e02</span> (7 Oct 2026) plus the uncommitted work in the tree, and a live query of the GNS3 controller on 12 Oct 2026.<br>
+    Design target: ANSI/TIA-942 Rated-3 data center, 96 racks in two halls, about 1 MW of IT load.
+  </div>
+</div>
+
+<!-- ============================================================ CONTENTS -->
+<h1 class="pb">Contents</h1>
+<div class="toc">
+  <div><b>1</b> The lab in one page<small>What it is, the design idea, the numbers</small></div>
+  <div><b>2</b> Architecture<small>Topology, layers, how a packet travels</small></div>
+  <div><b>3</b> Equipment list<small>All 31 nodes: type, image, address, console</small></div>
+  <div><b>4</b> Addressing plan<small>VLANs, gateways, transit networks, WAN, public IPs</small></div>
+  <div><b>5</b> Device by device<small>Role, functions and configuration of each equipment</small></div>
+  <div><b>6</b> High availability<small>What takes over when something fails</small></div>
+  <div><b>7</b> Security policy<small>Zones, firewall rules, NAT, inter-VLAN ACLs, hardening</small></div>
+  <div><b>8</b> Running the lab<small>Start-up, consoles, logins, automation scripts</small></div>
+  <div><b>9</b> Test commands<small>Per device, between devices, services, policy, failover</small></div>
+  <div><b>10</b> Project status<small>Done, in progress, to do, known issues, next steps</small></div>
+  <div><b>A</b> Appendix: full cabling plan<small>The 60 links, port by port</small></div>
+  <div><b>B</b> Appendix: lab credentials<small>Lab-only accounts and keys</small></div>
+</div>
+
+<div class="box" style="margin-top:6mm">
+  <b class="t">How to read this document</b>
+  <p>Sections 1 to 4 explain the design. Section 5 is the reference for each device. Sections 8 and 9 are the practical part: how to start the lab and which command proves what.
+  Section 10 is the honest status. Outputs shown in dark boxes with a date were really captured from the lab (files in <code>report/evidence/</code>); commands without a captured output are the standard checks for that device.</p>
+</div>
+
+<!-- ============================================================ 1 -->
+<h1><span class="n">1</span>The lab in one page</h1>
+
+<h2>What it is</h2>
+<p>The design study defined a production data center in Casablanca: 96 racks in two halls, about 1 MW of IT load, with a <b>Rated-3</b> resilience target
+(any critical component can be maintained or can fail without stopping the service). This lab reproduces the <b>network</b> of that data center inside GNS3, on a personal PC,
+to prove the design works and to measure how fast it recovers from failures.</p>
+
+<h2>The design idea: everything exists twice</h2>
+<div class="cols">
+<div>
+<ul>
+  <li><b>Two Internet providers</b> (ISP-A primary, ISP-B backup).</li>
+  <li><b>Two edge routers</b> speaking BGP to both providers.</li>
+  <li><b>Two firewalls</b> in an active/passive cluster.</li>
+  <li><b>Two core switches</b> sharing the gateway role per VLAN.</li>
+  <li><b>Leaf switches in pairs</b>, one pair per hall.</li>
+  <li><b>Servers with two network cards</b>, one to each leaf of the pair.</li>
+</ul>
+</div>
+<div>
+<p>Traffic normally uses the "A" side. If any A device stops, its B twin takes over automatically in a few seconds or less. A virtual IP address (HSRP on Cisco, CARP on pfSense, keepalived on servers)
+moves from the failed device to its twin, so neighbours never need to be reconfigured.</p>
+<p>Security is <b>deny by default</b>: only the flows listed in the policy are allowed, everything else is blocked and logged.</p>
+</div>
+</div>
+
+<h2>How it is built: one source of truth</h2>
+<p>Nothing is typed by hand on the devices. One file, <code>inventory/dc_casa.yaml</code>, describes the whole network (VLANs, addresses, ports, rules, tests).
+Scripts read it, generate every configuration, push them to the device consoles through the GNS3 API, collect proof and fill the report tables.
+To change the network you change the inventory and re-run the generators.</p>
+<div class="path">
+  <div class="hop"><b>inventory/dc_casa.yaml</b><i>single source of truth</i></div><div class="arr">&rarr;</div>
+  <div class="hop"><b>validate_inventory.py</b><i>98 links, 92 IPs checked</i></div><div class="arr">&rarr;</div>
+  <div class="hop"><b>gen_configs.py / gen_pfsense.py</b><i>configs/ for every device</i></div><div class="arr">&rarr;</div>
+  <div class="hop"><b>labctl.py push / deploy_*.py</b><i>applied on the consoles</i></div><div class="arr">&rarr;</div>
+  <div class="hop"><b>labctl.py show --save</b><i>proof in report/evidence/</i></div>
+</div>
+
+<h2>Key numbers</h2>
+<table>
+<thead><tr><th>Item</th><th>Value</th></tr></thead>
+<tbody>
+<tr><td>Nodes / links</td><td>31 nodes, 60 links, all running on the GNS3 VM (compute <code>vm</code>)</td></tr>
+<tr><td>Node types</td><td>18 QEMU virtual machines (2 IOSv, 6 IOSvL2, 2 pfSense, 8 Ubuntu), 8 Docker containers, 3 GNS3 switches, 2 NAT clouds</td></tr>
+<tr><td>Our autonomous system</td><td>AS 65100, public prefix <code>192.0.2.0/24</code> announced to both providers</td></tr>
+<tr><td>Providers</td><td>ISP-A AS 64500 (primary), ISP-B AS 64501 (backup)</td></tr>
+<tr><td>VLANs</td><td>10 business VLANs (10 to 100) + 4 technical (901, 902, 998, 999)</td></tr>
+<tr><td>Internal domain / timezone</td><td><code>dc.casa.lab</code>, Africa/Casablanca (UTC+1)</td></tr>
+<tr><td>Platform</td><td>Windows 11 host with 15.7 GB RAM, VMware Workstation, GNS3 2.2.56.1, GNS3 VM with 6 vCPU and 8 GB RAM, KSM on</td></tr>
+</tbody>
+</table>
+
+<!-- ============================================================ 2 -->
+<h1><span class="n">2</span>Architecture</h1>
+
+<figure>
+  <img src="../../screenshots/02_topologie_gns3.png" alt="GNS3 topology">
+  <figcaption>The live GNS3 project rendered by <code>automation/render_topology.py</code> (labels are in French, as in the main report).
+  Grey = WAN, red = external transit and firewall sync, blue = internal transit and core link, green = leaf uplinks and servers, light grey = out-of-band management.</figcaption>
+</figure>
+
+<h2>The layers, top to bottom</h2>
+<table>
+<thead><tr><th style="width:15%">Layer</th><th style="width:13%">TIA-942 space</th><th style="width:22%">Devices</th><th>What it does</th></tr></thead>
+<tbody>
+<tr><td><b>Internet</b></td><td>outside</td><td>NAT-A, NAT-B</td><td>GNS3 NAT clouds. They give the lab real Internet access so that ping 8.8.8.8 and package downloads are true end-to-end tests.</td></tr>
+<tr><td><b>Providers</b></td><td>ER (entrance room)</td><td>ISP-A, ISP-B</td><td>Simulated operators. Each sends a default route by BGP to both edge routers and accepts only our public prefix.</td></tr>
+<tr><td><b>Edge</b></td><td>ER</td><td>EDGE-A, EDGE-B</td><td>Border routers. Choose the provider (ISP-A preferred), block spoofed traffic, hand traffic to the firewalls.</td></tr>
+<tr><td><b>External transit</b></td><td>ER</td><td>SW-OUT (VLAN 901)</td><td>One shared segment joining the two edges and the two firewalls.</td></tr>
+<tr><td><b>Security</b></td><td>MDA (main distribution)</td><td>FW-A, FW-B, SW-DMZ</td><td>Stateful firewall cluster. Separates the zones, does NAT, publishes the DMZ web site, is the gateway of DMZ, management and admin VLANs.</td></tr>
+<tr><td><b>Core</b></td><td>MDA</td><td>CORE-A, CORE-B</td><td>Layer-3 switches. Gateways of the internal VLANs, routing between VLANs with access lists, default route to the firewall.</td></tr>
+<tr><td><b>Access</b></td><td>HDA-A, HDA-B</td><td>LEAF-A1/A2, LEAF-B1/B2</td><td>Layer-2 switches, one pair per hall. Every server has one card on each leaf of its pair.</td></tr>
+<tr><td><b>Servers</b></td><td>EDA-A, EDA-B, DMZ</td><td>8 VMs, 5 containers</td><td>Application, storage, backup, DNS/NTP, monitoring, DCIM, building simulators, web site.</td></tr>
+<tr><td><b>Management</b></td><td>MDA</td><td>SW-MGMT, SRV-BASTION, ADMIN-WS</td><td>Separate out-of-band network (VLAN 10) for device management and the admin zone (VLAN 90) with the bastion.</td></tr>
+</tbody>
+</table>
+
+<h2>How a packet travels</h2>
+<h3>A server goes to the Internet (for example SRV-CMP-01 to 8.8.8.8)</h3>
+<div class="path">
+  <div class="hop"><b>SRV-CMP-01</b>10.20.0.11<br><i>bond0, 2 leafs</i></div><div class="arr">&rarr;</div>
+  <div class="hop"><b>CORE-A</b>gateway 10.20.0.1<br><i>HSRP virtual IP</i></div><div class="arr">&rarr;</div>
+  <div class="hop"><b>FW-A</b>10.254.2.1<br><i>CARP, LAN rules</i></div><div class="arr">&rarr;</div>
+  <div class="hop"><b>SNAT</b>source becomes<br>192.0.2.10</div><div class="arr">&rarr;</div>
+  <div class="hop"><b>EDGE-A</b>10.254.1.6<br><i>HSRP virtual IP</i></div><div class="arr">&rarr;</div>
+  <div class="hop"><b>ISP-A</b>BGP default<br><i>local-pref 200</i></div><div class="arr">&rarr;</div>
+  <div class="hop"><b>Internet</b>via NAT-A</div>
+</div>
+<h3>The Internet reaches the public web site (192.0.2.80)</h3>
+<div class="path">
+  <div class="hop"><b>Internet / ISP</b>knows 192.0.2.0/24<br><i>by BGP</i></div><div class="arr">&rarr;</div>
+  <div class="hop"><b>EDGE</b>static route<br>192.0.2.0/24</div><div class="arr">&rarr;</div>
+  <div class="hop"><b>FW master</b>10.254.1.1 CARP<br><i>WAN rule T18-1</i></div><div class="arr">&rarr;</div>
+  <div class="hop"><b>DNAT</b>192.0.2.80:80/443<br>to 10.50.0.11</div><div class="arr">&rarr;</div>
+  <div class="hop"><b>SRV-WEB-01</b>DMZ VLAN 50<br><i>nginx, TLS</i></div>
+</div>
+<h3>Traffic between internal VLANs (for example an app server mounting NFS on the storage server)</h3>
+<p>VLAN 20 to VLAN 30 is routed <b>directly by the core switch</b> and never crosses the firewall. The core applies an inbound access list on each VLAN interface:
+only the declared flows pass (here TCP/UDP 2049, 111 and TCP 3260), the rest is dropped and logged.</p>
+<h3>Administration</h3>
+<p>Device management ports live in VLAN 10 (out of band). The cores and edges put that port in a separate routing table (<code>VRF MGMT</code>), so user traffic can never reach it.
+The only way in is from the admin zone (VLAN 90: bastion and admin workstation) through the firewall, with SSH or HTTPS.</p>
+
+<!-- ============================================================ 3 -->
+<h1><span class="n">3</span>Equipment list</h1>
+<p>All nodes of the GNS3 project <code>DC_Casablanca_TIA942_R3.gns3</code>. Consoles are reached on the GNS3 VM, <code>192.168.75.128</code>, at the port shown (telnet unless marked VNC). For containers the port is the <b>auxiliary console</b>, which gives a shell; their main console is attached to the service itself and must not be used (see section 8).</p>
+<table>
+<thead><tr><th>Node</th><th>Type</th><th>Image / software</th><th>RAM</th><th>Space</th><th>Address</th><th>Console</th><th>Role</th></tr></thead>
+<tbody>
+<tr><td><b>NAT-A, NAT-B</b></td><td>GNS3 NAT</td><td>-</td><td>-</td><td>outside</td><td>192.168.42.0/24 (DHCP)</td><td>-</td><td>Real Internet access for ISP-A and ISP-B</td></tr>
+<tr><td><b>ISP-A</b></td><td>Docker</td><td>dc/frr-isp:1.0 (FRR)</td><td>-</td><td>ER</td><td>198.51.100.1 and .5</td><td>5037</td><td>Provider 1, AS 64500, primary</td></tr>
+<tr><td><b>ISP-B</b></td><td>Docker</td><td>dc/frr-isp:1.0 (FRR)</td><td>-</td><td>ER</td><td>203.0.113.5 and .1</td><td>5039</td><td>Provider 2, AS 64501, backup</td></tr>
+<tr><td><b>EDGE-A</b></td><td>QEMU</td><td>Cisco IOSv 15.9(3)M6</td><td>512</td><td>ER</td><td>mgmt 10.10.0.1, lo 10.255.0.1</td><td>5004</td><td>Border router, HSRP active</td></tr>
+<tr><td><b>EDGE-B</b></td><td>QEMU</td><td>Cisco IOSv 15.9(3)M6</td><td>512</td><td>ER</td><td>mgmt 10.10.0.2, lo 10.255.0.2</td><td>5006</td><td>Border router, HSRP standby</td></tr>
+<tr><td><b>FW-A</b></td><td>QEMU</td><td>pfSense CE 2.7.2</td><td>1024</td><td>MDA</td><td>mgmt 10.10.0.11</td><td>VNC 5900</td><td>Firewall, CARP master</td></tr>
+<tr><td><b>FW-B</b></td><td>QEMU</td><td>pfSense CE 2.7.2</td><td>1024</td><td>MDA</td><td>mgmt 10.10.0.12</td><td>VNC 5901</td><td>Firewall, CARP backup</td></tr>
+<tr><td><b>CORE-A</b></td><td>QEMU</td><td>Cisco IOSvL2 15.2</td><td>768</td><td>MDA</td><td>mgmt 10.10.0.21, lo 10.255.0.21</td><td>5010</td><td>Core, gateway of VLAN 20/40/60/100</td></tr>
+<tr><td><b>CORE-B</b></td><td>QEMU</td><td>Cisco IOSvL2 15.2</td><td>768</td><td>MDA</td><td>mgmt 10.10.0.22, lo 10.255.0.22</td><td>5012</td><td>Core, gateway of VLAN 30/70/80</td></tr>
+<tr><td><b>LEAF-A1</b></td><td>QEMU</td><td>Cisco IOSvL2 15.2</td><td>768</td><td>HDA-A</td><td>mgmt 10.10.0.31</td><td>5014</td><td>Hall A access, server NIC 0</td></tr>
+<tr><td><b>LEAF-A2</b></td><td>QEMU</td><td>Cisco IOSvL2 15.2</td><td>768</td><td>HDA-A</td><td>mgmt 10.10.0.32</td><td>5016</td><td>Hall A access, server NIC 1</td></tr>
+<tr><td><b>LEAF-B1</b></td><td>QEMU</td><td>Cisco IOSvL2 15.2</td><td>768</td><td>HDA-B</td><td>mgmt 10.10.0.33</td><td>5018</td><td>Hall B access, server NIC 0</td></tr>
+<tr><td><b>LEAF-B2</b></td><td>QEMU</td><td>Cisco IOSvL2 15.2</td><td>768</td><td>HDA-B</td><td>mgmt 10.10.0.34</td><td>5020</td><td>Hall B access, server NIC 1</td></tr>
+<tr><td><b>SW-OUT</b></td><td>GNS3 switch</td><td>built-in (no RAM)</td><td>-</td><td>ER</td><td>-</td><td>-</td><td>VLAN 901 segment: 2 edges + 2 firewalls</td></tr>
+<tr><td><b>SW-DMZ</b></td><td>GNS3 switch</td><td>built-in</td><td>-</td><td>MDA</td><td>-</td><td>-</td><td>VLAN 50 segment: 2 firewalls + web server</td></tr>
+<tr><td><b>SW-MGMT</b></td><td>GNS3 switch</td><td>built-in</td><td>-</td><td>MDA</td><td>-</td><td>-</td><td>VLAN 10 management + VLAN 90 admin, 802.1Q trunk to firewalls</td></tr>
+<tr><td><b>SRV-CMP-01</b></td><td>QEMU</td><td>Ubuntu 20.04</td><td>512</td><td>EDA-A</td><td>10.20.0.11</td><td>5022</td><td>Application server, keepalived master</td></tr>
+<tr><td><b>SRV-CMP-02</b></td><td>QEMU</td><td>Ubuntu 20.04</td><td>512</td><td>EDA-A</td><td>10.20.0.12</td><td>5024</td><td>Application server, keepalived backup</td></tr>
+<tr><td><b>SRV-CMP-03</b></td><td>QEMU</td><td>Ubuntu 20.04</td><td>512</td><td>EDA-A</td><td>10.20.0.13</td><td>5026</td><td>Application server</td></tr>
+<tr><td><b>SRV-STO-01</b></td><td>QEMU</td><td>Ubuntu 20.04</td><td>512</td><td>EDA-A</td><td>10.30.0.11</td><td>5028</td><td>Storage: NFS + iSCSI</td></tr>
+<tr><td><b>SRV-BCK-01</b></td><td>QEMU</td><td>Ubuntu 20.04</td><td>512</td><td>EDA-B</td><td>10.40.0.11</td><td>5030</td><td>Backup target (rsync daemon)</td></tr>
+<tr><td><b>SRV-INF-01</b></td><td>QEMU</td><td>Ubuntu 20.04</td><td>512</td><td>EDA-B</td><td>10.100.0.11</td><td>5032</td><td>DNS and NTP for the whole site</td></tr>
+<tr><td><b>SRV-MON-01</b></td><td>QEMU</td><td>Ubuntu 20.04</td><td>1536</td><td>EDA-B</td><td>10.60.0.11</td><td>5034</td><td>Monitoring: Zabbix + Grafana</td></tr>
+<tr><td><b>SRV-BASTION</b></td><td>QEMU</td><td>Ubuntu 20.04</td><td>512</td><td>MDA</td><td>10.90.0.11</td><td>5036</td><td>SSH jump host for administrators</td></tr>
+<tr><td><b>SRV-DCIM-01</b></td><td>Docker</td><td>dc/dcim:1.0</td><td>-</td><td>EDA-B</td><td>10.70.0.11</td><td>5047</td><td>DCIM dashboard of the 96 racks</td></tr>
+<tr><td><b>SYSLOG</b></td><td>Docker</td><td>dc/syslog:1.0 (rsyslog)</td><td>-</td><td>EDA-B</td><td>10.60.0.12</td><td>5041</td><td>Central log collector</td></tr>
+<tr><td><b>BMS-SIM</b></td><td>Docker</td><td>dc/bms-sim:1.0</td><td>-</td><td>EDA-B</td><td>10.70.0.12</td><td>5043</td><td>Power infrastructure simulator</td></tr>
+<tr><td><b>CCTV-SIM</b></td><td>Docker</td><td>dc/cctv-sim:1.0</td><td>-</td><td>EDA-B</td><td>10.80.0.11</td><td>5045</td><td>Cameras and door-access simulator</td></tr>
+<tr><td><b>SRV-WEB-01</b></td><td>Docker</td><td>dc/web:1.0 (nginx)</td><td>-</td><td>DMZ</td><td>10.50.0.11</td><td>5052</td><td>Public web site</td></tr>
+<tr><td><b>ADMIN-WS</b></td><td>Docker</td><td>gns3/webterm</td><td>-</td><td>MDA</td><td>10.90.0.12</td><td>VNC 5904</td><td>Admin desktop with a browser</td></tr>
+</tbody>
+</table>
+<p>Count: 2 NAT + 2 ISP + 2 edge + 2 firewalls + 2 core + 4 leaf + 3 switches + 8 server VMs + 6 service containers = 31.</p>
+
+<!-- ============================================================ 4 -->
+<h1><span class="n">4</span>Addressing plan</h1>
+<p>Simple rule: <b>VLAN N uses 10.N.0.0/24</b>. Gateways are virtual IPs, so they survive the loss of one device.</p>
+
+<h2>VLANs</h2>
+<table>
+<thead><tr><th>VLAN</th><th>Name</th><th>Subnet</th><th>Gateway (virtual IP)</th><th>Held by</th><th>Zone</th><th>Used for</th></tr></thead>
+<tbody>
+<tr><td>10</td><td>MGMT</td><td>10.10.0.0/24</td><td>10.10.0.254</td><td>Firewalls (CARP)</td><td>Management</td><td>Out-of-band management ports of all devices</td></tr>
+<tr><td>20</td><td>SERVEURS</td><td>10.20.0.0/24</td><td>10.20.0.1</td><td>Cores (HSRP), active CORE-A</td><td>Internal</td><td>Application / compute servers</td></tr>
+<tr><td>30</td><td>STOCKAGE</td><td>10.30.0.0/24</td><td>10.30.0.1</td><td>Cores, active CORE-B</td><td>Internal</td><td>Storage (NFS, iSCSI)</td></tr>
+<tr><td>40</td><td>BACKUP</td><td>10.40.0.0/24</td><td>10.40.0.1</td><td>Cores, active CORE-A</td><td>Internal</td><td>Backup</td></tr>
+<tr><td>50</td><td>DMZ</td><td>10.50.0.0/24</td><td>10.50.0.1</td><td>Firewalls (CARP)</td><td>DMZ</td><td>Services exposed to the Internet</td></tr>
+<tr><td>60</td><td>MONITORING</td><td>10.60.0.0/24</td><td>10.60.0.1</td><td>Cores, active CORE-A</td><td>Internal</td><td>Monitoring and logging</td></tr>
+<tr><td>70</td><td>BMS-DCIM</td><td>10.70.0.0/24</td><td>10.70.0.1</td><td>Cores, active CORE-B</td><td>Internal</td><td>Building management and DCIM</td></tr>
+<tr><td>80</td><td>SECURITE-CCTV</td><td>10.80.0.0/24</td><td>10.80.0.1</td><td>Cores, active CORE-B</td><td>Internal</td><td>Video surveillance, access control</td></tr>
+<tr><td>90</td><td>ADMIN</td><td>10.90.0.0/24</td><td>10.90.0.1</td><td>Firewalls (CARP)</td><td>Administration</td><td>Admin workstation and bastion</td></tr>
+<tr><td>100</td><td>SERVICES-INT</td><td>10.100.0.0/24</td><td>10.100.0.1</td><td>Cores, active CORE-A</td><td>Internal</td><td>DNS, NTP, internal services</td></tr>
+<tr><td>901</td><td>TRANSIT-EXT</td><td>10.254.1.0/28</td><td>-</td><td>-</td><td>Transit</td><td>Edge routers to firewalls (SW-OUT)</td></tr>
+<tr><td>902</td><td>TRANSIT-INT</td><td>10.254.2.0/28</td><td>-</td><td>-</td><td>Transit</td><td>Firewalls to cores</td></tr>
+<tr><td>998</td><td>OSPF-CORE</td><td>10.254.4.0/30</td><td>-</td><td>-</td><td>Transit</td><td>OSPF adjacency between the two cores</td></tr>
+<tr><td>999</td><td>PARKING</td><td>none</td><td>-</td><td>-</td><td>None</td><td>Unused ports, shut down</td></tr>
+</tbody>
+</table>
+<p>On the core VLANs, CORE-A always has host address <code>.2</code> and CORE-B <code>.3</code>; the shared gateway is <code>.1</code>.</p>
+
+<div class="cols">
+<div>
+<h2>Transit and link networks</h2>
+<table>
+<thead><tr><th>Network</th><th>Addresses</th></tr></thead>
+<tbody>
+<tr><td><b>External transit</b><br>10.254.1.0/28</td><td>FW virtual IP .1, EDGE-A .2, EDGE-B .3, FW-A .4, FW-B .5, edge virtual IP .6</td></tr>
+<tr><td><b>Internal transit</b><br>10.254.2.0/28</td><td>FW virtual IP .1, CORE-A .2, CORE-B .3, FW-A .4, FW-B .5, core virtual IP .6</td></tr>
+<tr><td><b>Firewall sync</b><br>10.254.3.0/30</td><td>FW-A .1, FW-B .2 (direct cable em2)</td></tr>
+<tr><td><b>Core OSPF</b><br>10.254.4.0/30</td><td>CORE-A .1, CORE-B .2</td></tr>
+<tr><td><b>Edge inter-link</b><br>10.254.0.0/30</td><td>EDGE-A .1, EDGE-B .2</td></tr>
+<tr><td><b>Loopbacks</b><br>10.255.0.x/32</td><td>EDGE-A .1, EDGE-B .2, CORE-A .21, CORE-B .22</td></tr>
+</tbody>
+</table>
+</div>
+<div>
+<h2>WAN and public addresses</h2>
+<table>
+<thead><tr><th>Link</th><th>Network</th><th>ISP side</th><th>Edge side</th></tr></thead>
+<tbody>
+<tr><td>ISP-A to EDGE-A</td><td>198.51.100.0/30</td><td>.1</td><td>.2</td></tr>
+<tr><td>ISP-A to EDGE-B</td><td>198.51.100.4/30</td><td>.5</td><td>.6</td></tr>
+<tr><td>ISP-B to EDGE-A</td><td>203.0.113.4/30</td><td>.5</td><td>.6</td></tr>
+<tr><td>ISP-B to EDGE-B</td><td>203.0.113.0/30</td><td>.1</td><td>.2</td></tr>
+</tbody>
+</table>
+<table>
+<thead><tr><th>Public address</th><th>Use</th></tr></thead>
+<tbody>
+<tr><td>192.0.2.0/24</td><td>Our prefix, announced by BGP to both ISPs</td></tr>
+<tr><td>192.0.2.10</td><td>Outbound NAT: every internal host leaves with this source</td></tr>
+<tr><td>192.0.2.80</td><td>Public web site, forwarded to SRV-WEB-01</td></tr>
+</tbody>
+</table>
+<p>All "public" ranges are documentation prefixes (RFC 5737), safe to use in a lab.</p>
+</div>
+</div>
+
+<h2>Central services every device points to</h2>
+<table>
+<thead><tr><th>Service</th><th>Address</th><th>Hosted on</th></tr></thead>
+<tbody>
+<tr><td>DNS and NTP</td><td>10.100.0.11</td><td>SRV-INF-01</td></tr>
+<tr><td>Syslog collector (UDP/TCP 514)</td><td>10.60.0.12</td><td>SYSLOG</td></tr>
+<tr><td>Monitoring and SNMP traps</td><td>10.60.0.11</td><td>SRV-MON-01</td></tr>
+</tbody>
+</table>
+
+<!-- ============================================================ 5 -->
+<h1 class="pb"><span class="n">5</span>Device by device</h1>
+<p>For each family: its role, what it does, and the configuration that makes it do so. The full files are in <code>configs/</code>. The B device is always the same as A except for addresses and priorities.</p>
+
+<h2>5.1 ISP-A and ISP-B - the simulated Internet providers</h2>
+<div class="cols"><div>
+<p><b>Role.</b> Play the two operators the data center buys Internet from. They are FRR routers in containers; their third interface goes to a GNS3 NAT cloud, so traffic really reaches the Internet.</p>
+<ul>
+<li>eBGP session to <b>both</b> edge routers (4 sessions in total across the two ISPs), protected by an MD5 password, timers 3 s / 9 s.</li>
+<li>Sends <b>only a default route</b> to the customer (<code>default-originate</code>, everything else denied outbound).</li>
+<li>Accepts <b>only 192.0.2.0/24</b> from the customer, maximum 10 prefixes.</li>
+<li>IP forwarding + masquerade on <code>eth2</code> towards the real Internet.</li>
+</ul>
+</div><div>
+<pre><span class="c">! configs/ISP-A/frr.conf (extract)</span>
+router bgp 64500
+ neighbor 198.51.100.2 remote-as 65100
+ neighbor 198.51.100.2 password Bgp-DC-2026
+ neighbor 198.51.100.2 timers 3 9
+ address-family ipv4 unicast
+  neighbor 198.51.100.2 default-originate
+  neighbor 198.51.100.2 prefix-list PL-FROM-DC in
+  neighbor 198.51.100.2 route-map RM-DENY-ALL out
+  neighbor 198.51.100.2 maximum-prefix 10</pre>
+<p>ISP-B is identical with AS 64501 and the 203.0.113.x addresses.</p>
+</div></div>
+
+<h2>5.2 EDGE-A and EDGE-B - border routers (Cisco IOSv)</h2>
+<p><b>Role.</b> The door between the data center and the Internet. They decide which provider is used and present one virtual next hop to the firewalls.</p>
+<table>
+<thead><tr><th style="width:20%">Function</th><th>How it is configured</th></tr></thead>
+<tbody>
+<tr><td>Provider choice (BGP)</td><td>AS 65100. Routes from ISP-A get <b>local-preference 200</b>, from ISP-B <b>100</b>, so outbound traffic prefers ISP-A. Towards ISP-B our prefix is announced with the AS path <b>prepended twice</b>, so inbound traffic also prefers ISP-A. Only a default route is accepted, only 192.0.2.0/24 is announced, max 100 prefixes.</td></tr>
+<tr><td>Link between the two edges</td><td>iBGP between loopbacks with <code>next-hop-self</code>. OSPF area 0 (MD5, hello 1 s / dead 3 s) carries the loopbacks.</td></tr>
+<tr><td>Virtual next hop for the firewalls</td><td>HSRP version 2 on Gi0/3, virtual IP <b>10.254.1.6</b>. EDGE-A priority 110, EDGE-B 100, hello 250 ms / hold 750 ms, MD5 key, preempt after 30 s.</td></tr>
+<tr><td>Follow the Internet</td><td><code>track 10 ip route 0.0.0.0/0 reachability</code>: if an edge loses its default route, its HSRP priority drops by 20 and the other edge becomes active.</td></tr>
+<tr><td>Return route</td><td>Static route <code>192.0.2.0/24 via 10.254.1.1</code> (the firewall virtual IP): only the master firewall receives public traffic.</td></tr>
+<tr><td>Anti-spoofing</td><td><code>ACL-WAN-IN</code> inbound on both provider ports: private ranges, loopback and our own prefix are dropped as sources (logged).</td></tr>
+<tr><td>Management</td><td>Gi0/5 in <code>VRF MGMT</code>, 10.10.0.1 / .2, default route to 10.10.0.254.</td></tr>
+</tbody>
+</table>
+<div class="cols"><div>
+<pre><span class="c">! configs/EDGE-A.cfg - provider policy</span>
+route-map RM-ISP-A-IN permit 10
+ match ip address prefix-list PL-DEFAULT
+ set local-preference 200
+route-map RM-ISP-B-IN permit 10
+ match ip address prefix-list PL-DEFAULT
+ set local-preference 100
+route-map RM-ISP-B-OUT permit 10
+ match ip address prefix-list PL-ANNOUNCE
+ set as-path prepend 65100 65100</pre>
+</div><div>
+<pre><span class="c">! configs/EDGE-A.cfg - virtual gateway</span>
+track 10 ip route 0.0.0.0 0.0.0.0 reachability
+interface Gi0/3
+ ip address 10.254.1.2 255.255.255.240
+ standby version 2
+ standby 1 ip 10.254.1.6
+ standby 1 priority 110
+ standby 1 preempt delay minimum 30
+ standby 1 timers msec 250 msec 750
+ standby 1 track 10 decrement 20</pre>
+</div></div>
+<p><b>Port map (both edges).</b> Gi0/0 to ISP-A, Gi0/1 to ISP-B, Gi0/2 to the other edge, Gi0/3 to SW-OUT (VLAN 901), Gi0/5 to SW-MGMT. Gi0/4, 0/6, 0/7 are shut down.</p>
+
+<h2>5.3 FW-A and FW-B - firewall cluster (pfSense CE 2.7.2)</h2>
+<p><b>Role.</b> The security heart of the site. Every flow that changes zone (Internet, DMZ, internal, management, admin) is inspected here. The two firewalls form one active/passive cluster.</p>
+<table>
+<thead><tr><th>Interface</th><th>Port</th><th>FW-A</th><th>FW-B</th><th>Shared virtual IP (CARP id)</th><th>Purpose</th></tr></thead>
+<tbody>
+<tr><td>WAN</td><td>em0</td><td>10.254.1.4/28</td><td>10.254.1.5/28</td><td>10.254.1.1 (1)</td><td>External transit, VLAN 901</td></tr>
+<tr><td>LAN</td><td>lagg0 = em3 + em4</td><td>10.254.2.4/28</td><td>10.254.2.5/28</td><td>10.254.2.1 (2)</td><td>Internal transit; em3 goes to CORE-A, em4 to CORE-B (failover)</td></tr>
+<tr><td>SYNC</td><td>em2</td><td>10.254.3.1/30</td><td>10.254.3.2/30</td><td>-</td><td>Direct cable for state and config sync</td></tr>
+<tr><td>DMZ</td><td>em5</td><td>10.50.0.2/24</td><td>10.50.0.3/24</td><td>10.50.0.1 (50)</td><td>VLAN 50, web server</td></tr>
+<tr><td>MGMT</td><td>em6.10</td><td>10.10.0.11/24</td><td>10.10.0.12/24</td><td>10.10.0.254 (10)</td><td>Gateway of the device management network</td></tr>
+<tr><td>ADMIN</td><td>em6.90</td><td>10.90.0.2/24</td><td>10.90.0.3/24</td><td>10.90.0.1 (90)</td><td>Gateway of bastion and admin workstation</td></tr>
+</tbody>
+</table>
+<table>
+<thead><tr><th style="width:20%">Function</th><th>How it is configured</th></tr></thead>
+<tbody>
+<tr><td>Cluster (CARP)</td><td>5 virtual IPs. FW-A advertises with <code>advskew 0</code>, FW-B with <code>100</code>, so FW-A is master. Advertisement every 1 s.</td></tr>
+<tr><td>Session survival (pfsync)</td><td>The connection table is copied continuously to the peer over em2, so open sessions survive a failover.</td></tr>
+<tr><td>Config sync (XMLRPC)</td><td>Rules are edited on FW-A only and pushed to FW-B (<code>https://10.254.3.2/xmlrpc.php</code>). Verified on 7 Oct 2026.</td></tr>
+<tr><td>Routing</td><td>Static: default route to the edge virtual IP <b>10.254.1.6</b>; <code>10.0.0.0/8</code> to the core virtual IP <b>10.254.2.6</b>. (pfSense runs no OSPF here: documented deviation from the design.)</td></tr>
+<tr><td>Outbound NAT</td><td>Hybrid mode. Internal networks (10.0.0.0/8) and the firewall's own traffic leave as <b>192.0.2.10</b>.</td></tr>
+<tr><td>Port forwarding</td><td><b>192.0.2.80</b> TCP 80 and 443 to SRV-WEB-01 (10.50.0.11).</td></tr>
+<tr><td>Filtering</td><td>Rules per interface, listed in section 7. Last rule on every interface: block and log. 156 rules loaded (85 pass, 53 block).</td></tr>
+<tr><td>Own services</td><td>DNS and NTP client of 10.100.0.11, SNMP v2c readable only from VLAN 60, logs to 10.60.0.12, web GUI in HTTPS reachable only from VLAN 90.</td></tr>
+</tbody>
+</table>
+<p>The configuration is not clicked in the GUI: <code>automation/gen_pfsense.py</code> builds <code>FW-A.config.xml</code> and <code>FW-B.config.xml</code> from a factory baseline plus the inventory. Versions with secrets removed are in git as <code>*.config.redacted.xml</code>.</p>
+
+<h2>5.4 CORE-A and CORE-B - core switches (Cisco IOSvL2)</h2>
+<p><b>Role.</b> Route between the internal VLANs, be their gateway, filter what may go from one VLAN to another, and send everything else to the firewall.</p>
+<table>
+<thead><tr><th style="width:20%">Function</th><th>How it is configured</th></tr></thead>
+<tbody>
+<tr><td>Gateways (HSRP v2)</td><td>One VLAN interface per VLAN (CORE-A = .2, CORE-B = .3) with virtual IP .1. Priority 110 on the active core, 90 on the other, hello 250 ms / hold 750 ms, MD5, preempt after 30 s.</td></tr>
+<tr><td>Load sharing</td><td><b>CORE-A active</b> for VLAN 20, 40, 60, 100 and 902. <b>CORE-B active</b> for VLAN 30, 70, 80.</td></tr>
+<tr><td>Spanning tree</td><td>Rapid PVST+. The root bridge of each VLAN is the same core that is its HSRP active (priority 4096, the other 8192), so the layer-2 path and the gateway agree. Loop guard on.</td></tr>
+<tr><td>Link between cores</td><td>Port-channel 1 = Gi0/2 + Gi0/3 in LACP (802.3ad), trunk for VLAN 20-100, 902, 998.</td></tr>
+<tr><td>To the firewalls</td><td>Gi0/0 to FW-A and Gi0/1 to FW-B, access VLAN 902. Virtual IP <b>10.254.2.6</b> is what the firewalls use to reach internal networks.</td></tr>
+<tr><td>Routing</td><td>OSPF area 0 between the cores on VLAN 998 and 902 (MD5). Default route <code>0.0.0.0/0 via 10.254.2.1</code>, the firewall virtual IP.</td></tr>
+<tr><td>Inter-VLAN filtering</td><td>One inbound access list per VLAN interface (<code>ACL-VLAN20-IN</code> ... <code>ACL-VLAN100-IN</code>). Detailed in section 7.</td></tr>
+<tr><td>Management</td><td>Gi2/0 as a routed port in <code>VRF MGMT</code>, 10.10.0.21 / .22. Network 10.10.0.0/24 is absent from the main routing table.</td></tr>
+</tbody>
+</table>
+<div class="cols"><div>
+<pre><span class="c">! configs/CORE-A.cfg - a gateway</span>
+spanning-tree vlan 20,40,60,100,902,998 priority 4096
+spanning-tree vlan 30,70,80 priority 8192
+interface Vlan20
+ ip address 10.20.0.2 255.255.255.0
+ ip access-group ACL-VLAN20-IN in
+ standby version 2
+ standby 20 ip 10.20.0.1
+ standby 20 priority 110
+ standby 20 timers msec 250 msec 750</pre>
+</div><div>
+<pre><span class="c">! configs/CORE-A.cfg - uplinks</span>
+interface Gi0/2
+ switchport mode trunk
+ channel-group 1 mode active      <span class="c">! LACP to CORE-B</span>
+interface Gi1/0                   <span class="c">! to LEAF-A1</span>
+ switchport mode trunk
+ switchport trunk allowed vlan 20,30,40,60,70,80,100
+ip route 0.0.0.0 0.0.0.0 10.254.2.1</pre>
+</div></div>
+<p><b>Port map (both cores).</b> Gi0/0 FW-A, Gi0/1 FW-B, Gi0/2-3 Port-channel 1, Gi1/0 LEAF-A1, Gi1/1 LEAF-A2, Gi1/2 LEAF-B1, Gi1/3 LEAF-B2, Gi2/0 SW-MGMT. All other ports shut in VLAN 999.</p>
+
+<h2>5.5 LEAF-A1, A2, B1, B2 - access switches (Cisco IOSvL2)</h2>
+<p><b>Role.</b> Connect the servers. Pure layer 2 (<code>no ip routing</code>): they carry VLANs up to the cores and do not route.</p>
+<ul>
+<li><b>Two uplinks</b>, Gi0/0 to CORE-A and Gi0/1 to CORE-B, both trunks for VLAN 20, 30, 40, 60, 70, 80, 100. Spanning tree forwards each VLAN on the uplink towards "its" core and keeps the other as standby.</li>
+<li><b>Server ports</b>: access mode, <code>portfast</code> + <code>bpduguard</code> (a switch plugged by mistake disables the port; automatic recovery after 300 s).</li>
+<li><b>Unused ports</b>: access VLAN 999 and shut down.</li>
+<li><b>Management</b>: VLAN 10 interface (10.10.0.31 to .34) on a dedicated port to SW-MGMT; VLAN 10 is never carried on the uplinks.</li>
+</ul>
+<!--LEAFPORTS-->
+
+<h2>5.6 SW-OUT, SW-DMZ, SW-MGMT - GNS3 built-in switches</h2>
+<p>Simple switches that cost no memory. They have no configuration file; their port VLANs are set in the GNS3 project.</p>
+<table>
+<thead><tr><th>Switch</th><th>Ports</th></tr></thead>
+<tbody>
+<tr><td><b>SW-OUT</b></td><td>4 access ports in VLAN 901: EDGE-A Gi0/3, EDGE-B Gi0/3, FW-A em0, FW-B em0. It replaced four direct edge-to-firewall cables so that HSRP and CARP share one segment.</td></tr>
+<tr><td><b>SW-DMZ</b></td><td>3 access ports in VLAN 50: FW-A em5, FW-B em5, SRV-WEB-01.</td></tr>
+<tr><td><b>SW-MGMT</b></td><td>Ports 0, 1, 4 to 9 in VLAN 10 (edges, cores, leafs). Ports 2 and 3 are 802.1Q trunks carrying VLAN 10 and 90 to the firewalls. Ports 10 and 11 in VLAN 90 (SRV-BASTION, ADMIN-WS).</td></tr>
+</tbody>
+</table>
+
+<h2>5.7 Server virtual machines (Ubuntu 20.04)</h2>
+<p><b>Common base on every VM</b> (applied by <code>automation/deploy_servers.py</code> through the serial console): hostname, timezone, static address with netplan, DNS and time from 10.100.0.11, logs forwarded to 10.60.0.12, Zabbix agent pointing to 10.60.0.11.
+Dual-homed servers use <code>bond0</code> in <b>active-backup</b> mode over their two cards (link check every 100 ms).</p>
+<pre><span class="c"># configs/servers/SRV-CMP-01.netplan.yaml (extract)</span>
+bonds:
+  bond0:
+    interfaces: [nic0, nic1]            <span class="c"># nic0 -> LEAF-A1, nic1 -> LEAF-A2</span>
+    addresses: [10.20.0.11/24]
+    routes: [{to: 0.0.0.0/0, via: 10.20.0.1}]
+    nameservers: {addresses: [10.100.0.11], search: [dc.casa.lab]}
+    parameters: {mode: active-backup, primary: nic0, mii-monitor-interval: 100}</pre>
+<table>
+<thead><tr><th>Server</th><th>VLAN / IP</th><th>Leafs</th><th>Role and software</th><th>Listening ports</th></tr></thead>
+<tbody>
+<tr><td><b>SRV-CMP-01<br>SRV-CMP-02<br>SRV-CMP-03</b></td><td>20<br>10.20.0.11<br>.12<br>.13</td><td>A1 + A2</td><td>Demo application: a small HTTPS service that answers with its own host name (<code>dc-app.service</code>). <b>keepalived</b> on CMP-01 (priority 150) and CMP-02 (priority 100) shares the service address <b>10.20.0.10</b>: if the application on CMP-01 stops answering, the address moves to CMP-02. iperf3 server for throughput tests.</td><td>TCP 8443 (app), 5201 (iperf3), 10050 (Zabbix agent)</td></tr>
+<tr><td><b>SRV-STO-01</b></td><td>30<br>10.30.0.11</td><td>A1 + A2</td><td>Storage. NFS export <code>/srv/nfs/share</code> and one 1 GB iSCSI LUN (<code>iqn.2026-10.lab.casa.dc:sto01.lun0</code>), both only for 10.20.0.0/24.</td><td>TCP/UDP 2049, 111; TCP 3260</td></tr>
+<tr><td><b>SRV-BCK-01</b></td><td>40<br>10.40.0.11</td><td>B1 + B2</td><td>Backup target. rsync daemon, module <code>[backup]</code> on <code>/srv/backup</code>, allowed only from VLAN 20 and 30.</td><td>TCP 873</td></tr>
+<tr><td><b>SRV-INF-01</b></td><td>100<br>10.100.0.11</td><td>B1 + B2</td><td>Site DNS (<b>dnsmasq</b>: zone dc.casa.lab, forwards to 1.1.1.1 and 8.8.8.8 through the firewall) and site clock (<b>chrony</b>: synced on public servers, serves 10.0.0.0/8, local stratum 8 as fallback).</td><td>UDP/TCP 53, UDP 123</td></tr>
+<tr><td><b>SRV-MON-01</b></td><td>60<br>10.60.0.11</td><td>B1 + B2</td><td>Monitoring. <b>Zabbix</b> server with MariaDB and nginx front end; <b>Grafana</b> with the Zabbix plugin for the NOC dashboard. Receives SNMP traps.</td><td>TCP 80 (Zabbix web), 3000 (Grafana), 10051; UDP 162</td></tr>
+<tr><td><b>SRV-BASTION</b></td><td>90<br>10.90.0.11</td><td>SW-MGMT (single card)</td><td>The only entry point for administrators. SSH limited to the <code>sudo</code> group, legal banner, <b>auditd</b> session logging, TOTP second factor (<code>libpam-google-authenticator</code>, enrolled per administrator).</td><td>TCP 22</td></tr>
+</tbody>
+</table>
+
+<h2>5.8 Containers</h2>
+<table>
+<thead><tr><th>Container</th><th>VLAN / IP</th><th>Attached to</th><th>What it does</th><th>Interface</th></tr></thead>
+<tbody>
+<tr><td><b>SRV-WEB-01</b></td><td>50<br>10.50.0.11</td><td>SW-DMZ</td><td>Public web site (nginx). HTTP redirects to HTTPS; self-signed certificate; TLS 1.2/1.3 only; security headers (HSTS, CSP, no framing).</td><td><code>/health</code> on 80 and 443</td></tr>
+<tr><td><b>SYSLOG</b></td><td>60<br>10.60.0.12</td><td>LEAF-B1</td><td>Central log collector (rsyslog, UDP and TCP 514). Writes one file per source, <code>/var/log/remote/&lt;ip&gt;_&lt;host&gt;.log</code>, plus <code>all.log</code>.</td><td>files</td></tr>
+<tr><td><b>BMS-SIM</b></td><td>70<br>10.70.0.12</td><td>LEAF-B2</td><td>Simulates the power chain: UTILITY-A, UTILITY-B, UPS-A, UPS-B, GENERATOR. Rule: path X is powered if (utility X or generator) and UPS X. Computes load per path, raises alarms, sends every change to syslog.</td><td>HTTP 8080: <code>/api/state</code>, <code>/api/set</code>, <code>/api/reset</code>, <code>/metrics</code>, <code>/</code></td></tr>
+<tr><td><b>SRV-DCIM-01</b></td><td>70<br>10.70.0.11</td><td>LEAF-B1 + B2</td><td>DCIM / digital twin of the 96 racks. Polls BMS-SIM every 10 s and derives each rack state: OK, DEGRADED (one power path lost) or DOWN.</td><td>HTTP 8080: <code>/api/summary</code>, <code>/api/racks</code>, <code>/</code></td></tr>
+<tr><td><b>CCTV-SIM</b></td><td>80<br>10.80.0.11</td><td>LEAF-B2</td><td>Simulates 11 cameras and 6 doors. Emits events (motion, badge granted/denied, mantrap, camera health) to syslog about every 45 s.</td><td>HTTP 8080: <code>/api/cameras</code>, <code>/api/events</code></td></tr>
+<tr><td><b>ADMIN-WS</b></td><td>90<br>10.90.0.12</td><td>SW-MGMT</td><td>Administrator desktop with a web browser (pfSense GUI, Zabbix, Grafana, DCIM).</td><td>VNC console</td></tr>
+</tbody>
+</table>
+<div class="box"><b class="t">A finding the simulation revealed</b>
+At nominal load (942 kW of IT shared on two paths) each power path runs at <b>47.1 %</b> of its capacity, above the 45 % warning threshold of the design. BMS-SIM therefore shows a permanent WARNING: the site runs close to the 50 % limit beyond which losing one path could not be absorbed.</div>
+
+<h2>5.9 Hardening common to all Cisco devices</h2>
+<div class="cols"><div>
+<ul>
+<li>SSH version 2 only, no telnet, no HTTP server.</li>
+<li>Local accounts with AAA; 5 failed logins in 60 s block logins for 120 s; successes and failures logged.</li>
+<li>Remote access (VTY) only from VLAN 90 (admin) and VLAN 60 (monitoring): <code>ACL-MGMT-ACCESS</code>.</li>
+<li>Session timeout 10 minutes, legal banner.</li>
+</ul>
+</div><div>
+<ul>
+<li>SNMP version 3 with authentication (SHA) and encryption (AES-128), user <code>zbxmon</code>; traps to 10.60.0.11.</li>
+<li>Logs with millisecond timestamps to 10.60.0.12; clock from 10.100.0.11.</li>
+<li>Passwords stored encrypted; no source routing, no proxy ARP, no redirects.</li>
+<li>Interface descriptions follow the TIA-606 labelling: <code>MDA-CORE-A:Gi1/0 -&gt; HDA-A-LEAF-A1:Gi0/0</code>.</li>
+</ul>
+</div></div>
+
+<!-- ============================================================ 6 -->
+<h1><span class="n">6</span>High availability</h1>
+<p>What protects each layer, and what happens when the "A" device dies. Targets come from the design study (table 27).</p>
+<table>
+<thead><tr><th style="width:13%">Layer</th><th style="width:22%">Mechanism</th><th style="width:20%">Normal state</th><th>When it fails</th><th style="width:13%">Target</th></tr></thead>
+<tbody>
+<tr><td><b>Providers</b></td><td>eBGP to two ISPs from two edges, timers 3 s / 9 s</td><td>Default route via ISP-A (local-pref 200)</td><td>BGP session to ISP-A times out, the route via ISP-B (local-pref 100) is installed.</td><td>&le; 10 s</td></tr>
+<tr><td><b>Edge routers</b></td><td>HSRP v2 + route tracking, iBGP + OSPF between them</td><td>EDGE-A active on 10.254.1.6</td><td>EDGE-B takes the virtual IP in under a second. An edge that loses its default route steps down by itself.</td><td>&le; 10 s</td></tr>
+<tr><td><b>Firewalls</b></td><td>CARP + pfsync + XMLRPC; lagg failover to both cores</td><td>FW-A master on 5 virtual IPs</td><td>FW-B becomes master of all virtual IPs; open sessions continue because the state table was replicated.</td><td>&le; 5 s</td></tr>
+<tr><td><b>Cores</b></td><td>HSRP v2 per VLAN, Rapid PVST+, LACP port-channel, OSPF</td><td>Gateways split between A and B</td><td>The surviving core becomes gateway and spanning-tree root for all VLANs; firewalls switch to their second lagg member.</td><td>&le; 5 s</td></tr>
+<tr><td><b>Leafs</b></td><td>Two uplinks per leaf, two leafs per hall</td><td>Each VLAN forwards on the uplink to its core</td><td>Servers switch to their second card on the other leaf.</td><td>about 1 s</td></tr>
+<tr><td><b>Server links</b></td><td>Linux bond active-backup, link check 100 ms</td><td>nic0 active, nic1 standby</td><td>nic1 becomes active, same IP and MAC policy.</td><td>about 1 s</td></tr>
+<tr><td><b>Application</b></td><td>keepalived (VRRP) between SRV-CMP-01 and 02, health check every 2 s</td><td>10.20.0.10 on SRV-CMP-01</td><td>The service address moves to SRV-CMP-02; monitoring raises an alert.</td><td>alert &le; 1 min</td></tr>
+<tr><td><b>Power (simulated)</b></td><td>Two power paths A and B in BMS-SIM</td><td>Both paths powered, 47.1 % each</td><td>Path B carries the full load; BMS and DCIM raise alarms; racks show DEGRADED.</td><td>alarm &le; 30 s</td></tr>
+</tbody>
+</table>
+<figure>
+  <img src="../arch_ha.png" alt="HA paths" style="max-height:112mm">
+  <figcaption>Normal path (solid) and failover paths (dotted) for a server in VLAN 20, with the failure scenarios T1 to T3.</figcaption>
+</figure>
+
+<!-- ============================================================ 7 -->
+<h1><span class="n">7</span>Security policy</h1>
+
+<h2>Zones</h2>
+<table>
+<thead><tr><th style="width:17%">Zone</th><th style="width:22%">VLANs</th><th>Who controls it</th><th>Idea</th></tr></thead>
+<tbody>
+<tr><td><b>Internet</b></td><td>WAN, 901</td><td>Firewall WAN interface + edge ACL</td><td>Only the public web site is reachable from outside.</td></tr>
+<tr><td><b>DMZ</b></td><td>50</td><td>Firewall</td><td>Exposed servers. May call the application on port 8443, nothing else inside.</td></tr>
+<tr><td><b>Internal</b></td><td>20, 30, 40, 60, 70, 80, 100</td><td>Core ACLs between VLANs, firewall towards the outside</td><td>Each VLAN only reaches the services it needs.</td></tr>
+<tr><td><b>Management</b></td><td>10</td><td>Firewall</td><td>Devices can only send logs, traps and DNS/NTP queries. Nobody routes into it except the admin zone.</td></tr>
+<tr><td><b>Administration</b></td><td>90</td><td>Firewall</td><td>Bastion and admin desktop: the only source allowed to SSH or HTTPS to devices and servers.</td></tr>
+</tbody>
+</table>
+
+<h2>Firewall rules, per interface (read top to bottom, first match wins)</h2>
+<table class="fw">
+<thead><tr><th>Interface</th><th>Action</th><th>Protocol</th><th>Source</th><th>Destination</th><th>Ports</th><th>Purpose</th><th>Ref</th></tr></thead>
+<tbody>
+<tr><td><b>WAN</b></td><td><span class="pill ok">pass</span></td><td>tcp</td><td>any</td><td>SRV-WEB-01 (via 192.0.2.80)</td><td>80, 443</td><td>Internet to the public web site</td><td>T18-1</td></tr>
+<tr><td><b>DMZ</b></td><td><span class="pill ok">pass</span></td><td>tcp</td><td>DMZ</td><td>App servers 10.20.0.10-13</td><td>8443</td><td>Web front end to internal application</td><td>T18-2</td></tr>
+<tr><td>DMZ</td><td><span class="pill ok">pass</span></td><td>udp</td><td>DMZ</td><td>SRV-INF-01</td><td>53, 123</td><td>DNS and NTP</td><td>EXT-1</td></tr>
+<tr><td>DMZ</td><td><span class="pill bad">block</span></td><td>any</td><td>DMZ</td><td>VLAN 10, 90, 30, 40</td><td>-</td><td>DMZ never reaches management, admin, storage, backup (logged)</td><td>T18-9</td></tr>
+<tr><td><b>LAN</b></td><td><span class="pill ok">pass</span></td><td>tcp/udp</td><td>Internal VLANs</td><td>Internet (not private)</td><td>53, 80, 443, 123</td><td>Internal to Internet through NAT</td><td>T18-5</td></tr>
+<tr><td>LAN</td><td><span class="pill ok">pass</span></td><td>icmp</td><td>Internal VLANs</td><td>Internet</td><td>-</td><td>Ping for diagnostics</td><td>EXT-2</td></tr>
+<tr><td>LAN</td><td><span class="pill ok">pass</span></td><td>udp, icmp</td><td>VLAN 60</td><td>VLAN 10</td><td>161</td><td>Monitoring polls the devices (SNMP, ping)</td><td>T18-7</td></tr>
+<tr><td>LAN</td><td><span class="pill ok">pass</span></td><td>tcp</td><td>Internal VLANs</td><td>SRV-WEB-01</td><td>80, 443</td><td>Internal users to the DMZ site</td><td>EXT-3</td></tr>
+<tr><td><b>MGMT</b></td><td><span class="pill ok">pass</span></td><td>udp</td><td>VLAN 10</td><td>SYSLOG</td><td>514</td><td>Devices send their logs</td><td>T18-8</td></tr>
+<tr><td>MGMT</td><td><span class="pill ok">pass</span></td><td>udp</td><td>VLAN 10</td><td>SRV-MON-01</td><td>162</td><td>Devices send SNMP traps</td><td>T18-8</td></tr>
+<tr><td>MGMT</td><td><span class="pill ok">pass</span></td><td>udp</td><td>VLAN 10</td><td>SRV-INF-01</td><td>53, 123</td><td>DNS and NTP</td><td>EXT-4</td></tr>
+<tr><td><b>ADMIN</b></td><td><span class="pill ok">pass</span></td><td>udp</td><td>VLAN 90</td><td>SRV-INF-01</td><td>53, 123</td><td>DNS and NTP</td><td>EXT-7</td></tr>
+<tr><td>ADMIN</td><td><span class="pill ok">pass</span></td><td>udp</td><td>VLAN 90</td><td>SYSLOG</td><td>514</td><td>Session logs of the bastion</td><td>T18-8</td></tr>
+<tr><td>ADMIN</td><td><span class="pill ok">pass</span></td><td>tcp</td><td>VLAN 90</td><td>all internal + devices</td><td>22, 443</td><td>Administration by SSH / HTTPS</td><td>T18-6</td></tr>
+<tr><td>ADMIN</td><td><span class="pill ok">pass</span></td><td>udp, icmp</td><td>VLAN 90</td><td>all internal + devices</td><td>161</td><td>SNMP and ping</td><td>T18-6</td></tr>
+<tr><td>ADMIN</td><td><span class="pill ok">pass</span></td><td>tcp</td><td>VLAN 90</td><td>SRV-MON-01</td><td>80, 3000</td><td>Zabbix and Grafana</td><td>T18-6</td></tr>
+<tr><td>ADMIN</td><td><span class="pill ok">pass</span></td><td>tcp</td><td>VLAN 90</td><td>VLAN 70</td><td>8080</td><td>DCIM and BMS dashboards</td><td>T18-6</td></tr>
+<tr><td>ADMIN</td><td><span class="pill ok">pass</span></td><td>tcp/udp</td><td>VLAN 90</td><td>Internet</td><td>53, 80, 443, 123</td><td>Updates</td><td>EXT-5</td></tr>
+<tr><td><b>SYNC</b></td><td><span class="pill ok">pass</span></td><td>any</td><td>sync link</td><td>sync link</td><td>-</td><td>pfsync and XMLRPC between the two firewalls</td><td>HA</td></tr>
+<tr><td><b>every interface</b></td><td><span class="pill bad">block</span></td><td>any</td><td>any</td><td>any</td><td>-</td><td>Default deny, logged</td><td>T18</td></tr>
+</tbody>
+</table>
+<p>Routing-protocol chatter from neighbours (HSRP hellos to 224.0.0.102, OSPF to 224.0.0.5/6) is dropped <b>without logging</b> by dedicated rules placed before the default deny; otherwise it filled the logs with megabytes per hour.</p>
+
+<h2>Address translation</h2>
+<table>
+<thead><tr><th>Type</th><th>Translation</th><th>Use</th></tr></thead>
+<tbody>
+<tr><td>Outbound (source NAT)</td><td>10.0.0.0/8 becomes 192.0.2.10</td><td>Internet access for internal networks</td></tr>
+<tr><td>Outbound (source NAT)</td><td>10.254.1.0/28 becomes 192.0.2.10</td><td>The firewalls' own traffic (DNS, NTP, updates)</td></tr>
+<tr><td>Port forward (destination NAT)</td><td>192.0.2.80 : 80, 443 goes to 10.50.0.11 : 80, 443</td><td>Publishing SRV-WEB-01</td></tr>
+</tbody>
+</table>
+
+<h2>Filtering between internal VLANs (core access lists)</h2>
+<p>Each internal VLAN interface on the cores has an inbound list built in the same order:</p>
+<ol>
+<li>Replies of already-open TCP sessions, and HSRP / VRRP hellos.</li>
+<li><b>Common services allowed from every VLAN</b>: DNS and NTP to 10.100.0.11, syslog to 10.60.0.12 (UDP 514), Zabbix to 10.60.0.11 (TCP 10051), SNMP traps (UDP 162).</li>
+<li>The <b>specific flows</b> of that VLAN (table below); SNMP and ICMP replies to monitoring and admin.</li>
+<li><b>Deny and log</b> anything to management (10.10.0.0/24) and admin (10.90.0.0/24).</li>
+<li>Allow HTTP/HTTPS to the DMZ; <b>deny and log</b> anything else to 10.0.0.0/8.</li>
+<li>Allow the rest (Internet): it goes to the firewall, which filters it again.</li>
+</ol>
+<table>
+<thead><tr><th style="width:22%">From VLAN</th><th>Extra flows allowed</th><th style="width:12%">Ref</th></tr></thead>
+<tbody>
+<tr><td>20 Servers</td><td>to VLAN 30: TCP 2049, 3260, 111 and UDP 2049, 111 (NFS, iSCSI); to VLAN 40: TCP 873 (backup agent); VRRP for keepalived</td><td>T18-3, T18-4</td></tr>
+<tr><td>30 Storage</td><td>to VLAN 40: TCP 873 (backup)</td><td>T18-4</td></tr>
+<tr><td>60 Monitoring</td><td>to anywhere: UDP 161 (SNMP), TCP 10050 (Zabbix agents), ICMP; to VLAN 70: TCP 8080 (BMS / DCIM API)</td><td>T18-7</td></tr>
+<tr><td>70 BMS-DCIM</td><td>inside VLAN 70: TCP 8080 (DCIM polls BMS-SIM)</td><td>EXT-6</td></tr>
+<tr><td>40, 80, 100</td><td>Common services only (VLAN 100 also answers DNS and NTP)</td><td>-</td></tr>
+</tbody>
+</table>
+
+<h2>Standards the configuration follows</h2>
+<table>
+<thead><tr><th style="width:30%">Standard</th><th>Where it shows in the lab</th></tr></thead>
+<tbody>
+<tr><td>ANSI/TIA-942 Rated-3</td><td>No single point of failure in any layer; devices mapped to ER, MDA, HDA, EDA spaces.</td></tr>
+<tr><td>ANSI/TIA-606</td><td>Labelling convention in every interface description.</td></tr>
+<tr><td>ISO/IEC 27001 / 27002</td><td>Segmentation (A.8.22), logging (A.8.15), clock sync (A.8.17), privileged access through a bastion with MFA, secure configuration (A.8.9).</td></tr>
+<tr><td>IEEE 802.1Q, 802.1w, 802.3ad</td><td>VLAN trunks, rapid spanning tree, LACP.</td></tr>
+<tr><td>RFC 4271, 2328, 5798, 2281, 1918, 5737</td><td>BGP, OSPF, VRRP, HSRP, private and documentation address ranges.</td></tr>
+<tr><td>CIS-style hardening</td><td>SSHv2 only, SNMPv3, banners, unused ports shut in a parking VLAN, BPDU guard.</td></tr>
+</tbody>
+</table>
+
+<!-- ============================================================ 8 -->
+<h1><span class="n">8</span>Running the lab</h1>
+
+<h2>Platform</h2>
+<table>
+<thead><tr><th style="width:26%">Element</th><th>Value</th></tr></thead>
+<tbody>
+<tr><td>GNS3 VM</td><td><code>H:\GNS3 VM\GNS3 VM.vmx</code> (VMware Workstation), GNS3 2.2.56.1, 6 vCPU, 8 GB RAM</td></tr>
+<tr><td>GNS3 VM addresses</td><td>eth0 <b>192.168.75.128</b> (all consoles), eth1 192.168.153.128 via .2 (Internet). Static, because VMware DHCP is off on this host.</td></tr>
+<tr><td>Controller</td><td>Local GNS3 server on <code>localhost:3080</code>; every node runs on the compute <code>vm</code>.</td></tr>
+<tr><td>If the VM is unreachable</td><td><code>powershell -ExecutionPolicy Bypass -File fixgns3.ps1</code> (add <code>-DryRun</code> to diagnose only)</td></tr>
+</tbody>
+</table>
+<div class="box warn"><b class="t">Memory is the limit</b>
+The host has 15.7 GB of RAM (the design assumed 32 GB). Measured during staged start-up: after the core and leafs are up the host has about <b>0.2 GB free</b> and the VM load average is above 12.
+Do not start everything at once. Start by stages and stop what the current test does not need (for example the hall A leafs while working on hall B servers).</div>
+<table>
+<thead><tr><th>Stage</th><th>Nodes started</th><th>VM RAM used</th><th>VM RAM free</th><th>Load</th><th>Host RAM free</th></tr></thead>
+<tbody>
+<tr><td>1 WAN / edge</td><td>NAT-A, NAT-B, ISP-A, ISP-B, SW-OUT, EDGE-A, EDGE-B</td><td>1.2 GB</td><td>8.5 GB</td><td>1.9</td><td>5.9 GB</td></tr>
+<tr><td>2 Security / management</td><td>SW-DMZ, SW-MGMT, FW-A, FW-B, SRV-WEB-01, ADMIN-WS</td><td>3.4 GB</td><td>6.3 GB</td><td>1.7</td><td>3.1 GB</td></tr>
+<tr><td>3 Core / distribution</td><td>CORE-A, CORE-B, LEAF-A1, A2, B1, B2</td><td>6.2 GB</td><td>3.4 GB</td><td>12.7</td><td>0.2 GB</td></tr>
+<tr><td>4 Services</td><td>SYSLOG, BMS-SIM, CCTV-SIM, SRV-DCIM-01 (measured with the containers only; SRV-INF-01, SRV-MON-01, SRV-BASTION were off)</td><td>6.2 GB</td><td>3.4 GB</td><td>17.9</td><td>0.1 GB</td></tr>
+<tr><td>5 Workloads</td><td>SRV-CMP-01, 02, 03, SRV-STO-01, SRV-BCK-01</td><td colspan="4">not measured yet</td></tr>
+</tbody>
+</table>
+<p>Figures from <code>report/evidence/resources_stages.csv</code>, measured when the VM still had 10 GB of RAM (it has 8 GB now, so margins are smaller).</p>
+
+<h2>Start, stop, look</h2>
+<p>All commands are run from the folder <code>03_Network</code> on the Windows host.</p>
+<pre><span class="c"># start the lab stage by stage and measure resources (--from N resumes at stage N)</span>
+python automation/lab_up.py
+python automation/lab_up.py --from 3 --settle 150
+
+<span class="c"># state of every node, with its console address</span>
+python automation/labctl.py status
+
+<span class="c"># start / stop / reload chosen nodes</span>
+python automation/labctl.py start EDGE-A EDGE-B
+python automation/labctl.py stop  LEAF-A1 LEAF-A2
+
+<span class="c"># run a show command on a Cisco device (logs in for you); --save keeps the output as evidence</span>
+python automation/labctl.py show CORE-A "show standby brief"
+python automation/labctl.py show EDGE-A "show ip bgp summary" --save
+
+<span class="c"># re-apply a generated configuration (running + startup)</span>
+python automation/labctl.py push CORE-A</pre>
+
+<h2>Opening a console by hand</h2>
+<table>
+<thead><tr><th style="width:24%">Device</th><th style="width:36%">How</th><th>Login</th></tr></thead>
+<tbody>
+<tr><td>Cisco (EDGE, CORE, LEAF)</td><td><code>telnet 192.168.75.128 &lt;port&gt;</code> (ports in section 3)</td><td><code>netadmin</code>, then <code>enable</code>. Passwords in appendix B.</td></tr>
+<tr><td>ISP-A, ISP-B and other containers</td><td><code>telnet 192.168.75.128 &lt;aux port&gt;</code><br>ISP-A 5037, ISP-B 5039, SYSLOG 5041, BMS-SIM 5043, CCTV-SIM 5045, SRV-DCIM-01 5047, SRV-WEB-01 5052. In the GNS3 GUI: right-click the node, <i>Auxiliary console</i>.</td><td>Root shell, no login. On the ISPs use <code>vtysh</code> for the router CLI.</td></tr>
+<tr><td>Ubuntu servers</td><td><code>telnet 192.168.75.128 &lt;port&gt;</code></td><td><code>ubuntu</code> / <code>ubuntu</code>, then <code>sudo -i</code></td></tr>
+<tr><td>pfSense (FW-A, FW-B)</td><td>VNC to <code>192.168.75.128:5900</code> / <code>:5901</code>, menu option 8 for a shell. Or <code>python automation/vnc.py FW-A line "ifconfig em0"</code></td><td>Console menu, no login. Web GUI: see the next heading.</td></tr>
+<tr><td>ADMIN-WS</td><td>VNC to <code>192.168.75.128:5904</code></td><td>Desktop with browser</td></tr>
+</tbody>
+</table>
+<div class="box warn"><b class="t">Do not use the main console of a container</b>The main console (double-click in GNS3) is attached to the running service, not to a shell: nothing answers, and <b>Ctrl-C stops the container</b>. This happened to ISP-A on 12 Oct 2026 and cut its BGP sessions. If it happens, stop and start the node.</div>
+<p>From inside the lab, the proper way is: SSH to the bastion (10.90.0.11), then SSH from there to a device management address (10.10.0.x).</p>
+
+<h2>Opening the web interfaces from the physical PC</h2>
+<p>The lab networks live inside the GNS3 VM, so the Windows host cannot reach them directly. The helper <code>automation/lab_proxy.py</code> opens a door:
+a small SOCKS5 proxy in the GNS3 VM (<code>192.168.75.128:1080</code>, reachable from the host only) that sends every connection out through the ADMIN-WS container.
+The traffic therefore enters the lab as the admin workstation (10.90.0.12, VLAN 90) and is filtered by the firewall like any administrator.</p>
+<pre><span class="c"># 1. ADMIN-WS and the firewalls must be running, then start the proxy (again after every restart of ADMIN-WS)</span>
+python automation/lab_proxy.py start
+
+<span class="c"># 2. open an Edge window that browses through the proxy (separate profile, your normal browser is untouched)</span>
+python automation/lab_proxy.py open                      <span class="c"># all interfaces below, one tab each</span>
+python automation/lab_proxy.py open https://10.90.0.1/   <span class="c"># or only the ones you name</span>
+
+<span class="c"># check / stop</span>
+python automation/lab_proxy.py status
+python automation/lab_proxy.py stop</pre>
+<table>
+<thead><tr><th style="width:21%">Interface</th><th style="width:27%">Address</th><th style="width:24%">Login</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td><b>pfSense</b> (firewalls)</td><td><code>https://10.90.0.1</code> master<br><code>https://10.90.0.2</code> FW-A<br><code>https://10.90.0.3</code> FW-B</td><td><code>admin</code> / <code>Esprim-DC-2026!</code></td><td>Status &gt; CARP shows master / backup. Self-signed certificate.</td></tr>
+<tr><td><b>Zabbix</b></td><td><code>http://10.60.0.11</code></td><td><code>Admin</code> / <code>zabbix</code></td><td>Needs SRV-MON-01 running</td></tr>
+<tr><td><b>Grafana</b></td><td><code>http://10.60.0.11:3000</code></td><td><code>admin</code> / <code>Grafana-DC-2026!</code></td><td>Needs SRV-MON-01 running</td></tr>
+<tr><td><b>BMS-SIM</b> power dashboard</td><td><code>http://10.70.0.12:8080</code></td><td>none</td><td><code>/api/state</code>, <code>/api/set?...</code>, <code>/api/reset</code></td></tr>
+<tr><td><b>DCIM</b> 96 racks</td><td><code>http://10.70.0.11:8080</code></td><td>none</td><td><code>/api/summary</code>, <code>/api/racks</code></td></tr>
+<tr><td><b>Web site</b> (DMZ)</td><td><code>https://10.50.0.11</code></td><td>none</td><td>Self-signed certificate</td></tr>
+<tr><td><b>CCTV-SIM</b></td><td><code>http://10.80.0.11:8080</code></td><td>-</td><td><b>Not reachable, by design</b>: the policy opens port 8080 from the admin zone to VLAN 70 only. Its events are visible in the syslog.</td></tr>
+</tbody>
+</table>
+<p>Without the proxy, the same pages open from the browser of <b>ADMIN-WS</b> (VNC to <code>192.168.75.128:5904</code>). Tested through the proxy on 12 Oct 2026: pfSense, Zabbix and Grafana (page and login), BMS-SIM, DCIM and the web site.</p>
+
+<h2>The automation scripts</h2>
+<table>
+<thead><tr><th style="width:27%">Script</th><th>What it does</th></tr></thead>
+<tbody>
+<tr><td><code>automation/validate_inventory.py</code></td><td>Checks the inventory before anything is generated: every link declared the same from both ends, every IP in its subnet, no duplicate.</td></tr>
+<tr><td><code>automation/gen_configs.py</code></td><td>Generates Cisco, FRR, netplan and container network files, plus the report tables.</td></tr>
+<tr><td><code>automation/gen_pfsense.py</code></td><td>Generates the two pfSense <code>config.xml</code> from a factory baseline and the inventory.</td></tr>
+<tr><td><code>automation/labctl.py</code></td><td>Drives the lab: GNS3 API plus device consoles (status, start, stop, show, push).</td></tr>
+<tr><td><code>automation/lab_up.py</code></td><td>Staged start-up with resource measurement.</td></tr>
+<tr><td><code>automation/apply_topology.py</code><br><code>automation/verify_topology.py</code></td><td>Bring the live GNS3 project in line with the inventory, then compare links and switch VLANs (exit 0 when identical).</td></tr>
+<tr><td><code>automation/build_images.py</code><br><code>automation/deploy_containers.py</code></td><td>Build the custom Docker images inside the GNS3 VM; attach them to the nodes and write their network files.</td></tr>
+<tr><td><code>automation/deploy_servers.py</code></td><td>Configures the Ubuntu VMs through their serial console: base system, then the role packages. <code>--base-only</code> for network only.</td></tr>
+<tr><td><code>automation/build_repo.sh</code><br><code>automation/attach_repo.py</code></td><td>Build an offline package repository as an ISO (label DCREPO) and attach it to server VMs as a second disk. Needed because downloads through the emulated chain run at about 70 KB/s.</td></tr>
+<tr><td><code>automation/flow_matrix.py</code></td><td>Runs 15 allowed / forbidden probes from the servers and compares with the policy.</td></tr>
+<tr><td><code>automation/gns3vm.py</code>, <code>vnc.py</code>, <code>vm_fileserver.py</code></td><td>Helpers: run a shell command in the GNS3 VM, drive a VNC console, exchange files with pfSense.</td></tr>
+<tr><td><code>automation/lab_proxy.py</code></td><td>Opens the lab web interfaces from the physical PC (SOCKS5 proxy through ADMIN-WS).</td></tr>
+<tr><td><code>automation/render_topology.py</code></td><td>Draws the live topology as a PNG (the figure in section 2).</td></tr>
+<tr><td><code>report/build.ps1</code></td><td>Builds the French report (<code>content/*.md</code> to .docx and .pdf). Needs Node.js and Word.</td></tr>
+</tbody>
+</table>
+<div class="box"><b class="t">Changing the network the right way</b>
+1. Edit <code>inventory/dc_casa.yaml</code>. &nbsp; 2. <code>python automation/validate_inventory.py</code>. &nbsp; 3. <code>python automation/gen_configs.py</code> (and <code>gen_pfsense.py</code> for firewall changes). &nbsp;
+4. <code>python automation/labctl.py push &lt;device&gt;</code>. &nbsp; 5. Verify with the commands of section 9. &nbsp; 6. Rebuild the report and commit.</div>
+
+<!-- ============================================================ 9 -->
+<h1 class="pb"><span class="n">9</span>Test commands</h1>
+<p>Run Cisco commands either on the console or with <code>python automation/labctl.py show &lt;device&gt; "&lt;command&gt;"</code>. Each test says what a good result looks like.</p>
+
+<h2>9.1 Ten-command health check</h2>
+<table>
+<thead><tr><th style="width:4%">#</th><th style="width:14%">Where</th><th style="width:34%">Command</th><th>Healthy result</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>host</td><td><code>python automation/labctl.py status</code></td><td>The nodes of the stages you started are <code>started</code></td></tr>
+<tr><td>2</td><td>EDGE-A</td><td><code>show ip bgp summary</code></td><td>3 neighbours with a number in the last column (not Idle / Active)</td></tr>
+<tr><td>3</td><td>EDGE-A</td><td><code>show standby brief</code></td><td>Gi0/3 group 1 <b>Active</b>, virtual IP 10.254.1.6</td></tr>
+<tr><td>4</td><td>EDGE-A</td><td><code>ping 8.8.8.8 repeat 5</code></td><td><code>!!!!!</code></td></tr>
+<tr><td>5</td><td>FW-A shell</td><td><code>ifconfig | grep 'carp:'</code></td><td>5 lines <code>MASTER</code> (on FW-B: 5 lines <code>BACKUP</code>)</td></tr>
+<tr><td>6</td><td>CORE-A</td><td><code>show standby brief</code></td><td>Active on VLAN 20, 40, 60, 100, 902; Standby on 30, 70, 80</td></tr>
+<tr><td>7</td><td>CORE-A</td><td><code>show etherchannel summary</code></td><td><code>Po1(SU)</code> with <code>Gi0/2(P) Gi0/3(P)</code></td></tr>
+<tr><td>8</td><td>CORE-A</td><td><code>ping 8.8.8.8 source vlan20 repeat 5</code></td><td><code>!!!!!</code> : the full chain core, firewall, NAT, edge, ISP works</td></tr>
+<tr><td>9</td><td>any server</td><td><code>cat /proc/net/bonding/bond0</code></td><td>Two slaves with <code>MII Status: up</code></td></tr>
+<tr><td>10</td><td>any server</td><td><code>dig +short @10.100.0.11 deb.debian.org</code></td><td>An IP address comes back</td></tr>
+</tbody>
+</table>
+
+<h2>9.2 Providers and edge routers</h2>
+<table>
+<thead><tr><th style="width:16%">Between</th><th style="width:36%">Command</th><th>What it proves / expected</th></tr></thead>
+<tbody>
+<tr><td>ISP &harr; Internet</td><td>on ISP-A: <code>ping -c 3 8.8.8.8</code> &nbsp; <code>ip -br addr</code></td><td>eth2 has a 192.168.42.x address; replies arrive (captured: 0 % loss, about 45 ms)</td></tr>
+<tr><td>ISP &harr; EDGE</td><td>on ISP-A: <code>vtysh -c "show ip bgp summary"</code><br><code>vtysh -c "show ip bgp"</code></td><td>2 sessions established (EDGE-A, EDGE-B); prefix 192.0.2.0/24 received from AS 65100</td></tr>
+<tr><td>EDGE &harr; ISP</td><td><code>show ip bgp summary</code><br><code>show ip bgp</code><br><code>show ip route 0.0.0.0</code></td><td>3/3 sessions up; default route chosen via ISP-A (local-pref 200), ISP-B kept as backup</td></tr>
+<tr><td>EDGE &harr; EDGE</td><td><code>show ip ospf neighbor</code><br><code>show standby brief</code><br><code>ping 10.255.0.2 source lo0</code></td><td>2 neighbours FULL (Gi0/2, Gi0/3); EDGE-A Active / EDGE-B Standby; loopback reachable</td></tr>
+<tr><td>EDGE &harr; firewall</td><td><code>ping 10.254.1.1</code><br><code>show ip route 192.0.2.0</code></td><td>Static route to the firewall virtual IP is present. The ping is expected to <b>fail</b>: the WAN interface drops ICMP by policy.</td></tr>
+<tr><td>Anti-spoofing</td><td><code>show access-lists ACL-WAN-IN</code></td><td>Hit counters on the deny lines grow when bogus sources arrive</td></tr>
+<tr><td>Management</td><td><code>show vrf</code> &nbsp; <code>show ip route vrf MGMT</code><br>on SYSLOG: <code>ls /var/log/remote | grep 10.10.0.1</code></td><td>VRF MGMT holds Gi0/5 with a default route to 10.10.0.254; the edge's log file exists on SYSLOG, so the management path works. (Pinging 10.10.0.254 is blocked by policy.)</td></tr>
+</tbody>
+</table>
+<pre class="cap"><span class="c"># EDGE-A - show ip bgp summary - captured 2026-10-07 18:08</span>
+Neighbor        V           AS MsgRcvd MsgSent   TblVer  InQ OutQ Up/Down  State/PfxRcd
+10.255.0.2      4        65100      47      48        3    0    0 00:02:10        2
+198.51.100.1    4        64500     303     296        3    0    0 00:14:49        1
+203.0.113.5     4        64501     303     296        3    0    0 00:14:49        1
+
+<span class="c"># EDGE-A - show standby brief - captured 2026-10-07 18:08</span>
+Interface   Grp  Pri P State   Active          Standby         Virtual IP
+Gi0/3       1    110 P Active  local           10.254.1.3      10.254.1.6
+
+<span class="c"># EDGE-A - show ip ospf neighbor - captured 2026-10-07 18:08</span>
+Neighbor ID     Pri   State           Dead Time   Address         Interface
+10.255.0.2        1   FULL/BDR        00:00:32    10.254.1.3      GigabitEthernet0/3
+10.255.0.2        0   FULL/  -        00:00:02    10.254.0.2      GigabitEthernet0/2</pre>
+
+<h2>9.3 Firewalls</h2>
+<p>Open the pfSense console (VNC), choose option <b>8</b> (shell). These are the commands used for the captured proof below.</p>
+<table>
+<thead><tr><th style="width:16%">Between</th><th style="width:38%">Command</th><th>What it proves / expected</th></tr></thead>
+<tbody>
+<tr><td>FW-A &harr; FW-B (cluster)</td><td><code>ifconfig | grep 'carp:'</code></td><td>FW-A: MASTER on vhid 1, 2, 10, 50, 90. FW-B: BACKUP on the same five.</td></tr>
+<tr><td>FW-A &harr; FW-B (sync)</td><td><code>ifconfig pfsync0</code> &nbsp; <code>ping -c 1 10.254.3.2</code></td><td><code>syncdev: em2 syncpeer: 10.254.3.2</code>; the peer answers</td></tr>
+<tr><td>Firewall &harr; cores</td><td><code>ifconfig lagg0</code> &nbsp; <code>ping -c 2 10.254.2.6</code></td><td>lagg0 active on em3, em4 standby; the core virtual IP answers</td></tr>
+<tr><td>Firewall &harr; edges</td><td><code>ping -c 2 10.254.1.6</code> &nbsp; <code>netstat -rn | head</code></td><td>Edge virtual IP answers; default route points to 10.254.1.6</td></tr>
+<tr><td>Firewall &harr; Internet</td><td><code>ping -c 2 8.8.8.8</code></td><td>Works on the master (leaves as 192.0.2.10). On the backup it fails, which is normal for active/passive.</td></tr>
+<tr><td>Rules and NAT loaded</td><td><code>pfctl -sr | wc -l</code> &nbsp; <code>pfctl -sn</code></td><td>156 filter rules; the source-NAT and the two port-forward rules are listed</td></tr>
+<tr><td>Live sessions</td><td><code>pfctl -ss | wc -l</code> (on both)</td><td>Similar counts on FW-A and FW-B: states are replicated</td></tr>
+<tr><td>Blocked traffic</td><td><code>tail -f /var/log/filter.log</code></td><td>One line per blocked packet, with the rule label (T18-x)</td></tr>
+</tbody>
+</table>
+<figure>
+  <img src="../../screenshots/12_fw-a_carp_master.png" alt="FW-A CARP master" style="width:118mm">
+  <figcaption>FW-A on 7 Oct 2026: master on the five virtual IPs, pfsync running on em2 towards 10.254.3.2, Internet reachable.</figcaption>
+</figure>
+
+<h2>9.4 Core and leaf switches</h2>
+<table>
+<thead><tr><th style="width:16%">Between</th><th style="width:36%">Command</th><th>What it proves / expected</th></tr></thead>
+<tbody>
+<tr><td>CORE-A &harr; CORE-B</td><td><code>show etherchannel summary</code><br><code>show ip ospf neighbor</code><br><code>show standby brief</code></td><td>Po1 bundled with 2 ports; 2 neighbours FULL (Vlan998, Vlan902); gateways split as designed</td></tr>
+<tr><td>Core &harr; firewall</td><td><code>show ip route 0.0.0.0</code><br><code>ping 8.8.8.8 source vlan20</code></td><td>Default via 10.254.2.1; Internet reachable from VLAN 20. (A direct ping to 10.254.2.1 is refused: only VLAN 60 may ping the firewall.)</td></tr>
+<tr><td>Core &harr; leafs</td><td><code>show interfaces trunk</code><br><code>show spanning-tree root</code><br><code>show lldp neighbors</code></td><td>4 leaf trunks up; root is local for "its" VLANs and via Po1 for the others; every neighbour is the one in the cabling plan</td></tr>
+<tr><td>Leaf &harr; cores</td><td>on a leaf: <code>show interfaces trunk</code><br><code>show spanning-tree vlan 20</code></td><td>Gi0/0 forwards VLAN 20, 40, 60, 100 (CORE-A side); Gi0/1 forwards 30, 70, 80 (CORE-B side)</td></tr>
+<tr><td>Leaf &harr; servers</td><td><code>show interfaces status</code><br><code>show mac address-table</code><br><code>show spanning-tree summary</code></td><td>Server ports connected in the right VLAN; server MACs learnt; portfast / BPDU guard active</td></tr>
+<tr><td>Inter-VLAN filter</td><td><code>show access-lists ACL-VLAN20-IN</code></td><td>Counters increase on the permit lines used; hits on <code>deny ... log</code> show blocked attempts</td></tr>
+<tr><td>Management isolation</td><td><code>show vrf</code> &nbsp; <code>show ip route 10.10.0.0</code></td><td>Gi2/0 in VRF MGMT; network 10.10.0.0 <b>not</b> in the main table</td></tr>
+</tbody>
+</table>
+<pre class="cap"><span class="c"># CORE-A - show standby brief - captured 2026-10-07 19:01</span>
+Interface   Grp  Pri P State   Active          Standby         Virtual IP
+Vl20        20   110 P Active  local           10.20.0.3       10.20.0.1
+Vl30        30   90  P Standby 10.30.0.3       local           10.30.0.1
+Vl40        40   110 P Active  local           10.40.0.3       10.40.0.1
+Vl60        60   110 P Active  local           10.60.0.3       10.60.0.1
+Vl70        70   90  P Standby 10.70.0.3       local           10.70.0.1
+Vl80        80   90  P Standby 10.80.0.3       local           10.80.0.1
+Vl100       100  110 P Active  local           10.100.0.3      10.100.0.1
+Vl902       902  110 P Active  local           10.254.2.3      10.254.2.6
+
+<span class="c"># CORE-A - show etherchannel summary - captured 2026-10-07 19:01</span>
+1      Po1(SU)         LACP      Gi0/2(P)    Gi0/3(P)
+
+<span class="c"># CORE-A - show ip ospf neighbor - captured 2026-10-07 19:01</span>
+10.255.0.22       1   FULL/BDR        00:00:31    10.254.2.3      Vlan902
+10.255.0.22       0   FULL/  -        00:00:02    10.254.4.2      Vlan998
+
+<span class="c"># CORE-A - ping 8.8.8.8 source Vlan20 repeat 5 - captured 2026-10-07 19:03</span>
+Packet sent with a source address of 10.20.0.2
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 40/105/244 ms
+
+<span class="c"># LEAF-A1 - show interfaces trunk (VLANs in forwarding state) - captured 2026-10-07 19:03</span>
+Gi0/0       20,40,60,100
+Gi0/1       30,70,80</pre>
+
+<h2>9.5 Servers and services</h2>
+<p>Log in on the server console (<code>ubuntu</code> / <code>ubuntu</code>, then <code>sudo -i</code>).</p>
+<table>
+<thead><tr><th style="width:16%">Server</th><th style="width:42%">Command</th><th>Expected</th></tr></thead>
+<tbody>
+<tr><td>Any dual-homed server</td><td><code>cat /proc/net/bonding/bond0</code><br><code>ip -br addr show bond0</code><br><code>ip neigh show &lt;gateway .1&gt;</code><br><code>ping -c 3 8.8.8.8</code></td><td>Mode active-backup, 2 slaves up, right IP, gateway MAC resolved, Internet answers. Pinging the gateway itself is blocked by the core ACL (only VLAN 60 may ping inside).</td></tr>
+<tr><td>Any server</td><td><code>dig +short @10.100.0.11 deb.debian.org</code><br><code>timedatectl timesync-status</code><br><code>logger "test from $(hostname)"</code></td><td>Name resolved; clock synced on 10.100.0.11; the line appears on SYSLOG</td></tr>
+<tr><td>SRV-INF-01</td><td><code>systemctl is-active dnsmasq chrony</code><br><code>chronyc sources</code><br><code>ss -lunp | grep -E ':53|:123'</code></td><td>Both active; several time sources; listening on UDP 53 and 123</td></tr>
+<tr><td>SRV-CMP-01/02/03</td><td><code>curl -sk https://127.0.0.1:8443/</code><br><code>ip addr show bond0 | grep 10.20.0.10</code><br><code>iperf3 -c 10.20.0.12 -t 5</code></td><td>JSON with the host name; the service address is on CMP-01 only; throughput measured between servers</td></tr>
+<tr><td>SRV-STO-01</td><td><code>exportfs -v</code><br><code>tgtadm --mode target --op show</code></td><td>Export <code>/srv/nfs/share</code> for 10.20.0.0/24; target <code>...sto01.lun0</code> with a 1 GB LUN</td></tr>
+<tr><td>App to storage</td><td>on CMP-01: <code>timeout 3 bash -c '&lt;/dev/tcp/10.30.0.11/2049' &amp;&amp; echo open</code><br>same with port <code>3260</code></td><td><code>open</code> twice: NFS and iSCSI reachable through the core ACL</td></tr>
+<tr><td>App to backup</td><td>on CMP-01: <code>rsync rsync://10.40.0.11/</code></td><td>Module <code>backup</code> listed</td></tr>
+<tr><td>SRV-MON-01</td><td><code>systemctl is-active zabbix-server nginx mariadb grafana-server</code><br><code>curl -sI http://127.0.0.1/ | head -1</code><br><code>curl -sI http://127.0.0.1:3000/login | head -1</code></td><td>All active; HTTP 200 from Zabbix and Grafana</td></tr>
+<tr><td>SRV-BASTION</td><td>from a host in VLAN 90: <code>ssh ubuntu@10.90.0.11</code>, then from the bastion <code>ssh netadmin@10.10.0.21</code><br>on the bastion: <code>systemctl is-active auditd</code></td><td>Banner shown, login accepted, jump to CORE-A works; audit daemon active</td></tr>
+<tr><td>SYSLOG</td><td><code>ls /var/log/remote/</code><br><code>tail -f /var/log/remote/all.log</code></td><td>One file per source (edges, cores, leafs, firewalls, servers, simulators); new lines arrive live</td></tr>
+<tr><td>SRV-WEB-01 (inside)</td><td>from an internal server: <code>curl -sk https://10.50.0.11/health</code></td><td><code>OK SRV-WEB-01 (TLS)</code></td></tr>
+<tr><td>SRV-WEB-01 (from Internet)</td><td>on ISP-A: <code>printf 'GET /health HTTP/1.0
+
+
+
+' | nc -w 5 192.0.2.80 80</code></td><td><code>HTTP/1.1 200 OK</code> and <code>OK SRV-WEB-01</code>: BGP, the edge route, the port forward and the WAN rule all work (verified 12 Oct 2026; <code>wget</code> crashes in this image)</td></tr>
+<tr><td>BMS-SIM</td><td>from ADMIN-WS or SRV-MON-01: <code>curl -s http://10.70.0.12:8080/api/state</code></td><td>JSON: 5 elements UP, paths A and B powered, load 47.1 % each</td></tr>
+<tr><td>SRV-DCIM-01</td><td>from ADMIN-WS or SRV-MON-01: <code>curl -s http://10.70.0.11:8080/api/summary</code></td><td>96 racks, all OK when both power paths are up</td></tr>
+<tr><td>CCTV-SIM</td><td>on SYSLOG: <code>grep -i cctv /var/log/remote/all.log | tail</code></td><td>Camera and badge events, one roughly every 45 s</td></tr>
+</tbody>
+</table>
+
+<h2>9.6 Security policy: the flow matrix</h2>
+<p><code>python automation/flow_matrix.py</code> runs these 15 probes from the servers and compares each result with the policy. A probe passes when an allowed flow opens <b>and</b> when a forbidden flow is refused. Results go to <code>report/evidence/flow_matrix.csv</code>. You can also run any line by hand on the source server.</p>
+<table>
+<thead><tr><th style="width:13%">From</th><th style="width:26%">Flow</th><th>Probe command</th><th style="width:10%">Expected</th></tr></thead>
+<tbody>
+<tr><td>SRV-CMP-01</td><td>Storage NFS 2049</td><td><code>timeout 3 bash -c '&lt;/dev/tcp/10.30.0.11/2049'</code></td><td><span class="pill ok">allowed</span></td></tr>
+<tr><td>SRV-CMP-01</td><td>Storage iSCSI 3260</td><td><code>timeout 3 bash -c '&lt;/dev/tcp/10.30.0.11/3260'</code></td><td><span class="pill ok">allowed</span></td></tr>
+<tr><td>SRV-CMP-01</td><td>Backup agent 873</td><td><code>timeout 3 bash -c '&lt;/dev/tcp/10.40.0.11/873'</code></td><td><span class="pill ok">allowed</span></td></tr>
+<tr><td>SRV-CMP-01</td><td>SSH to storage</td><td><code>timeout 3 bash -c '&lt;/dev/tcp/10.30.0.11/22'</code></td><td><span class="pill bad">denied</span></td></tr>
+<tr><td>SRV-CMP-01</td><td>Internal DNS</td><td><code>dig +time=2 +short @10.100.0.11 example.com</code></td><td><span class="pill ok">allowed</span></td></tr>
+<tr><td>SRV-CMP-01</td><td>Internet HTTPS (NAT)</td><td><code>curl -s -m 6 -o /dev/null https://deb.debian.org</code></td><td><span class="pill ok">allowed</span></td></tr>
+<tr><td>SRV-CMP-01</td><td>Management network</td><td><code>ping -c 1 -W 2 10.10.0.21</code></td><td><span class="pill bad">denied</span></td></tr>
+<tr><td>SRV-CMP-01</td><td>DMZ web site</td><td><code>curl -sk -m 5 -o /dev/null https://10.50.0.11</code></td><td><span class="pill ok">allowed</span></td></tr>
+<tr><td>SRV-MON-01</td><td>SNMP to devices</td><td><code>ping -c1 -W2 10.10.0.21</code> (and UDP 161)</td><td><span class="pill ok">allowed</span></td></tr>
+<tr><td>SRV-MON-01</td><td>Zabbix agent 10050</td><td><code>timeout 3 bash -c '&lt;/dev/tcp/10.20.0.11/10050'</code></td><td><span class="pill ok">allowed</span></td></tr>
+<tr><td>SRV-STO-01</td><td>Internet HTTPS</td><td><code>curl -s -m 6 -o /dev/null https://deb.debian.org</code></td><td><span class="pill ok">allowed</span></td></tr>
+<tr><td>SRV-STO-01</td><td>SSH to app servers</td><td><code>timeout 3 bash -c '&lt;/dev/tcp/10.20.0.11/22'</code></td><td><span class="pill bad">denied</span></td></tr>
+<tr><td>SRV-BASTION</td><td>SSH to servers</td><td><code>timeout 3 bash -c '&lt;/dev/tcp/10.20.0.11/22'</code></td><td><span class="pill ok">allowed</span></td></tr>
+<tr><td>SRV-BASTION</td><td>SSH to devices</td><td><code>timeout 3 bash -c '&lt;/dev/tcp/10.10.0.21/22'</code></td><td><span class="pill ok">allowed</span></td></tr>
+<tr><td>SRV-BASTION</td><td>Firewall web GUI</td><td><code>curl -sk -m 5 -o /dev/null https://10.90.0.1</code></td><td><span class="pill ok">allowed</span></td></tr>
+</tbody>
+</table>
+<p>For a denied flow, look for the proof on the device that blocked it: <code>show access-lists ACL-VLAN20-IN</code> on the active core, or <code>/var/log/filter.log</code> on the master firewall.</p>
+
+<h2>9.7 Failover tests (resilience scenarios)</h2>
+<div class="box"><b class="t">Method, the same for every scenario</b>
+<ol>
+<li>On SRV-CMP-01 start a fast ping and leave it running: <code>ping -i 0.2 8.8.8.8</code> (5 packets per second).</li>
+<li>From the host, cause the fault: <code>python automation/labctl.py stop &lt;node&gt;</code>.</li>
+<li>Count the lost replies: <b>outage in seconds = lost packets x 0.2</b>. Compare with the target.</li>
+<li>Check who took over with the command in the table.</li>
+<li>Restore: <code>python automation/labctl.py start &lt;node&gt;</code>, wait for it to boot, check the original device takes its role back (preempt after 30 s) without a second outage.</li>
+</ol></div>
+<table>
+<thead><tr><th style="width:5%">ID</th><th style="width:16%">Fault</th><th style="width:25%">How to cause it</th><th>How to see the takeover</th><th style="width:17%">Target</th></tr></thead>
+<tbody>
+<tr><td><b>T1</b></td><td>ISP-A down</td><td><code>labctl.py stop ISP-A</code></td><td>EDGE-A: <code>show ip bgp summary</code> (ISP-A neighbour Idle/Active), <code>show ip route 0.0.0.0</code> now via 203.0.113.5</td><td>&le; 10 s, traffic via ISP-B</td></tr>
+<tr><td><b>T2</b></td><td>FW-A down</td><td><code>labctl.py stop FW-A</code></td><td>FW-B: <code>ifconfig | grep 'carp:'</code> shows MASTER x 5. An open SSH or download must not be cut.</td><td>&le; 5 s, sessions kept</td></tr>
+<tr><td><b>T3</b></td><td>CORE-A down</td><td><code>labctl.py stop CORE-A</code></td><td>CORE-B: <code>show standby brief</code> Active on every VLAN; <code>show spanning-tree root</code> local everywhere</td><td>&le; 5 s</td></tr>
+<tr><td><b>T4</b></td><td>LEAF-A1 down</td><td><code>labctl.py stop LEAF-A1</code></td><td>SRV-CMP-01: <code>cat /proc/net/bonding/bond0</code>, <code>Currently Active Slave</code> is now the second card</td><td>about 1 s</td></tr>
+<tr><td><b>T5</b></td><td>SRV-CMP-01 down</td><td><code>labctl.py stop SRV-CMP-01</code><br>(run the ping from SRV-CMP-03)</td><td><code>curl -sk https://10.20.0.10:8443/</code> now answers with host <code>srv-cmp-02</code>; Zabbix shows the host down</td><td>service continues, alert &le; 1 min</td></tr>
+<tr><td><b>T6</b></td><td>Power path A lost</td><td><code>curl "http://10.70.0.12:8080/api/set?UTILITY-A=DOWN&amp;UPS-A=DOWN&amp;GENERATOR=DOWN"</code></td><td><code>/api/state</code>: path A not powered, path B at 94.2 %, alarms raised. DCIM <code>/api/summary</code>: racks DEGRADED. Lines in <code>all.log</code>. Restore with <code>/api/reset</code>.</td><td>alarm &le; 30 s, path B alone</td></tr>
+<tr><td><b>M1</b></td><td>Maintenance + fault: CORE-A stopped and ISP-A link of EDGE-A lost</td><td><code>labctl.py stop CORE-A</code>, then suspend the link EDGE-A Gi0/0 in the GNS3 GUI (right-click the link, Suspend)</td><td>Ping continues through CORE-B; EDGE-A still has a default route (through EDGE-B to ISP-A, or its own ISP-B link)</td><td>service maintained</td></tr>
+</tbody>
+</table>
+<div class="box warn"><b class="t">Not run yet</b>
+Only T6 has been rehearsed (12 Oct 2026). The other scenarios are defined in the inventory (section <code>tests</code>) but have not been executed: the automatic runner <code>resilience_tests.py</code> planned for phase 8 is not written, and no measured convergence time exists yet. Until then use the manual method above.</div>
+
+<!-- ============================================================ 10 -->
+<h1 class="pb"><span class="n">10</span>Project status</h1>
+
+<div class="cols">
+<div class="box good" style="flex:1"><b class="t">Done and verified</b>Platform repair, inventory and generators, topology, Docker images, providers and edge routers, firewall cluster, core and leaf switches, central syslog, SRV-INF-01 (DNS and NTP).</div>
+<div class="box warn" style="flex:1"><b class="t">In progress</b>Server deployment (phase 6.2 to 6.4): bastion and monitoring server installed but not committed, Grafana install failed, five servers not deployed, flow matrix not run.</div>
+<div class="box" style="flex:1;border-color:#56606d;background:#e9edf1"><b class="t">To do</b>Monitoring set-up (Zabbix hosts, triggers, Grafana dashboard), resilience tests T1 to T6, final report, screenshots, diagrams.</div>
+</div>
+
+<h2>Phase by phase</h2>
+<table>
+<thead><tr><th style="width:7%">Phase</th><th style="width:35%">Content</th><th style="width:11%">State</th><th>Proof / detail</th></tr></thead>
+<tbody>
+<tr><td>Pre</td><td>Repair of the GNS3 environment (VM network, Docker images, project on the VM)</td><td><span class="pill ok">Done</span></td><td>commit <code>2a1e1ca</code>; script <code>fixgns3.ps1</code></td></tr>
+<tr><td>0</td><td>Folder structure, execution plan, report build chain</td><td><span class="pill ok">Done</span></td><td><code>c67c751</code></td></tr>
+<tr><td>1.1</td><td>Inventory (source of truth) and consistency checker</td><td><span class="pill ok">Done</span></td><td><code>3eb6035</code>; 98 links and 92 IPs checked, result OK</td></tr>
+<tr><td>1.2</td><td>Configuration and report-table generators</td><td><span class="pill ok">Done</span></td><td><code>be74e5f</code></td></tr>
+<tr><td>1.3</td><td>Lab driver (GNS3 API, consoles) and platform fixes</td><td><span class="pill ok">Done</span></td><td><code>8844d8e</code></td></tr>
+<tr><td>2.1</td><td>Topology changes: SW-OUT, NAT uplinks, ADMIN-WS, VLANs</td><td><span class="pill ok">Done</span></td><td><code>b705ead</code></td></tr>
+<tr><td>2.2</td><td>Custom Docker images (ISP, syslog, BMS, CCTV, DCIM, web)</td><td><span class="pill ok">Done</span></td><td><code>ffa418a</code></td></tr>
+<tr><td>2.3</td><td>Resource budget and staged start-up</td><td><span class="pill ok">Done</span></td><td><code>5683c18</code>; <code>resources_stages.csv</code></td></tr>
+<tr><td>3</td><td>Providers and edge: BGP, OSPF, HSRP, Internet access</td><td><span class="pill ok">Done</span></td><td><code>79ab4be</code>; BGP 3/3 on both edges, OSPF FULL, HSRP OK, ping 8.8.8.8 5/5</td></tr>
+<tr><td>4</td><td>pfSense cluster: install, generated config, CARP, pfsync, NAT</td><td><span class="pill ok">Done</span></td><td><code>d93afba</code>; FW-A master x 5, FW-B backup x 5, 156 rules</td></tr>
+<tr><td>5</td><td>Core and leafs: VLANs, HSRP, RPVST+, LACP, OSPF, ACLs, VRF</td><td><span class="pill ok">Done</span></td><td><code>441b10a</code>; ping 8.8.8.8 from VLAN 20 5/5</td></tr>
+<tr><td>6.x</td><td>Firewall log-noise rules, XMLRPC sync, central syslog</td><td><span class="pill ok">Done</span></td><td><code>5a9c0c7</code></td></tr>
+<tr><td>6.1</td><td>SRV-INF-01 in service (DNS, NTP), service containers</td><td><span class="pill ok">Done</span></td><td><code>3ca4e02</code> (last commit, 7 Oct 2026)</td></tr>
+<tr><td>6.2-6.4</td><td>Other servers (bastion, storage, backup, compute), flow matrix</td><td><span class="pill wip">In progress</span></td><td>Uncommitted work, see below</td></tr>
+<tr><td>7</td><td>Monitoring: Zabbix hosts and triggers, Grafana NOC dashboard</td><td><span class="pill todo">To do</span></td><td>Zabbix server is installed and started on SRV-MON-01; no hosts, triggers or dashboards yet</td></tr>
+<tr><td>8</td><td>Resilience tests T1 to T6 and M1, measured</td><td><span class="pill todo">To do</span></td><td><code>resilience_tests.py</code> not written</td></tr>
+<tr><td>9</td><td>Final documentation: screenshots, diagrams, report, README</td><td><span class="pill todo">To do</span></td><td>The French report already covers phases 0 to 6.1</td></tr>
+</tbody>
+</table>
+
+<h2>Device by device</h2>
+<table>
+<thead><tr><th style="width:24%">Equipment</th><th style="width:13%">Configured</th><th style="width:13%">Verified</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td>ISP-A, ISP-B</td><td><span class="pill ok">Yes</span></td><td><span class="pill ok">Yes</span></td><td>Configuration baked into the image and re-applied at every start</td></tr>
+<tr><td>EDGE-A, EDGE-B</td><td><span class="pill ok">Yes</span></td><td><span class="pill ok">Yes</span></td><td>uRPF removed (it dropped all Internet replies with a default-only table); the ACL does the anti-spoofing</td></tr>
+<tr><td>FW-A, FW-B</td><td><span class="pill ok">Yes</span></td><td><span class="pill ok">Yes</span></td><td>Policy not yet measured end to end (needs the flow matrix). Two admin rules added since the last commit.</td></tr>
+<tr><td>CORE-A, CORE-B</td><td><span class="pill ok">Yes</span></td><td><span class="pill ok">Yes</span></td><td>-</td></tr>
+<tr><td>LEAF-A1, A2, B1, B2</td><td><span class="pill ok">Yes</span></td><td><span class="pill ok">Yes</span></td><td>Trunk and spanning-tree proof captured on LEAF-A1</td></tr>
+<tr><td>SYSLOG, BMS-SIM, CCTV-SIM, SRV-DCIM-01, SRV-WEB-01, ADMIN-WS</td><td><span class="pill ok">Yes</span></td><td><span class="pill ok">Yes</span></td><td>Checked on 12 Oct 2026: 15 log sources on SYSLOG, web site answering from ISP-A through 192.0.2.80, BMS and DCIM dashboards reachable from the admin zone.</td></tr>
+<tr><td>SRV-INF-01</td><td><span class="pill ok">Yes</span></td><td><span class="pill ok">Yes</span></td><td>Re-checked on 12 Oct 2026: bond with both links up, dnsmasq and chrony active, DNS answers, 5 time sources, Internet reachable, management network refused as designed.</td></tr>
+<tr><td>SRV-BASTION</td><td><span class="pill ok">Yes</span></td><td><span class="pill wip">Partly</span></td><td>Installed from the offline repository (log not committed). On 12 Oct 2026 it reached the BMS and DCIM dashboards, the firewall GUI, the DMZ site and the SSH port of CORE-A and EDGE-A; auditd active. An interactive SSH login to a device and the TOTP enrolment are still to do.</td></tr>
+<tr><td>SRV-MON-01</td><td><span class="pill ok">Yes</span></td><td><span class="pill wip">Partly</span></td><td>Fixed on 12 Oct 2026. Zabbix server now starts (it refused MariaDB 10.3; <code>AllowUnsupportedDBVersions=1</code> added). Grafana 13.2.3 installed after growing the disk from 2 GB to 8 GB (it was 100 % full). Both answer locally; the Grafana Zabbix plugin could not be downloaded yet. No hosts or dashboards configured.</td></tr>
+<tr><td>SRV-CMP-01, 02, 03</td><td><span class="pill todo">No</span></td><td><span class="pill todo">No</span></td><td>Network files generated, role script ready, not deployed</td></tr>
+<tr><td>SRV-STO-01, SRV-BCK-01</td><td><span class="pill todo">No</span></td><td><span class="pill todo">No</span></td><td>Same</td></tr>
+</tbody>
+</table>
+
+<h2>State of the lab on 12 October 2026</h2>
+<p>In the morning the lab was powered off (only SRV-BASTION, the NAT clouds and the built-in switches were started). It was then started by tiers as a <b>demo set of 25 nodes</b> and checked tier by tier:</p>
+<ul>
+<li><b>Edge:</b> BGP 3/3 on both edges, EDGE-A HSRP active, ping 8.8.8.8 5/5.</li>
+<li><b>Firewalls:</b> FW-A master and FW-B backup on the five virtual IPs, pfsync up.</li>
+<li><b>Core and hall B leafs:</b> Po1 bundled, OSPF full, gateways and spanning-tree roots split as designed, ping 8.8.8.8 from VLAN 20 5/5.</li>
+<li><b>Services:</b> see the table above. The simulated power-path failure (T6) was rehearsed: path B at 94.2 %, status CRITICAL, 96 racks DEGRADED, then restored.</li>
+</ul>
+<p>Left off to save memory: LEAF-A2, SRV-CMP-02 and 03, SRV-STO-01, SRV-BCK-01, SRV-MON-01. With the demo set running the GNS3 VM had about 2.6 GB of RAM available and the host about 0.9 GB free.</p>
+
+<h2>Work in the tree that is not committed yet</h2>
+<ul>
+<li><code>inventory/dc_casa.yaml</code>: Zabbix and Grafana passwords, two new ADMIN firewall rules (DNS/NTP and syslog from VLAN 90).</li>
+<li><code>configs/pfsense/*.redacted.xml</code> and <code>report/content/generated/fw_rules.md</code>: regenerated with those rules.</li>
+<li><code>automation/deploy_servers.py</code> (offline repository support), new <code>attach_repo.py</code> and <code>build_repo.sh</code>.</li>
+<li><code>DC_Casablanca_TIA942_R3.gns3</code>: project file changed by the live lab.</li>
+<li>Deployment logs of SRV-BASTION and SRV-MON-01; architecture report files (<code>Rapport_Architecture_DC_Casablanca.docx</code>, English markdown, diagrams).</li>
+</ul>
+
+<h2>Known issues and limits</h2>
+<table>
+<thead><tr><th style="width:28%">Issue</th><th>Detail and consequence</th></tr></thead>
+<tbody>
+<tr><td>GNS3 VM froze on 12 Oct 2026</td><td>At 13:07 Windows logged write errors on the external USB disk H: (<code>GNS3 VM-disk2.vmdk</code>, "delayed write failed, data lost") and the VM stopped running. Same family as the earlier USB-disk incident. The VM disk must be checked after restart; keeping the VM on an internal disk would remove this risk.</td></tr>
+<tr><td>Monitoring server does not fit with the demo set</td><td>Starting SRV-MON-01 on top of the demo set saturated the PC: gateways flapped on the cores (HSRP timers of 250 ms cannot hold when the CPU is starved) and CORE-A hung. Run SRV-MON-01 with a reduced set, or stop it when it is not being shown.</td></tr>
+<tr><td>Server disks are 2 GB</td><td>The Ubuntu image is not enlarged at deployment. SRV-MON-01 was grown by hand (GNS3 resize, +6 GB); the other servers still have the small disk.</td></tr>
+<tr><td>Grafana plugin missing</td><td>The Zabbix data-source plugin download failed (lab bandwidth). Phase 7 dashboards need it.</td></tr>
+<tr><td>Very little free memory</td><td>15.7 GB host for a design sized for 32 GB. The full lab cannot run comfortably at once; tests must be done by tiers. This may affect measured failover times (CPU saturation adds latency).</td></tr>
+<tr><td>Slow downloads inside the lab</td><td>About 70 KB/s through the emulated routers and firewalls. Solved with the offline package ISO; servers must have it attached before deployment.</td></tr>
+<tr><td>Policy not measured end to end</td><td><code>flow_matrix.py</code> exists but has not produced results; it needs the compute, storage and backup servers running.</td></tr>
+<tr><td>No failover measurement</td><td>Targets (10 s, 5 s, 1 s) are design values, not yet measured.</td></tr>
+<tr><td>Firewalls use static routes</td><td>The design asked for OSPF including the firewalls. pfSense has no OSPF without an extra package, so static routes to HSRP virtual IPs are used. Documented deviation.</td></tr>
+<tr><td>Small inconsistencies</td><td>The inventory lists SRV-WEB-01 with image <code>nginx:alpine</code> while the project runs <code>dc/web:1.0</code>. One evidence file (<code>CORE-A traceroute</code>) contains a command syntax error instead of a result.</td></tr>
+<tr><td>Power design margin</td><td>Finding from BMS-SIM: 47.1 % load per path exceeds the 45 % warning threshold of the design.</td></tr>
+</tbody>
+</table>
+
+<h2>Recommended next steps, in order</h2>
+<ol>
+<li><b>Commit the pending work</b> (inventory, firewall rules, offline repository scripts, logs) so the repository matches the lab.</li>
+<li><b>Restart and check the GNS3 VM</b> after the USB-disk write error, then re-run <code>deploy_servers.py SRV-MON-01</code> to refresh its deployment log and retry the Grafana plugin.</li>
+<li><b>Deploy the five remaining servers</b>: attach the offline ISO (<code>attach_repo.py</code>), then <code>deploy_servers.py SRV-STO-01 SRV-BCK-01 SRV-CMP-01 SRV-CMP-02 SRV-CMP-03</code>, by hall to save memory.</li>
+<li><b>Run the flow matrix</b> and add the result to the report (closes phase 6).</li>
+<li><b>Phase 7</b>: declare hosts in Zabbix (SNMPv3 for Cisco, SNMP for pfSense, agents for Linux, HTTP check on BMS-SIM), triggers, Grafana NOC dashboard.</li>
+<li><b>Phase 8</b>: write <code>resilience_tests.py</code>, run T1 to T6 and M1, record the measured times against the targets.</li>
+<li><b>Phase 9</b>: screenshots, diagrams, final French report, README.</li>
+</ol>
+
+<!-- ============================================================ A -->
+<h1 class="pb"><span class="n">A</span>Appendix: full cabling plan</h1>
+<p>The 60 links of the project, from <code>DC_Casablanca_TIA942_R3_wiring.csv</code>.</p>
+<!--CABLING-->
+
+<!-- ============================================================ B -->
+<h1 class="pb"><span class="n">B</span>Appendix: lab credentials</h1>
+<div class="box warn"><b class="t">Lab only</b>
+These accounts exist only inside the GNS3 simulation and are stored in clear text in <code>inventory/dc_casa.yaml</code>. Never reuse them anywhere else. Remove this page before sharing the document outside the project team.</div>
+<table>
+<thead><tr><th style="width:34%">Use</th><th style="width:22%">Account / name</th><th>Secret</th></tr></thead>
+<tbody>
+<tr><td>Cisco devices, administrator</td><td><code>netadmin</code></td><td><code>Esprim-DC-2026!</code></td></tr>
+<tr><td>Cisco enable</td><td>-</td><td><code>Esprim-Enable-2026!</code></td></tr>
+<tr><td>Ubuntu servers (console and SSH)</td><td><code>ubuntu</code></td><td><code>ubuntu</code></td></tr>
+<tr><td>SNMPv3 (Cisco), SHA + AES-128</td><td><code>zbxmon</code></td><td>auth <code>Zbx-Auth-2026!</code> / priv <code>Zbx-Priv-2026!</code></td></tr>
+<tr><td>SNMP v2c (pfSense, VLAN 60 only)</td><td>community</td><td><code>dc-casa-ro</code></td></tr>
+<tr><td>HSRP key</td><td>-</td><td><code>Hsrp-DC-2026</code></td></tr>
+<tr><td>OSPF MD5 key</td><td>key 1</td><td><code>Ospf-DC-2026</code></td></tr>
+<tr><td>BGP session password</td><td>-</td><td><code>Bgp-DC-2026</code></td></tr>
+<tr><td>CARP password</td><td>-</td><td><code>Carp-DC-2026</code></td></tr>
+<tr><td>Zabbix database</td><td><code>zabbix</code></td><td><code>Zbx-Db-2026!</code></td></tr>
+<tr><td>Grafana</td><td><code>admin</code></td><td><code>Grafana-DC-2026!</code></td></tr>
+<tr><td>pfSense web GUI</td><td><code>admin</code></td><td><code>Esprim-DC-2026!</code> (same as the Cisco administrator)</td></tr>
+<tr><td>Zabbix web interface</td><td><code>Admin</code></td><td><code>zabbix</code> (product default, not changed yet)</td></tr>
+</tbody>
+</table>
+
+</body>
+</html>
