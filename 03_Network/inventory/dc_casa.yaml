@@ -35,6 +35,8 @@ credentials:
   ospf_key: "Ospf-DC-2026"
   bgp_password: "Bgp-DC-2026"
   carp_password: "Carp-DC-2026"
+  zabbix_db_password: "Zbx-Db-2026!"
+  grafana_admin_password: "Grafana-DC-2026!"
 
 # ---------------------------------------------------------------------------------------------------
 # VLANs (PDF Table 15 + technical VLANs). gw_type: core = HSRP on CORE-A/B, fw = CARP on FW-A/B
@@ -325,6 +327,8 @@ firewall_rules:
     - {action: pass, proto: udp, src: MGMT_NET, dst: MON_SERVER, ports: SNMP_TRAP, descr: "Équipements -> traps SNMP", ref: "T18-8"}
     - {action: pass, proto: udp, src: MGMT_NET, dst: INF_SERVER, ports: [53, 123], descr: "Équipements -> DNS/NTP", ref: "EXT-4"}
   ADMIN:
+    - {action: pass, proto: udp,  src: ADMIN_NET, dst: INF_SERVER, ports: [53, 123], descr: "Administration -> DNS/NTP internes", ref: "EXT-7"}
+    - {action: pass, proto: udp,  src: ADMIN_NET, dst: SYSLOG_SERVER, ports: SYSLOG, descr: "Administration -> syslog central (journal des sessions)", ref: "T18-8"}
     - {action: pass, proto: tcp,  src: ADMIN_NET, dst: any_internal, ports: ADMIN_SVC, descr: "Administration -> tous équipements SSH/HTTPS", ref: "T18-6"}
     - {action: pass, proto: udp,  src: ADMIN_NET, dst: any_internal, ports: SNMP, descr: "Administration -> SNMP", ref: "T18-6"}
     - {action: pass, proto: tcp,  src: ADMIN_NET, dst: MON_SERVER, ports: [3000, 80], descr: "Administration -> Zabbix/Grafana", ref: "T18-6"}

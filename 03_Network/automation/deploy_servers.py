@@ -116,6 +116,46 @@ echo 'Banner /etc/issue.net' >> /etc/ssh/sshd_config
 printf 'SRV-BASTION – acces reserve aux administrateurs, sessions journalisees (ISO/IEC 27001 A.8.15)\\n' > /etc/issue.net
 systemctl restart ssh; systemctl enable --now auditd""",
     "mfa": "true   # TOTP (pam_google_authenticator) enrolled per administrator, see report",
+    "zabbix-agent": f"""DEBIAN_FRONTEND=noninteractive apt-get install -y -q zabbix-agent >/dev/null
+sed -i -e 's/^Server=.*/Server={S['monitoring']}/' -e 's/^ServerActive=.*/ServerActive={S['monitoring']}/' \\
+       -e "s/^Hostname=.*/Hostname=$(hostname | tr a-z A-Z)/" /etc/zabbix/zabbix_agentd.conf
+systemctl enable zabbix-agent >/dev/null 2>&1; systemctl restart zabbix-agent""",
+    "zabbix": f"""export DEBIAN_FRONTEND=noninteractive
+apt-get install -y -q mariadb-server zabbix-server-mysql zabbix-frontend-php zabbix-nginx-conf zabbix-sql-scripts \\
+    php7.4-fpm php7.4-mysql nginx >/dev/null
+systemctl enable --now mariadb
+mysql -e "CREATE DATABASE IF NOT EXISTS zabbix CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+          CREATE USER IF NOT EXISTS 'zabbix'@'localhost' IDENTIFIED BY '{INV['credentials']['zabbix_db_password']}';
+          GRANT ALL PRIVILEGES ON zabbix.* TO 'zabbix'@'localhost'; SET GLOBAL log_bin_trust_function_creators = 1;"
+if ! mysql -N -e "SELECT 1 FROM zabbix.users LIMIT 1" >/dev/null 2>&1; then
+  zcat /usr/share/zabbix-sql-scripts/mysql/server.sql.gz | mysql --default-character-set=utf8mb4 -uzabbix -p'{INV['credentials']['zabbix_db_password']}' zabbix
+fi
+mysql -e "SET GLOBAL log_bin_trust_function_creators = 0;"
+sed -i "s/^# DBPassword=.*/DBPassword={INV['credentials']['zabbix_db_password']}/" /etc/zabbix/zabbix_server.conf
+# Ubuntu 20.04 ships MariaDB 10.3; Zabbix 6.0 refuses to start below 10.5 unless told otherwise (lab only)
+grep -q '^AllowUnsupportedDBVersions=1' /etc/zabbix/zabbix_server.conf || echo 'AllowUnsupportedDBVersions=1' >> /etc/zabbix/zabbix_server.conf
+sed -i -e 's/^#\\?\\s*listen\\s.*;/        listen 80;/' -e 's/^#\\?\\s*server_name\\s.*;/        server_name zabbix.{SITE['domain']} {S['monitoring']};/' /etc/zabbix/nginx.conf
+rm -f /etc/nginx/sites-enabled/default
+cat > /etc/zabbix/web/zabbix.conf.php <<'PHPEOF'
+<?php
+$DB['TYPE'] = 'MYSQL'; $DB['SERVER'] = 'localhost'; $DB['PORT'] = '0'; $DB['DATABASE'] = 'zabbix';
+$DB['USER'] = 'zabbix'; $DB['PASSWORD'] = '{INV['credentials']['zabbix_db_password']}'; $DB['SCHEMA'] = '';
+$DB['ENCRYPTION'] = false; $DB['KEY_FILE'] = ''; $DB['CERT_FILE'] = ''; $DB['CA_FILE'] = ''; $DB['VERIFY_HOST'] = false;
+$DB['CIPHER_LIST'] = ''; $DB['VAULT_URL'] = ''; $DB['VAULT_DB_PATH'] = ''; $DB['VAULT_TOKEN'] = ''; $DB['DOUBLE_IEEE754'] = true;
+$ZBX_SERVER_NAME = 'DC Casablanca NOC';
+$IMAGE_FORMAT_DEFAULT = IMAGE_FORMAT_PNG;
+PHPEOF
+chown www-data:www-data /etc/zabbix/web/zabbix.conf.php
+systemctl enable zabbix-server nginx php7.4-fpm >/dev/null 2>&1
+systemctl restart zabbix-server php7.4-fpm nginx
+sleep 3; systemctl is-active zabbix-server nginx mariadb""",
+    "grafana": f"""export DEBIAN_FRONTEND=noninteractive
+apt-get install -y -q grafana >/dev/null
+sed -i -e 's/^;\\?http_port = .*/http_port = 3000/' -e 's/^;\\?admin_password = .*/admin_password = {INV['credentials']['grafana_admin_password']}/' /etc/grafana/grafana.ini
+systemctl daemon-reload; systemctl enable --now grafana-server
+# Zabbix data source plugin (small download through the lab Internet path)
+timeout 600 grafana-cli plugins install alexanderzobnin-zabbix-app >/dev/null 2>&1 || echo 'plugin download failed (lab bandwidth) - can be retried'
+systemctl restart grafana-server; sleep 5; systemctl is-active grafana-server""",
 }
 
 
@@ -175,10 +215,19 @@ def deploy(api, p, name, base_only=False):
         print(f"[{name}] internet: {inet}")
         # bootstrap resolvers while installing packages (SRV-INF-01 cannot resolve through itself yet)
         lx.run("rm -f /etc/resolv.conf; echo 'nameserver 1.1.1.1' > /etc/resolv.conf; echo 'nameserver 8.8.8.8' >> /etc/resolv.conf")
-        # archive/security.ubuntu.com are unreachable from the site's upstream: use the kernel.org mirror, IPv4 only
-        lx.put_file("/etc/apt/sources.list", "\n".join(
-            f"deb http://mirrors.edge.kernel.org/ubuntu focal{suite} main universe"
-            for suite in ("", "-security")) + "\n")
+        # preferred source: the offline repository disk (ISO labelled DCREPO attached as the second disk, built by
+        # automation/build_repo.sh); fallback: kernel.org mirror over the lab Internet path, IPv4 only
+        rc, _ = lx.run("blkid -L DCREPO >/dev/null 2>&1 || blkid /dev/vdb 2>/dev/null | grep -q DCREPO")
+        if rc == 0:
+            lx.run("mkdir -p /mnt/dcrepo; mountpoint -q /mnt/dcrepo || mount -o ro $(blkid -L DCREPO || echo /dev/vdb) /mnt/dcrepo")
+            lx.run("grep -q dcrepo /etc/fstab || echo 'LABEL=DCREPO /mnt/dcrepo iso9660 ro,nofail 0 0' >> /etc/fstab")
+            lx.put_file("/etc/apt/sources.list", "deb [trusted=yes] file:/mnt/dcrepo ./\n")
+            print(f"[{name}] package source: offline repository DCREPO", flush=True)
+        else:
+            lx.put_file("/etc/apt/sources.list", "\n".join(
+                f"deb http://mirrors.edge.kernel.org/ubuntu focal{suite} main universe"
+                for suite in ("", "-security")) + "\n")
+            print(f"[{name}] package source: network mirror", flush=True)
         # the lab path (IOSv / pfSense software forwarding) gives a few hundred KB/s: keep the indexes small
         lx.put_file("/etc/apt/apt.conf.d/99dc-lab",
                     'Acquire::ForceIPv4 "true";\nAcquire::Languages "none";\nAcquire::Retries "3";\nDPkg::Lock::Timeout "900";\n')
@@ -188,9 +237,12 @@ def deploy(api, p, name, base_only=False):
         # an upgrade already started at boot keeps the dpkg lock for a long time: SIGTERM makes it finish the
         # current package and exit cleanly (checked afterwards with dpkg --audit)
         lx.run("pkill -TERM -f unattended-upgrade; for i in $(seq 1 30); do pgrep -f unattended-upgrade >/dev/null || break; sleep 5; done; dpkg --audit", 200)
+        # the boot-time 'apt-daily' index refresh holds /var/lib/apt/lists/lock: it only downloads indexes,
+        # so it is safe to stop before running our own update
+        lx.run("systemctl stop apt-daily.service >/dev/null 2>&1; pkill -TERM -f 'apt.systemd.daily|apt-get -qq -y update|apt-get update'; sleep 3; true", 60)
         rc, out = lx.run("DEBIAN_FRONTEND=noninteractive apt-get update -q > /root/apt.log 2>&1; echo apt-update-rc=$?; grep -c '^Err' /root/apt.log", 1500)
         print(f"[{name}] {out}")
-        for role in s["roles"]:
+        for role in s["roles"] + ["zabbix-agent"]:
             print(f"[{name}] role {role} ...", flush=True)
             if role.startswith("keepalived"):
                 body = keepalived(150 if role.endswith("master") else 100)

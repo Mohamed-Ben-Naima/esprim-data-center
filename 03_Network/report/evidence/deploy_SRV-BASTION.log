@@ -1,0 +1,17 @@
+[SRV-BASTION] base system ...
+[SRV-BASTION] nics=['ens3'] netplan rc=0
+ens3             UP             10.90.0.11/24 
+[SRV-BASTION] gateway: rtt min/avg/max/mdev = 3.429/6.143/8.858/2.714 ms
+[SRV-BASTION] internet: 
+[SRV-BASTION] package source: offline repository DCREPO
+[SRV-BASTION] apt-update-rc=0
+0
+[SRV-BASTION] role bastion ...
+[SRV-BASTION] role bastion: rc=0 Synchronizing state of auditd.service with SysV service script with /lib/systemd/systemd-sysv-install.
+Executing: /lib/systemd/systemd-sysv-install enable auditd
+[SRV-BASTION] role mfa ...
+[SRV-BASTION] role mfa: rc=0 
+[SRV-BASTION] role zabbix-agent ...
+[SRV-BASTION] role zabbix-agent: rc=0 
+[SRV-BASTION] final: dns-ok
+yes

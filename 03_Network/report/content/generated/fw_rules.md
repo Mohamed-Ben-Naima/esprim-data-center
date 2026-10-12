@@ -17,6 +17,8 @@ Table: Politique des pare-feux par interface (évaluation de haut en bas)
 | MGMT | **autoriser** | udp | MGMT_NET | MON_SERVER | SNMP_TRAP [162] | Équipements -> traps SNMP | T18-8 |
 | MGMT | **autoriser** | udp | MGMT_NET | INF_SERVER | [53, 123] | Équipements -> DNS/NTP | EXT-4 |
 | MGMT | **bloquer** | any | any | any | — | Refus par défaut (journalisé) | T18 |
+| ADMIN | **autoriser** | udp | ADMIN_NET | INF_SERVER | [53, 123] | Administration -> DNS/NTP internes | EXT-7 |
+| ADMIN | **autoriser** | udp | ADMIN_NET | SYSLOG_SERVER | SYSLOG [514] | Administration -> syslog central (journal des sessions) | T18-8 |
 | ADMIN | **autoriser** | tcp | ADMIN_NET | any_internal | ADMIN_SVC [22, 443] | Administration -> tous équipements SSH/HTTPS | T18-6 |
 | ADMIN | **autoriser** | udp | ADMIN_NET | any_internal | SNMP [161] | Administration -> SNMP | T18-6 |
 | ADMIN | **autoriser** | tcp | ADMIN_NET | MON_SERVER | [3000, 80] | Administration -> Zabbix/Grafana | T18-6 |
