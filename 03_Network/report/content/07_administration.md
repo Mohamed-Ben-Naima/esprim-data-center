@@ -10,7 +10,7 @@ Table: Points d'entrée de la zone d'administration
 | Équipement | Adresse | Rôle | État dans le laboratoire |
 |---|---|---|---|
 | ADMIN-WS | 10.90.0.12 | Poste d'administration : navigateur pour les interfaces web, client SSH pour la ligne de commande | En service en permanence |
-| SRV-BASTION | 10.90.0.11 | Rebond SSH avec second facteur (TOTP) et audit (`auditd`) | Démarré pour ses propres essais (capacité de l'hôte) |
+| SRV-BASTION | 10.90.0.11 | Rebond SSH : mot de passe **et** code TOTP, audit (`auditd`) | Démarré pour ses propres essais (capacité de l'hôte) |
 
 Cette organisation répond aux mesures de l'ISO/IEC 27001:2022 sur le contrôle d'accès (A.5.15), les droits d'accès
 privilégiés (A.8.2), la restriction d'accès à l'information (A.8.3) et la séparation des réseaux (A.8.22).
@@ -124,7 +124,7 @@ Table: Protection des sessions d'administration
 | Délai d'inactivité | `exec-timeout` 10 minutes (valeur par défaut d'IOS, `show line vty 0`) | Cisco | Conforme sur EDGE-A : session fermée par l'équipement après 634 secondes réelles (10 minutes à son horloge). Sur LEAF-B1, la session était encore ouverte à 840 secondes : horloge ralentie (limite décrite ci-dessous) |
 | Journalisation des connexions | `login on-failure log`, `login on-success log` | Cisco | Conforme : 30 réussites et les échecs du test sur le collecteur |
 | Session web des pare-feux | Délai de session par défaut de pfSense (4 heures) | FW-A, FW-B | **Écart** : à ramener à 15 minutes lors du prochain déploiement des pare-feux (FW.2) |
-| Bastion | Bannière, `AllowGroups sudo`, `auditd`, journaux `sshd` centralisés | SRV-BASTION | Conforme ; second facteur TOTP installé mais **non imposé** (voir ci-dessous) |
+| Bastion | Bannière, `AllowGroups sudo`, `auditd`, journaux `sshd` centralisés, second facteur TOTP | SRV-BASTION | Conforme depuis ADM.4 : mot de passe puis code de vérification exigés |
 
 > [!WARN] Limite du laboratoire : les horloges des commutateurs virtuels retardent
 > Les images IOSvL2 ne reçoivent pas assez de temps processeur sur le poste hôte : leur horloge n'avance qu'à environ
@@ -139,7 +139,8 @@ Table: Comptes et secrets d'administration – état au 12 octobre 2026
 |---|---|---|---|
 | `netadmin` et secret `enable` | Les huit équipements Cisco | Compte partagé, mot de passe propre au laboratoire | Écart assumé : pas de comptes nominatifs dans le laboratoire |
 | `admin` (pfSense) | Interface web et SSH des deux pare-feux | Même mot de passe que `netadmin` | Écart : secret à distinguer |
-| `ubuntu` / mot de passe par défaut | Tous les serveurs Ubuntu, **y compris SRV-BASTION**, SSH par mot de passe | **Non conforme** : identifiants par défaut de l'image | Sous-tâche ADM.4 proposée : compte d'administration dédié, mot de passe de l'inventaire, TOTP imposé sur le bastion |
+| `ubuntu` / mot de passe par défaut | Console série des serveurs Ubuntu uniquement (pilotage du laboratoire) | Refusé en SSH depuis ADM.4 (`DenyUsers ubuntu`) | Écart résiduel : le compte subsiste sur la console de GNS3 |
+| `sysadmin` | SSH de tous les serveurs Ubuntu déployés | Mot de passe de l'inventaire ; sur SRV-BASTION, second facteur TOTP | Conforme |
 | `Admin` / `zabbix` | Interface web de Zabbix | Mot de passe par défaut du produit | Remplacé en ZBX.1 |
 | `admin` (Grafana) | Interface web de Grafana | Mot de passe de l'inventaire | Conforme |
 | Communauté SNMP v2c | Pare-feux, lecture seule, limitée au VLAN 60 | Secret en clair sur le réseau | Écart assumé (pfSense sans SNMPv3 natif) |
@@ -153,4 +154,39 @@ Table: Vérification – ADM.3, règles d'accès privilégié (12 octobre 2026)
 | Trace du verrouillage | `grep SEC_LOGIN /var/log/remote/all.log` | SYSLOG, console auxiliaire (5041) | Lignes `LOGIN_FAILED` puis `QUIET_MODE_ON` | Conforme, source `10.90.0.12` |
 | Délai d'inactivité configuré | `show line vty 0` | LEAF-B1 (console 5018) | `Idle EXEC 00:10:00` | Conforme |
 | Délai d'inactivité constaté | Session SSH laissée sans saisie | ADMIN-WS vers EDGE-A | Fermeture par l'équipement | Conforme sur EDGE-A : session fermée par l'équipement après 634 secondes réelles (10 minutes à son horloge). Sur LEAF-B1, la session était encore ouverte à 840 secondes : horloge ralentie (limite décrite ci-dessous) |
+
+## Comptes des serveurs et second facteur du bastion
+
+Le contrôle des comptes (ADM.3) avait relevé deux non-conformités : les serveurs, bastion compris, acceptaient en SSH
+le compte par défaut de l'image, et le second facteur du bastion était installé sans être exigé. La sous-tâche ADM.4
+les corrige dans `automation/deploy_servers.py` (étape « comptes », rejouable seule avec `--accounts-only`) :
+
+Table: Politique de comptes des serveurs Ubuntu
+| Mesure | Réalisation | Portée |
+|---|---|---|
+| Compte d'administration nommé | `sysadmin`, membre de `sudo`, mot de passe pris dans l'inventaire | Tous les serveurs déployés |
+| Compte par défaut fermé à distance | `DenyUsers ubuntu` dans `/etc/ssh/sshd_config.d/10-dc-casa.conf` ; la console série reste utilisable par l'automatisation | Tous les serveurs déployés |
+| Second facteur | `pam_google_authenticator` requis après le mot de passe, `AuthenticationMethods keyboard-interactive`, code à usage unique (TOTP, RFC 6238, 30 s), réutilisation interdite, 3 essais par 30 s | SRV-BASTION |
+| Secret du second facteur | Dans l'inventaire (`bastion_totp_secret`) ; code courant donné par `python automation/totp.py` | Laboratoire |
+
+Les alias SSH du poste d'administration utilisent désormais `sysadmin` ; le rebond `ssh -J bastion core-a` demande donc
+trois réponses : mot de passe du bastion, code de vérification, mot de passe de l'équipement.
+
+```text title="Questions posées par SSH lors d'un rebond par le bastion (12 octobre 2026)"
+(sysadmin@10.90.0.11) Password:
+(sysadmin@10.90.0.11) Verification code:
+(netadmin@10.10.0.21) Password:
+CORE-A uptime is 3 hours, 40 minutes
+```
+
+Table: Vérification – ADM.4, comptes des serveurs et second facteur (12 octobre 2026)
+| Contrôle | Commande | Depuis | Attendu | Résultat |
+|---|---|---|---|---|
+| Compte par défaut refusé sur le bastion | `ssh ubuntu@10.90.0.11` | Terminal d'ADMIN-WS | `Permission denied` | Conforme |
+| Compte par défaut refusé sur un serveur | `ssh ubuntu@10.100.0.11` | Terminal d'ADMIN-WS | `Permission denied` | Conforme |
+| Compte d'administration accepté | `ssh srv-inf-01 hostname` | Terminal d'ADMIN-WS | `srv-inf-01` après le mot de passe | Conforme |
+| Mauvais code refusé | `ssh bastion`, bon mot de passe, code `000000` | Terminal d'ADMIN-WS | Deux questions puis `Permission denied` | Conforme |
+| Bon code accepté | `ssh bastion`, code de `python automation/totp.py` | Terminal d'ADMIN-WS | `srv-bastion` | Conforme ; `Accepted google_authenticator for sysadmin` sur le collecteur |
+| Rebond avec second facteur | `ssh -J bastion core-a "show version"` | Terminal d'ADMIN-WS | Trois questions puis réponse de CORE-A | Conforme |
+| Matrice d'accès | `python automation/access_matrix.py --login` | Hôte | 0 échec | Conforme : 16 accès testés |
 

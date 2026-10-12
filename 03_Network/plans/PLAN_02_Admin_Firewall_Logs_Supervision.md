@@ -200,12 +200,15 @@ Files: `automation/access_matrix.py` (new), `report/evidence/access_matrix.csv`,
 | Lockout | 5 wrong passwords on `ssh core-a`, then a right one | ADMIN-WS | refused for 120 s; `%SEC_LOGIN-1-QUIET_MODE_ON` in the log collector |
 | Jump host | `ssh -J bastion core-a` (SRV-BASTION running) | ADMIN-WS | login through 10.90.0.11 |
 
-### ADM.4 Bastion and server accounts (proposed 12 Oct 2026, to be confirmed)
+### ADM.4 Bastion and server accounts — confirmed and done 12 Oct 2026
 Closes the two non-conformities found in ADM.3 (A.5.17, A.8.5).
-- [ ] Inventory: named administration account and password for the Ubuntu servers; TOTP secret for the bastion.
-- [ ] `deploy_servers.py`: create the account, lock the password of `ubuntu` for SSH (console login kept for the lab
-      driver), SSH alias users updated by `gen_configs.py`.
-- [ ] SRV-BASTION: `pam_google_authenticator` enforced for SSH (password + TOTP), secret enrolled from the inventory.
+- [x] Inventory: named administration account and password for the Ubuntu servers; TOTP secret for the bastion.
+- [x] `deploy_servers.py`: create the account, lock the password of `ubuntu` for SSH (console login kept for the lab
+      driver), SSH alias users updated by `gen_configs.py`. New: `--accounts-only`, `automation/totp.py`.
+      Applied to SRV-INF-01 and SRV-BASTION. **SRV-MON-01 is stopped: run
+      `python automation/deploy_servers.py --accounts-only SRV-MON-01` when it is started for ZBX.1.**
+- [x] SRV-BASTION: `pam_google_authenticator` enforced for SSH (password + TOTP), secret enrolled from the inventory.
+- [x] Result: six tests pass, access matrix 16 targets / 0 failure with the TOTP login.
 
 | Test | Command | From | Expected |
 |---|---|---|---|

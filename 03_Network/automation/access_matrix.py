@@ -21,6 +21,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 import gen_configs as g  # noqa: E402  (inventory + ssh_targets)
 import gns3vm  # noqa: E402
 import labctl  # noqa: E402
+from totp import TOTP_SOURCE  # noqa: E402
 
 NET = Path(__file__).resolve().parents[1]
 SOURCES = [("ADMIN-WS", "docker", "VLAN 90", True), ("SRV-INF-01", "vm", "VLAN 100", False), ("SRV-WEB-01", "docker", "DMZ", False)]
@@ -71,17 +72,23 @@ def run_source(api, p, source, kind, script):
 
 def logins(T, running):
     cred = g.C
-    pw = {"cisco": cred["admin_password"], "pfsense": cred["admin_password"], "linux": cred["server_password"]}
+    pw = {"cisco": cred["admin_password"], "pfsense": cred["admin_password"], "linux": cred["server_admin_password"]}
     assert all("'" not in v for v in pw.values())
-    s = ["c=$(docker ps -q --filter name=ADMIN-WS)"]
-    for fam, v in pw.items():
-        s.append(f"docker exec $c sh -c 'umask 077; printf \"#!/bin/sh\\necho %s\\n\" \"$1\" > /tmp/ap_{fam}.sh; chmod 700 /tmp/ap_{fam}.sh' _ '{v}'")
+    mfa = {n for n, srv in g.INV["servers"].items() if "mfa" in srv.get("roles", [])}
+    s = ["c=$(docker ps -q --filter name=ADMIN-WS)",
+         # helper sent to the VM: current TOTP code of the bastion (same function as automation/totp.py)
+         "cat > /tmp/totp_now.py <<'EOP'\n" + TOTP_SOURCE + f"print(totp('{cred['bastion_totp_secret']}'))\nEOP"]
+    for fam, v in pw.items():       # askpass helper: the verification code when asked for it, the password otherwise
+        s.append(f"cat > /tmp/ap_{fam}.sh <<'EOP'\n#!/bin/sh\ncase \"$1\" in *erification*) cat /tmp/totp;; *) echo '{v}';; esac\nEOP\n"
+                 f"chmod 700 /tmp/ap_{fam}.sh; docker cp /tmp/ap_{fam}.sh $c:/tmp/ap_{fam}.sh; rm -f /tmp/ap_{fam}.sh")
     for t in T:
         if t["access"] == "SSH" and running.get(t["node"]):
+            if t["node"] in mfa:
+                s.append("docker exec $c sh -c \"echo $(python3 /tmp/totp_now.py) > /tmp/totp\"")
             s.append(f"out=$(docker exec -e SSH_ASKPASS=/tmp/ap_{t['family']}.sh -e SSH_ASKPASS_REQUIRE=force -e DISPLAY=:0 $c "
                      f"timeout 45 setsid -w ssh -o NumberOfPasswordPrompts=1 {t['alias']} '{LOGIN_CMD[t['family']]}' 2>/dev/null); rc=$?\n"
                      f"echo \"L {t['key']} $rc $(echo \"$out\" | tr -d '\\r' | grep -v '^[*]' | grep -v '^$' | tail -1)\"")
-    s.append("docker exec $c sh -c 'rm -f /tmp/ap_*.sh'")
+    s.append("docker exec $c sh -c 'rm -f /tmp/ap_*.sh /tmp/totp'; rm -f /tmp/totp_now.py")
     out = gns3vm.run("\n".join(s), sudo=True)
     res = {}
     for l in out.splitlines():

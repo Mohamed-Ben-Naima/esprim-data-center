@@ -712,7 +712,7 @@ python automation/labctl.py push CORE-A</pre>
 </tbody>
 </table>
 <div class="box warn"><b class="t">Do not use the main console of a container</b>The main console (double-click in GNS3) is attached to the running service, not to a shell: nothing answers, and <b>Ctrl-C stops the container</b>. This happened to ISP-A on 12 Oct 2026 and cut its BGP sessions. If it happens, stop and start the node.</div>
-<p><b>The proper way, as an administrator:</b> open ADMIN-WS (VNC <code>192.168.75.128:5904</code>). The browser starts on the portal; from its terminal, <code>ssh core-a</code> opens a session on a device, and <code>ssh -J bastion core-a</code> goes through the jump host SRV-BASTION when it is running. Sessions are logged centrally (tag <code>admin-ssh</code>).</p>
+<p><b>The proper way, as an administrator:</b> open ADMIN-WS (VNC <code>192.168.75.128:5904</code>). The browser starts on the portal; from its terminal, <code>ssh core-a</code> opens a session on a device, and <code>ssh -J bastion core-a</code> goes through the jump host SRV-BASTION when it is running. The bastion asks for the password of <code>sysadmin</code> and then a verification code: get it with <code>python automation/totp.py</code> on the host. Sessions are logged centrally (tag <code>admin-ssh</code>).</p>
 
 <h2>Opening the web interfaces from the physical PC</h2>
 <p>The lab networks live inside the GNS3 VM, so the Windows host cannot reach them directly. The helper <code>automation/lab_proxy.py</code> opens a door:
@@ -1040,7 +1040,7 @@ Only T6 has been rehearsed (12 Oct 2026). The other scenarios are defined in the
 <tr><td>Firewalls use static routes</td><td>The design asked for OSPF including the firewalls. pfSense has no OSPF without an extra package, so static routes to HSRP virtual IPs are used. Documented deviation.</td></tr>
 <tr><td>Small inconsistencies</td><td>The inventory lists SRV-WEB-01 with image <code>nginx:alpine</code> while the project runs <code>dc/web:1.0</code>. One evidence file (<code>CORE-A traceroute</code>) contains a command syntax error instead of a result.</td></tr>
 <tr><td>Device clocks run slow</td><td>On this host the IOSvL2 clocks advance at about 55-60 % of real time and no Cisco device is NTP-synchronised. Every timer on them is stretched (a 120 s login lockout lasted about 4 minutes). Failover timings must be read with this in mind.</td></tr>
-<tr><td>Default accounts on servers</td><td>The Ubuntu servers, SRV-BASTION included, accept SSH with the image default account, and the bastion's second factor is installed but not enforced. Sub-task ADM.4 is proposed to close it.</td></tr>
+<tr><td>Default account kept on consoles</td><td>Since ADM.4 the image default account <code>ubuntu</code> is refused by SSH on the deployed servers and the bastion requires password + TOTP. The account still exists for the serial console (used by the automation). SRV-MON-01 gets the same policy at its next start.</td></tr>
 <tr><td>SSH keys on switches</td><td>LEAF-B2 had lost its RSA keys (SSH disabled); regenerated on 12 Oct 2026. Run <code>access_matrix.py</code> after each full restart. LEAF-A1/A2 are unchecked.</td></tr>
 <tr><td>Local time differs between images</td><td>ADMIN-WS shows +00 and the log collector +01 for the same zone <code>Africa/Casablanca</code>: the two images carry different time-zone databases. Accepted as a lab limit; log lines are stamped by the collector, so the order of events is not affected.</td></tr>
 <tr><td>Power design margin</td><td>Finding from BMS-SIM: 47.1 % load per path exceeds the 45 % warning threshold of the design.</td></tr>
@@ -1050,7 +1050,6 @@ Only T6 has been rehearsed (12 Oct 2026). The other scenarios are defined in the
 <h2>Next steps</h2>
 <p>The work continues in the order of <code>plans/PLAN_02_Admin_Firewall_Logs_Supervision.md</code>, one sub-task per commit:</p>
 <ol>
-<li><b>ADM.4</b> (proposed): dedicated administration account on the servers, second factor enforced on the bastion.</li>
 <li><b>FW</b>: audit of the live firewalls, rule for supervision, behaviour when a core stops, flow matrix.</li>
 <li><b>LOG</b>: log collection server: missing sources, NTP on every device, retention, log viewer for administrators.</li>
 <li><b>ZBX</b> then <b>GRF</b>: Zabbix hosts, checks and triggers; Grafana data source and NOC dashboard.</li>
@@ -1072,7 +1071,9 @@ These accounts exist only inside the GNS3 simulation and are stored in clear tex
 <tbody>
 <tr><td>Cisco devices, administrator</td><td><code>netadmin</code></td><td><code>Esprim-DC-2026!</code></td></tr>
 <tr><td>Cisco enable</td><td>-</td><td><code>Esprim-Enable-2026!</code></td></tr>
-<tr><td>Ubuntu servers (console and SSH)</td><td><code>ubuntu</code></td><td><code>ubuntu</code></td></tr>
+<tr><td>Ubuntu servers, serial console only</td><td><code>ubuntu</code></td><td><code>ubuntu</code> (refused by SSH)</td></tr>
+<tr><td>Ubuntu servers, SSH</td><td><code>sysadmin</code></td><td><code>Esprim-Srv-2026!</code></td></tr>
+<tr><td>SRV-BASTION second factor (TOTP)</td><td><code>sysadmin</code></td><td>secret <code>2N6PYPMNY7M6AUOZ</code>; current code: <code>python automation/totp.py</code></td></tr>
 <tr><td>SNMPv3 (Cisco), SHA + AES-128</td><td><code>zbxmon</code></td><td>auth <code>Zbx-Auth-2026!</code> / priv <code>Zbx-Priv-2026!</code></td></tr>
 <tr><td>SNMP v2c (pfSense, VLAN 60 only)</td><td>community</td><td><code>dc-casa-ro</code></td></tr>
 <tr><td>HSRP key</td><td>-</td><td><code>Hsrp-DC-2026</code></td></tr>

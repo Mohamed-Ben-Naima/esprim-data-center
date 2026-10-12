@@ -616,7 +616,7 @@ def ssh_targets():
             out.append((name.lower(), VL[90]["fw_a" if name.endswith("A") else "fw_b"], "admin", "pfsense", name))
     for name, s in INV["servers"].items():
         if s["kind"] == "vm":
-            out.append((name.lower(), s["ip"], "ubuntu", "linux", name))
+            out.append((name.lower(), s["ip"], C["server_admin_user"], "linux", name))
     return out
 
 

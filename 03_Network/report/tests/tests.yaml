@@ -404,6 +404,41 @@ sections:
         expected: 'Idle EXEC 00:10:00; the session is closed by the device ("Connection to ... closed by remote host"). EDGE-A closed an idle session by itself after 634 s of real time (10 min on its clock); LEAF-B1 had not closed it after 840 s because its clock runs slow (known lab limit).'
         verified: 2026-10-12
 
+      - id: PRV-05
+        proves: The image default account cannot open an SSH session any more
+        from: ADMIN-WS terminal (VNC 5904)
+        command: |-
+          ssh ubuntu@10.90.0.11
+          ssh ubuntu@10.100.0.11
+        expected: '"Permission denied" on both, whatever the password'
+        verified: 2026-10-12
+      - id: PRV-06
+        proves: Servers are administered with the named account
+        from: ADMIN-WS terminal (VNC 5904)
+        command: ssh srv-inf-01 hostname
+        expected: 'password of sysadmin asked, then "srv-inf-01"'
+        verified: 2026-10-12
+      - id: PRV-07
+        proves: The bastion asks for a second factor and refuses a wrong code
+        from: ADMIN-WS terminal (VNC 5904); the code comes from "python automation/totp.py" on the host
+        command: |-
+          ssh bastion       (right password, code 000000)
+          ssh bastion       (right password, current code)
+        expected: 'two questions each time: "Password:" then "Verification code:". Wrong code: "Permission denied". Right code: session opened. A code cannot be used twice.'
+        verified: 2026-10-12
+      - id: PRV-08
+        proves: The second factor is recorded on the log collector
+        from: SYSLOG auxiliary console (5041)
+        command: grep -h google_authenticator /var/log/remote/10.90.0.11_*.log | tail -2
+        expected: '"Accepted google_authenticator for sysadmin"'
+        verified: 2026-10-12
+      - id: PRV-09
+        proves: The jump through the bastion needs the second factor too
+        from: ADMIN-WS terminal (VNC 5904)
+        command: ssh -J bastion core-a "show version | include uptime"
+        expected: 'three questions (bastion password, verification code, device password), then "CORE-A uptime is ..."'
+        verified: 2026-10-12
+
   - id: PWR
     title: Power simulator and DCIM (scenario T6)
     needs: "BMS-SIM, SRV-DCIM-01, SYSLOG, LEAF-B1/B2, cores, firewalls, SRV-BASTION (or the proxy)"

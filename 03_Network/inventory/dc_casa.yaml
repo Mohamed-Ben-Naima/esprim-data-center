@@ -26,8 +26,11 @@ services:
 credentials:
   admin_user: netadmin
   admin_password: "Esprim-DC-2026!"
-  server_user: ubuntu                  # Ubuntu server VMs (set by the GNS3 cloud-init disk)
+  server_user: ubuntu                  # image default account of the Ubuntu VMs: console only, refused by SSH (ADM.4)
   server_password: "ubuntu"
+  server_admin_user: sysadmin          # administration account of the Ubuntu servers (SSH)
+  server_admin_password: "Esprim-Srv-2026!"
+  bastion_totp_secret: "2N6PYPMNY7M6AUOZ"   # second factor of SRV-BASTION (RFC 6238); code: python automation/totp.py
   enable_secret: "Esprim-Enable-2026!"
   snmpv3_user: zbxmon
   snmpv3_auth: "Zbx-Auth-2026!"        # SHA

@@ -1915,7 +1915,7 @@
             },
             {
                 "filters": {},
-                "link_id": "e9bcd258-6ff9-450f-8774-18bd9a095538",
+                "link_id": "a1b6f986-e6de-42ff-ba63-a30ce21d5dff",
                 "link_style": {},
                 "nodes": [
                     {
@@ -1924,7 +1924,7 @@
                             "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
                             "text": "0/0"
                         },
-                        "node_id": "6513d372-b694-47d5-8e17-c93ac5f6ea03",
+                        "node_id": "290a60b5-798e-4432-8ae2-8b5821263e00",
                         "port_number": 0
                     },
                     {
@@ -3863,7 +3863,7 @@
                 },
                 "locked": false,
                 "name": "ADMIN-WS",
-                "node_id": "6513d372-b694-47d5-8e17-c93ac5f6ea03",
+                "node_id": "290a60b5-798e-4432-8ae2-8b5821263e00",
                 "node_type": "docker",
                 "port_name_format": "Ethernet{0}",
                 "port_segment_size": 0,
@@ -3873,14 +3873,14 @@
                     "console_http_path": "/",
                     "console_http_port": 80,
                     "console_resolution": "1280x800",
-                    "container_id": "65ff1c2fb784f7686bf89714299a94878cc10262994a5151bb85bd0107e9ab82",
+                    "container_id": "391dab1819f0e930f454aa360d14ba192ba3af03432b8d06eadc14a39f27018e",
                     "environment": "TZ=Africa/Casablanca\nSYSLOG_HOST=10.60.0.12",
                     "extra_hosts": "",
                     "extra_volumes": [
                         "/root"
                     ],
                     "image": "dc/admin-ws:1.0",
-                    "mac_address": "02:42:13:d3:72:00",
+                    "mac_address": "02:42:0a:60:b5:00",
                     "start_command": "",
                     "usage": ""
                 },

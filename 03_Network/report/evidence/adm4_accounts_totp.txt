@@ -1,0 +1,11 @@
+# ADM.4 - server accounts and bastion second factor - 2026-10-12
+# deploy_servers.py --accounts-only SRV-INF-01 SRV-BASTION -> accounts-ok on both
+1) default account on the bastion:        rc=255 ubuntu@10.90.0.11: Permission denied (keyboard-interactive).
+2) default account on SRV-INF-01:         rc=255 ubuntu@10.100.0.11: Permission denied (publickey,password).
+3) sysadmin on SRV-INF-01 (password):     rc=0   srv-inf-01
+4) bastion, right password, wrong code:   rc=255 Permission denied; prompts: Password: | Verification code:
+5) bastion, right password, right code:   rc=0   srv-bastion
+6) jump -J bastion core-a:                rc=0   CORE-A uptime is 3 hours, 40 minutes; prompts: (sysadmin@10.90.0.11) Password: | (sysadmin@10.90.0.11) Verification code: | (netadmin@10.10.0.21) Password:
+# collector: srv-bastion sshd(pam_google_authenticator): Accepted google_authenticator for sysadmin
+# collector: srv-bastion sshd: Accepted keyboard-interactive/pam for sysadmin from 10.90.0.12
+# access_matrix.py --login: 16 target(s) tested, 0 failure(s), 10 not running
