@@ -104,3 +104,53 @@ Table: Vérification – ADM.2, matrice d'accès (12 octobre 2026)
 | Refus journalisés | `grep filterlog /var/log/remote/all.log` | SYSLOG, console auxiliaire (5041) | Lignes `block` pour la source 10.50.0.11 | Conforme : 36 lignes vers le réseau de management |
 | La sonde fonctionne sur chaque source | Port local de contrôle intégré au script | SRV-INF-01, SRV-WEB-01 | `control ok` | Conforme |
 
+## Règles d'accès privilégié
+
+Deux chemins mènent à un équipement, tous deux depuis le VLAN 90 : la session directe depuis ADMIN-WS
+(`ssh core-a`) et le rebond par SRV-BASTION (`ssh -J bastion core-a`), qui ajoute la bannière, l'audit `auditd` et
+les journaux `sshd` du bastion. Une session ouverte par rebond laisse trois traces indépendantes sur le collecteur :
+
+```text title="Une session par rebond, vue par les trois équipements (12 octobre 2026, 21 h 26)"
+ADMIN-WS     admin-ssh session start user=root target=[-J bastion core-a show users]
+SRV-BASTION  sshd: Disconnected from user ubuntu 10.90.0.12 port 49424
+CORE-A       %SEC_LOGIN-5-LOGIN_SUCCESS: Login Success [user: netadmin] [Source: 10.90.0.11] [localport: 22]
+```
+
+Table: Protection des sessions d'administration
+| Mesure | Réglage | Équipements | Constat |
+|---|---|---|---|
+| Accès distant restreint | SSH v2 seul, lignes VTY filtrées par `ACL-MGMT-ACCESS` (VLAN 90 et 60) | Cisco | Conforme (matrice d'accès) |
+| Verrouillage après échecs | `login block-for 120 attempts 5 within 60` | Cisco | Conforme : au cinquième échec le commutateur refuse toute connexion SSH, y compris avec le bon mot de passe, et le signale (`%SEC_LOGIN-1-QUIET_MODE_ON`) |
+| Délai d'inactivité | `exec-timeout` 10 minutes (valeur par défaut d'IOS, `show line vty 0`) | Cisco | Conforme sur EDGE-A : session fermée par l'équipement après 634 secondes réelles (10 minutes à son horloge). Sur LEAF-B1, la session était encore ouverte à 840 secondes : horloge ralentie (limite décrite ci-dessous) |
+| Journalisation des connexions | `login on-failure log`, `login on-success log` | Cisco | Conforme : 30 réussites et les échecs du test sur le collecteur |
+| Session web des pare-feux | Délai de session par défaut de pfSense (4 heures) | FW-A, FW-B | **Écart** : à ramener à 15 minutes lors du prochain déploiement des pare-feux (FW.2) |
+| Bastion | Bannière, `AllowGroups sudo`, `auditd`, journaux `sshd` centralisés | SRV-BASTION | Conforme ; second facteur TOTP installé mais **non imposé** (voir ci-dessous) |
+
+> [!WARN] Limite du laboratoire : les horloges des commutateurs virtuels retardent
+> Les images IOSvL2 ne reçoivent pas assez de temps processeur sur le poste hôte : leur horloge n'avance qu'à environ
+> 55 à 60 % de la vitesse réelle (CORE-A affichait 19 h 47 à 21 h 28 après 3 h 30 de fonctionnement), et aucun
+> équipement Cisco n'est synchronisé par NTP. Conséquence mesurée : la période de silence de 120 secondes après
+> verrouillage a duré environ quatre minutes réelles. Toutes les temporisations de ces équipements (HSRP,
+> verrouillage, inactivité) sont allongées d'autant ; les temps de convergence mesurés en phase 8 devront être lus
+> avec cette réserve. La synchronisation NTP est traitée avec la collecte des journaux (LOG.1).
+
+Table: Comptes et secrets d'administration – état au 12 octobre 2026
+| Compte | Portée | État | Suite |
+|---|---|---|---|
+| `netadmin` et secret `enable` | Les huit équipements Cisco | Compte partagé, mot de passe propre au laboratoire | Écart assumé : pas de comptes nominatifs dans le laboratoire |
+| `admin` (pfSense) | Interface web et SSH des deux pare-feux | Même mot de passe que `netadmin` | Écart : secret à distinguer |
+| `ubuntu` / mot de passe par défaut | Tous les serveurs Ubuntu, **y compris SRV-BASTION**, SSH par mot de passe | **Non conforme** : identifiants par défaut de l'image | Sous-tâche ADM.4 proposée : compte d'administration dédié, mot de passe de l'inventaire, TOTP imposé sur le bastion |
+| `Admin` / `zabbix` | Interface web de Zabbix | Mot de passe par défaut du produit | Remplacé en ZBX.1 |
+| `admin` (Grafana) | Interface web de Grafana | Mot de passe de l'inventaire | Conforme |
+| Communauté SNMP v2c | Pare-feux, lecture seule, limitée au VLAN 60 | Secret en clair sur le réseau | Écart assumé (pfSense sans SNMPv3 natif) |
+
+Table: Vérification – ADM.3, règles d'accès privilégié (12 octobre 2026)
+| Contrôle | Commande | Depuis | Attendu | Résultat |
+|---|---|---|---|---|
+| Rebond par le bastion | `ssh -J bastion core-a "show users"` | Terminal d'ADMIN-WS | Bannière du bastion puis réponse de CORE-A | Conforme ; source `10.90.0.11` dans le journal de CORE-A |
+| Bastion dans la matrice | `python automation/access_matrix.py --login` | Hôte | SRV-BASTION joignable depuis ADMIN-WS, refusé ailleurs | Conforme : 16 accès testés, 0 échec |
+| Verrouillage | Six tentatives `ssh leaf-b2` avec un mauvais mot de passe, puis une avec le bon | Terminal d'ADMIN-WS | Refus de connexion pendant la période de silence | Conforme : `Connection refused` dès le cinquième échec, connexion de nouveau acceptée ensuite |
+| Trace du verrouillage | `grep SEC_LOGIN /var/log/remote/all.log` | SYSLOG, console auxiliaire (5041) | Lignes `LOGIN_FAILED` puis `QUIET_MODE_ON` | Conforme, source `10.90.0.12` |
+| Délai d'inactivité configuré | `show line vty 0` | LEAF-B1 (console 5018) | `Idle EXEC 00:10:00` | Conforme |
+| Délai d'inactivité constaté | Session SSH laissée sans saisie | ADMIN-WS vers EDGE-A | Fermeture par l'équipement | Conforme sur EDGE-A : session fermée par l'équipement après 634 secondes réelles (10 minutes à son horloge). Sur LEAF-B1, la session était encore ouverte à 840 secondes : horloge ralentie (limite décrite ci-dessous) |
+

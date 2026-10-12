@@ -180,18 +180,38 @@ Files: `automation/access_matrix.py` (new), `report/evidence/access_matrix.csv`,
 | One by hand | `ssh edge-a`, `ssh fw-a`, `ssh srv-inf-01` | ADMIN-WS terminal | three logins |
 | Refusal is logged | `show access-lists ACL-VLAN100-IN \| include deny` | CORE-A (5010) | match counters grow after the SRV-INF-01 probes (the core ACL refuses before the device does) |
 
-### ADM.3 Privileged access rules (A.8.2, A.8.5)
-- [ ] Decide and document the two entry points: **ADMIN-WS** (administration desktop, browser and SSH) and
+### ADM.3 Privileged access rules (A.8.2, A.8.5) — done 12 Oct 2026
+- [x] Decide and document the two entry points: **ADMIN-WS** (administration desktop, browser and SSH) and
       **SRV-BASTION** (SSH jump host with TOTP second factor and `auditd`, started when its tests run). SSH alias
       `ssh -J bastion core-a` provided for the path through the jump host.
-- [ ] Session lock and idle timeout on the devices checked (`exec-timeout 10 0` on Cisco, pfSense GUI session timeout).
-- [ ] Default and shared passwords listed with their status (Zabbix default password is removed in ZBX.1).
+- [x] Session lock and idle timeout on the devices checked (`exec-timeout 10 0` on Cisco, pfSense GUI session timeout).
+      Lockout works (quiet mode at the fifth failure). Idle: EDGE-A closed an idle session by itself after 634 s of real time (10 min on its clock); LEAF-B1 had not closed it after 840 s because its clock runs slow (known lab limit).
+      pfSense web session timeout is the 4 h default: **set it to 15 min in the FW.2 deployment**.
+- [x] Default and shared passwords listed with their status (Zabbix default password is removed in ZBX.1).
+- [x] Findings: (1) servers and SRV-BASTION accept SSH with the image default account `ubuntu`/`ubuntu`, and the
+      TOTP second factor is installed but not enforced -> proposed sub-task ADM.4 below; (2) pfSense `admin` shares
+      the Cisco administrator password; (3) IOSvL2 clocks run at about 55-60 % of real time on this host and no
+      Cisco device is NTP-synchronised: every device timer is stretched (the 120 s quiet period lasted about 4 min).
+      Known lab limit for timing measurements (phase 8); NTP is LOG.1.
 
 | Test | Command | From | Expected |
 |---|---|---|---|
 | Idle timeout | open `ssh core-a`, wait 10 min | ADMIN-WS | session closed by the device |
 | Lockout | 5 wrong passwords on `ssh core-a`, then a right one | ADMIN-WS | refused for 120 s; `%SEC_LOGIN-1-QUIET_MODE_ON` in the log collector |
 | Jump host | `ssh -J bastion core-a` (SRV-BASTION running) | ADMIN-WS | login through 10.90.0.11 |
+
+### ADM.4 Bastion and server accounts (proposed 12 Oct 2026, to be confirmed)
+Closes the two non-conformities found in ADM.3 (A.5.17, A.8.5).
+- [ ] Inventory: named administration account and password for the Ubuntu servers; TOTP secret for the bastion.
+- [ ] `deploy_servers.py`: create the account, lock the password of `ubuntu` for SSH (console login kept for the lab
+      driver), SSH alias users updated by `gen_configs.py`.
+- [ ] SRV-BASTION: `pam_google_authenticator` enforced for SSH (password + TOTP), secret enrolled from the inventory.
+
+| Test | Command | From | Expected |
+|---|---|---|---|
+| Default account refused | `ssh ubuntu@10.90.0.11` | ADMIN-WS | `Permission denied` |
+| TOTP required | `ssh bastion` | ADMIN-WS | password prompt, then `Verification code:` |
+| Matrix still passes | `python automation/access_matrix.py --login` | host | 0 failure |
 
 ---
 
@@ -218,6 +238,7 @@ Files: `automation/fw_audit.py` (new), `report/evidence/fw_audit.txt`.
 Zabbix agent on SRV-BASTION (VLAN 90) cannot reach the Zabbix server today: no ADMIN rule for TCP 10051.
 Files: `inventory/dc_casa.yaml` (rule `EXT-8`: ADMIN_NET → MON_SERVER tcp ZABBIX_TRAPPER), generated files.
 - [ ] Add the rule, validate, `gen_configs.py` (tables), `gen_pfsense.py`, deploy on FW-A, sync to FW-B.
+- [ ] Same deployment: web session timeout of pfSense set to 15 minutes (finding of ADM.3).
 - [ ] Review-focus 2: force FW-B master (`ifconfig carp` maintenance mode on FW-A: *Status > CARP > Enter Persistent
       CARP Maintenance Mode*), repeat the test, leave maintenance mode.
 

@@ -371,6 +371,39 @@ sections:
         expected: 'lines "em5,match,block,in ... tcp ... 10.50.0.11,10.10.0.x,...,22"'
         verified: 2026-10-12
 
+  - id: PRV
+    title: Privileged access rules
+    needs: "ADMIN-WS, SRV-BASTION, firewalls, the target device, SYSLOG and its path"
+    tests:
+      - id: PRV-01
+        proves: A device is reached through the jump host, and each hop records it
+        from: ADMIN-WS terminal (VNC 5904)
+        command: ssh -J bastion core-a "show users"
+        expected: 'banner of SRV-BASTION, then the answer of CORE-A. On SYSLOG: "LOGIN_SUCCESS ... Source: 10.90.0.11" in the file of 10.10.0.21'
+        verified: 2026-10-12
+      - id: PRV-02
+        proves: Repeated wrong passwords lock the device against every SSH login for a while
+        from: ADMIN-WS terminal (VNC 5904)
+        command: |-
+          ssh leaf-b2      (wrong password, three times in a row)
+          ssh leaf-b2      (right password)
+        expected: '"Connection refused" from the fifth failed authentication, also with the right password; accepted again after the quiet period (120 s on the device clock, about 4 min in real time on this host)'
+        verified: 2026-10-12
+      - id: PRV-03
+        proves: The lockout is reported to the log collector
+        from: SYSLOG auxiliary console (5041)
+        command: grep -E "SEC_LOGIN|QUIET" /var/log/remote/10.10.0.34_*.log | tail -5
+        expected: 'lines "LOGIN_FAILED ... Source: 10.90.0.12" then "QUIET_MODE_ON"'
+        verified: 2026-10-12
+      - id: PRV-04
+        proves: An idle administration session is closed by the device
+        from: LEAF-B1 console (5018) for the setting; ADMIN-WS for the behaviour
+        command: |-
+          show line vty 0 | begin Timeouts
+          ssh edge-a       (then type nothing)
+        expected: 'Idle EXEC 00:10:00; the session is closed by the device ("Connection to ... closed by remote host"). EDGE-A closed an idle session by itself after 634 s of real time (10 min on its clock); LEAF-B1 had not closed it after 840 s because its clock runs slow (known lab limit).'
+        verified: 2026-10-12
+
   - id: PWR
     title: Power simulator and DCIM (scenario T6)
     needs: "BMS-SIM, SRV-DCIM-01, SYSLOG, LEAF-B1/B2, cores, firewalls, SRV-BASTION (or the proxy)"

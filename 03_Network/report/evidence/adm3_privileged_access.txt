@@ -1,0 +1,18 @@
+# ADM.3 - privileged access rules - 2026-10-12
+# jump host: ssh -J bastion core-a 'show users' -> rc=0; traces on the collector:
+ADMIN-WS admin-ssh session start user=root target=[-o NumberOfPasswordPrompts=1 -J bastion core-a show users]
+srv-bastion sshd[1070]: Disconnected from user ubuntu 10.90.0.12 port 49424
+CORE-A %SEC_LOGIN-5-LOGIN_SUCCESS: Login Success [user: netadmin] [Source: 10.90.0.11] [localport: 22]
+# lockout on LEAF-B2 (VM clock is UTC):
+20:20:17 wrong password #1: rc=255 Permission denied (publickey,keyboard-interactive,password).
+20:20:20 wrong password #2: rc=255 Permission denied (publickey,keyboard-interactive,password).
+20:20:22 wrong password #3: rc=255 Connection closed by 10.10.0.34 port 22
+20:20:22 wrong password #4: rc=255 ssh: connect to host 10.10.0.34 port 22: Connection refused
+20:20:23 right password during the quiet period: rc=255 Connection refused
+20:22:39 right password after 135 s: rc=255 Connection refused (device clock slow: quiet period ~4 min real)
+LEAF-B2 %SEC_LOGIN-1-QUIET_MODE_ON ... [Source: 10.90.0.12] [localport: 22]
+later: access_matrix --login -> LEAF-B2 reachable, 16 targets, 0 failure
+# idle timeout: show line vty 0 -> Idle EXEC 00:10:00
+EDGE-A: idle SSH session, last client output 634 s after start: 'Connection to 10.10.0.1 closed by remote host.'
+LEAF-B1: idle SSH session still open at 840 s (test limit); device clock 19:57 at 21:28 real time
+# device clocks at 21:28:55 host time: EDGE-A 20:54:03, CORE-A 19:47:49, LEAF-B1 19:57:18 (none NTP-synchronised)
