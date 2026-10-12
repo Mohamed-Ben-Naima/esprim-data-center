@@ -1,0 +1,14 @@
+flowchart TD
+    INET([Internet]) --- ISPA[ISP-A AS64500] & ISPB[ISP-B AS64501]
+    ISPA --- EA[EDGE-A] & EB[EDGE-B]
+    ISPB --- EA & EB
+    EA <--> EB
+    EA & EB --- SWOUT[(SW-OUT 901)]
+    SWOUT --- FWA[FW-A MASTER] & FWB[FW-B BACKUP]
+    FWA <--> FWB
+    FWA & FWB --- CA[CORE-A] & CB[CORE-B]
+    CA <--> CB
+    CA & CB --- LA[LEAF-A1/A2<br/>Hall A] & LB[LEAF-B1/B2<br/>Hall B]
+    LA --- CMP[CMP-01/02/03 + STO-01]
+    LB --- SRV[BCK + INF + MON + DCIM]
+    FWA & FWB --- WEB[SRV-WEB-01 DMZ]

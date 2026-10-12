@@ -1,0 +1,12 @@
+flowchart TD
+    C[Client SRV-CMP-01<br/>10.20.0.11] -->|default .1| CA[CORE-A ACTIVE<br/>VLAN 20]
+    C -.->|standby| CB[CORE-B STANDBY]
+    CA -->|0.0.0.0/0| FWA[FW-A MASTER<br/>10.254.2.1]
+    CB -.->|failover ≤5s| FWB[FW-B BACKUP]
+    FWA -->|SNAT 192.0.2.10| EA[EDGE-A ACTIVE<br/>10.254.1.6]
+    FWA -.->|HSRP track| EB[EDGE-B STANDBY]
+    EA -->|LP200| ISPA[ISP-A]
+    EA -.->|LP100| ISPB[ISP-B]
+    ISPA -.->|T1: ISP-A down ≤10s| ISPB
+    FWA -.->|T2: FW-A down ≤5s<br/>pfsync keeps states| FWB
+    CA -.->|T3: CORE-A down ≤5s<br/>HSRP to CORE-B| CB

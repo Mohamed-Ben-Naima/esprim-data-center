@@ -1,0 +1,25 @@
+flowchart TD
+    INET([Internet]) --- NATA[NAT-A] & NATB[NAT-B]
+    NATA --- ISPA[ISP-A<br/>AS64500 FRR]
+    NATB --- ISPB[ISP-B<br/>AS64501 FRR]
+    ISPA --- EA[EDGE-A<br/>IOSv .1]
+    ISPA --- EB[EDGE-B<br/>IOSv .2]
+    ISPB --- EA
+    ISPB --- EB
+    EA <--> EB
+    EA --- SWOUT[(SW-OUT<br/>VLAN 901)]
+    EB --- SWOUT
+    SWOUT --- FWA[FW-A<br/>pfSense MASTER]
+    SWOUT --- FWB[FW-B<br/>pfSense BACKUP]
+    FWA <--> FWB
+    FWA --- CA[CORE-A<br/>IOSvL2]
+    FWA --- CB[CORE-B<br/>IOSvL2]
+    FWB --- CA
+    FWB --- CB
+    CA <--> CB
+    CA --- LA1[LEAF-A1] & LA2[LEAF-A2] & LB1[LEAF-B1] & LB2[LEAF-B2]
+    CB --- LA1 & LA2 & LB1 & LB2
+    LA1 & LA2 --- CMP1[CMP-01] & CMP2[CMP-02] & CMP3[CMP-03] & STO[STO-01]
+    LB1 & LB2 --- BCK[BCK-01] & INF[INF-01] & MON[MON-01]
+    FWA & FWB --- SWDMZ[(SW-DMZ<br/>VLAN 50)] --- WEB[SRV-WEB-01]
+    EA & EB & FWA & FWB & CA & CB & LA1 & LA2 & LB1 & LB2 --- SWMGMT[(SW-MGMT<br/>VLAN 10/90)] --- BAS[BASTION] & AWS[ADMIN-WS]

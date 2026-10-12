@@ -1,0 +1,25 @@
+flowchart LR
+    subgraph EXT[External / Transit]
+        V901[VLAN 901<br/>10.254.1.0/28<br/>FW CARP .1 / Edge HSRP .6]
+        V902[VLAN 902<br/>10.254.2.0/28<br/>FW CARP .1 / Core HSRP .6]
+    end
+    subgraph SEC[Security edge]
+        DMZ[VLAN 50 DMZ<br/>10.50.0.0/24<br/>FW CARP .1]
+        MGMT[VLAN 10 MGMT OOB<br/>10.10.0.0/24<br/>FW CARP .254]
+        ADMIN[VLAN 90 ADMIN<br/>10.90.0.0/24<br/>FW CARP .1]
+    end
+    subgraph INT[Internal - Core routed + ACL]
+        V20[VLAN 20 SERVEURS<br/>.1 CORE-A]
+        V30[VLAN 30 STOCKAGE<br/>.1 CORE-B]
+        V40[VLAN 40 BACKUP<br/>.1 CORE-A]
+        V60[VLAN 60 MONITORING<br/>.1 CORE-A]
+        V70[VLAN 70 BMS-DCIM<br/>.1 CORE-B]
+        V80[VLAN 80 CCTV<br/>.1 CORE-B]
+        V100[VLAN 100 SERVICES<br/>.1 CORE-A]
+    end
+    V901 --> DMZ
+    V902 --> INT
+    INT -->|syslog / DNS / Zabbix| V60
+    INT -->|only via FW| MGMT
+    ADMIN -->|SSH/HTTPS/SNMP| INT
+    ADMIN -->|SSH/HTTPS| MGMT
