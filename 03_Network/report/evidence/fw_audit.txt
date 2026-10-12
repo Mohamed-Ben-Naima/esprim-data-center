@@ -1,0 +1,41 @@
+# Firewall audit - live pfSense against the generated configuration - 2026-10-12 22:00
+== FW-A (fw-a)
+  [ok] config section <interfaces> identical to the generated file
+  [ok] config section <vlans> identical to the generated file
+  [ok] config section <laggs> identical to the generated file
+  [ok] config section <virtualip> identical to the generated file
+  [ok] config section <gateways> identical to the generated file
+  [ok] config section <staticroutes> identical to the generated file
+  [ok] config section <aliases> identical to the generated file
+  [ok] config section <nat> identical to the generated file
+  [ok] config section <filter> identical to the generated file
+  [ok] config section <hasync> identical to the generated file
+  [ok] config section <syslog> identical to the generated file
+  [ok] config section <snmpd> identical to the generated file
+  [ok] 32/32 generated rule descriptions loaded in pf (165 pf lines)
+  [ok] outbound NAT to 192.0.2.10 loaded
+  [ok] port forwards of 192.0.2.80 (80, 443) loaded
+  [ok] CARP: 5 virtual addresses, state ['MASTER'] (expected 5 x MASTER)
+  [ok] first-time setup wizard trigger absent
+  [info] web session timeout: not set (pfSense default, 240 min)
+== FW-B (fw-b)
+  [ok] config section <interfaces> identical to the generated file
+  [ok] config section <vlans> identical to the generated file
+  [ok] config section <laggs> identical to the generated file
+  [ok] config section <virtualip> identical to the generated file
+  [ok] config section <gateways> identical to the generated file
+  [ok] config section <staticroutes> identical to the generated file
+  [ok] config section <aliases> identical to the generated file
+  [ok] config section <nat> identical to the generated file
+  [ok] config section <filter> identical to the generated file
+  [ok] config section <hasync> identical to the generated file
+  [ok] config section <syslog> identical to the generated file
+  [ok] config section <snmpd> identical to the generated file
+  [ok] 32/32 generated rule descriptions loaded in pf (165 pf lines)
+  [ok] outbound NAT to 192.0.2.10 loaded
+  [ok] port forwards of 192.0.2.80 (80, 443) loaded
+  [ok] CARP: 5 virtual addresses, state ['BACKUP'] (expected 5 x BACKUP)
+  [ok] first-time setup wizard trigger absent
+  [info] web session timeout: not set (pfSense default, 240 min)
+
+0 difference(s)

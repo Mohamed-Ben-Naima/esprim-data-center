@@ -144,6 +144,19 @@ sections:
         expected: '"HTTP/1.1 200 OK" and "OK SRV-WEB-01"'
         verified: 2026-10-12
 
+      - id: FW-07
+        proves: Both live firewalls run exactly the configuration generated from the inventory
+        from: Windows host, folder 03_Network (ADMIN-WS, FW-A and FW-B running)
+        command: python automation/fw_audit.py
+        expected: 'every line "[ok]" for FW-A and FW-B (12 configuration sections, 32/32 rules loaded in pf, NAT, CARP roles, no setup wizard), last line "0 difference(s)"'
+        verified: 2026-10-12
+      - id: FW-08
+        proves: A command can be run on a firewall by the administrator path (SSH from ADMIN-WS)
+        from: Windows host, folder 03_Network
+        command: python automation/adminws.py fw-a "pfctl -sr | wc -l"
+        expected: the number of loaded pf lines (165 on 12 Oct), the same on fw-b
+        verified: 2026-10-12
+
   - id: CORE
     title: Core and leaf switches
     needs: "CORE-A, CORE-B, LEAF-B1, LEAF-B2 (firewalls and edge tier for CORE-06)"

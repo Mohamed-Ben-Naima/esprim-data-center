@@ -124,3 +124,45 @@ Table: Sources reçues par le collecteur syslog central
 | LEAF-A1, A2, B1, B2 | 10.10.0.31 à 10.10.0.34 | SVI VLAN 10 → pare-feu → VLAN 60 |
 | FW-A, FW-B | 10.10.0.11, 10.10.0.12 | Interface MGMT |
 | SRV-INF-01, SRV-DCIM-01, CCTV-SIM | VLAN 100, 70, 80 | Routage inter-VLAN par le cœur (ACL : syslog autorisé) |
+
+## Audit des pare-feux en service
+
+Une configuration générée n'a de valeur que si les équipements exécutent bien celle-là. Le script
+`automation/fw_audit.py` le vérifie sans rien modifier : depuis le poste d'administration, il ouvre une session SSH
+sur chaque pare-feu, relit `/cf/conf/config.xml` et le compare, section par section, au fichier produit par
+`gen_pfsense.py` (les horodatages sont ignorés, les descriptions sont comparées après décodage des entités HTML que
+pfSense y introduit). Il contrôle ensuite ce que le moteur de filtrage a réellement chargé : chaque règle générée doit
+se retrouver dans `pfctl -sr` par son libellé, et aucune règle chargée ne doit être étrangère à l'inventaire.
+
+Table: Résultat de l'audit du 12 octobre 2026 (0 écart)
+| Contrôle | FW-A | FW-B |
+|---|---|---|
+| Sections `interfaces`, `vlans`, `laggs`, `virtualip`, `gateways`, `staticroutes` | Identiques au fichier généré | Identiques |
+| Sections `aliases`, `nat`, `filter` | Identiques (40 règles, 2 redirections) | Identiques, reçues par la synchronisation XMLRPC |
+| Sections `hasync`, `syslog`, `snmpd` | Identiques | Identiques |
+| Règles chargées dans pf | 32 libellés sur 32, 165 lignes | 32 sur 32, 165 lignes |
+| Traduction d'adresses | SNAT 192.0.2.10 et redirections de 192.0.2.80 chargés | Idem |
+| Rôles CARP | MASTER sur les cinq VIP | BACKUP sur les cinq VIP |
+| Assistant de première configuration | Absent | Absent |
+
+Les deux règles d'administration ajoutées après le premier déploiement (EXT-7, DNS/NTP ; journalisation des sessions
+vers le collecteur) sont bien en service sur les deux pare-feux. Deux points sont relevés pour le prochain
+déploiement : le délai de session de l'interface web est celui par défaut de pfSense (4 heures), et le fichier
+`/cf/conf/trigger_initial_wizard`, laissé par l'installation, doit être supprimé à l'étape 5 de la chaîne de
+déploiement (sinon l'interface web ouvre l'assistant de première configuration au lieu du tableau de bord ; il a été
+supprimé à la main le 12 octobre 2026 sur les deux pare-feux).
+
+> [!NOTE] Nouvelle voie d'accès pour l'automatisation
+> Jusqu'ici, les pare-feux n'étaient pilotés que par leur console VNC. Le module `automation/adminws.py` exécute
+> désormais des commandes par SSH **depuis ADMIN-WS**, c'est-à-dire par le chemin d'un administrateur : règles de la
+> zone ADMIN, compte `admin`, session inscrite au journal central. L'audit et les déploiements suivants l'utilisent.
+
+Table: Vérification – FW.1, audit des pare-feux (12 octobre 2026)
+| Contrôle | Commande | Depuis | Attendu | Résultat |
+|---|---|---|---|---|
+| Audit complet | `python automation/fw_audit.py` | Hôte, dossier `03_Network` | `0 difference(s)`, code de retour 0 | Conforme |
+| L'audit sait voir un écart | Comparaison des fichiers générés de FW-A et de FW-B par la même fonction | Hôte | Sections `interfaces`, `virtualip`, `hasync` différentes | Conforme |
+| Règle ajoutée présente | `python automation/adminws.py fw-a "pfctl -sr"` puis recherche de `EXT-7` | Hôte | Au moins une ligne | Conforme : 2 lignes sur FW-A et sur FW-B |
+| Même nombre de règles | `pfctl -sr` compté sur les deux pare-feux | FW-A et FW-B | Nombres égaux | Conforme : 165 et 165 |
+| Tableau de bord sans assistant | Ouvrir `https://10.90.0.1` | Navigateur de l'hôte par le proxy, ou ADMIN-WS | Page « Status: Dashboard » | Conforme |
+

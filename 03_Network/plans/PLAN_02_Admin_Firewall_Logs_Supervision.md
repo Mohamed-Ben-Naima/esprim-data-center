@@ -220,15 +220,15 @@ Closes the two non-conformities found in ADM.3 (A.5.17, A.8.5).
 
 ## FW — Firewall completion
 
-### FW.1 Audit: live firewalls against the generated configuration
+### FW.1 Audit: live firewalls against the generated configuration — done 12 Oct 2026
 Files: `automation/fw_audit.py` (new), `report/evidence/fw_audit.txt`.
-- [ ] `fw_audit.py` runs `pfctl -sr`, `pfctl -sn`, `ifconfig | grep carp:` and `ls /cf/conf/trigger_initial_wizard` on
-      FW-A and FW-B through `vnc.py`, writes the output to a file on the firewall, fetches it with the existing
-      `vm_fileserver.py` path, and compares rule labels with `inventory.firewall_rules`.
-- [ ] Record every difference. Known candidates: rules EXT-7 and ADMIN→syslog (generated after the last deployment),
+- [x] `fw_audit.py` reads `config.xml`, `pfctl -sr`, `pfctl -sn`, CARP state and the wizard trigger on FW-A and FW-B
+      **over SSH from ADMIN-WS** (new module `automation/adminws.py`, simpler than the VNC + file-server path first
+      planned) and compares them with the generated `configs/pfsense/<FW>.config.xml`.
+- [x] Record every difference: **0 difference on both firewalls**. Known candidates: rules EXT-7 and ADMIN→syslog (generated after the last deployment),
       wizard trigger file (removed live on 12 Oct 2026, not in the deployment procedure).
-- [ ] Redeploy with `gen_pfsense.py` if a generated rule is missing live; add the trigger-file removal to the
-      deployment step documented in `06_securite.md`.
+- [x] No redeployment needed (EXT-7 and the ADMIN -> syslog rule are live on both). Trigger-file removal documented in
+      `06_securite.md`; it becomes a step of the FW.2 deployment.
 
 | Test | Command | From | Expected |
 |---|---|---|---|

@@ -86,7 +86,8 @@ Table: Avancement des sous-tâches
 | ADM.2 | Matrice d'accès : joignable depuis la zone d'administration, refusé ailleurs ; SSH rétabli sur LEAF-B2 | **Terminé** |
 | ADM.3 | Règles d'accès privilégié : rebond par le bastion, verrouillage, délai d'inactivité, état des comptes | **Terminé** |
 | ADM.4 | Compte d'administration `sysadmin`, compte par défaut refusé en SSH, second facteur TOTP exigé sur le bastion | **Terminé** |
-| FW.1 – FW.5 | Pare-feux : audit, règles de supervision, bascule côté LAN, matrice de flux | À faire |
+| FW.1 | Audit des pare-feux en service contre la configuration générée (0 écart) | **Terminé** |
+| FW.2 – FW.5 | Pare-feux : règles de supervision, bascule côté LAN, matrice de flux, preuves | À faire |
 | LOG.1 – LOG.6 | Collecte des journaux : sources, horloges, rétention, consultation | À faire |
 | 7.1 – 7.3 | Supervision (ZBX.1 – ZBX.7, GRF.1 – GRF.5 du plan 02) | À faire |
 | ISO.1 – ISO.2 | Matrice d'accès et de conformité ISO/IEC 27001, sauvegarde des configurations | À faire |
