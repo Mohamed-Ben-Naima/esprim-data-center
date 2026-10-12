@@ -1,8 +1,10 @@
 """Start the lab in stages and measure resources after each stage (plan §2.3).
 
-  python automation/lab_up.py [--settle 150] [--from N]
+  python automation/lab_up.py [--settle 150] [--from N] [--profile full|supervision]
 Each stage is started, left to settle, then measured: GNS3 VM memory, KSM shared pages, swap, load average,
 host free RAM. Results -> report/evidence/resources_stages.csv (+ printed table).
+Profile "supervision" (PLAN_02 P0.2) leaves hall A, the undeployed servers and SRV-BASTION off: it is what the
+15.7 GB host carries together with SRV-MON-01. Results -> report/evidence/resources_supervision.csv.
 """
 import csv
 import re
@@ -23,6 +25,9 @@ STAGES = [
     ("4 Services", ["SYSLOG", "BMS-SIM", "CCTV-SIM", "SRV-DCIM-01", "SRV-INF-01", "SRV-MON-01", "SRV-BASTION"]),
     ("5 Charges", ["SRV-CMP-01", "SRV-CMP-02", "SRV-CMP-03", "SRV-STO-01", "SRV-BCK-01"]),
 ]
+OFF = {"full": set(),
+       "supervision": {"LEAF-A1", "LEAF-A2", "SRV-BASTION", "SRV-CMP-01", "SRV-CMP-02", "SRV-CMP-03", "SRV-STO-01",
+                       "SRV-BCK-01"}}
 
 
 def measure():
@@ -40,11 +45,15 @@ def measure():
 def main():
     settle = int(sys.argv[sys.argv.index("--settle") + 1]) if "--settle" in sys.argv else 150
     first = int(sys.argv[sys.argv.index("--from") + 1]) if "--from" in sys.argv else 1
+    profile = sys.argv[sys.argv.index("--profile") + 1] if "--profile" in sys.argv else "full"
+    if profile not in OFF:
+        sys.exit(f"unknown profile {profile!r}; choose one of {', '.join(OFF)}")
     api = labctl.Gns3()
     p = api.open(api.project())
     rows = [dict(stage="0 Avant démarrage", nodes="—", **measure())] if first == 1 else []
     for i, (stage, names) in enumerate(STAGES, 1):
-        if i < first:
+        names = [n for n in names if n not in OFF[profile]]
+        if i < first or not names:
             continue
         for n in names:
             node = api.node(p, n)
@@ -55,7 +64,7 @@ def main():
         m = measure()
         rows.append(dict(stage=stage, nodes=len(names), **m))
         print("   ", m, flush=True)
-    path = NET / "report" / "evidence" / "resources_stages.csv"
+    path = NET / "report" / "evidence" / ("resources_stages.csv" if profile == "full" else f"resources_{profile}.csv")
     if rows:
         with open(path, "w", newline="", encoding="utf-8") as f:
             w = csv.DictWriter(f, fieldnames=list(rows[0]))

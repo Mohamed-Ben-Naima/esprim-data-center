@@ -73,21 +73,44 @@ design PDF `05_Report/Datacenter_Casablanca_TIA942_GNS3_detaille.pdf` Tables 18,
 ### P0.2 Supervision profile (which nodes run during this plan)
 Zabbix must see the network devices, so the edges come back; hall A stays off.
 Files: `automation/lab_up.py` (add profile `supervision`), `report/content/09_mise_en_oeuvre.md`.
-- [ ] Add `--profile supervision` to `lab_up.py`: NAT-A/B, ISP-A/B, SW-OUT/DMZ/MGMT, EDGE-A/B, FW-A/B, CORE-A/B,
-      LEAF-B1/B2, SRV-WEB-01, ADMIN-WS, SYSLOG, BMS-SIM, CCTV-SIM, SRV-DCIM-01, SRV-INF-01, SRV-MON-01 (24 nodes).
+- [x] Add `--profile supervision` to `lab_up.py`: NAT-A/B, ISP-A/B, SW-OUT/DMZ/MGMT, EDGE-A/B, FW-A/B, CORE-A/B,
+      LEAF-B1/B2, SRV-WEB-01, ADMIN-WS, SYSLOG, BMS-SIM, CCTV-SIM, SRV-DCIM-01, SRV-INF-01, SRV-MON-01 (23 nodes).
       Not started: LEAF-A1/A2, SRV-CMP-01/02/03, SRV-STO-01, SRV-BCK-01, SRV-BASTION.
       ADMIN-WS is the administration entry point of this profile (see ADM); SRV-BASTION is started only for its own tests.
 - [x] Host power settings on mains (12 Oct 2026): hard-disk turn-off was 30 s and USB selective suspend was on, while the
       VM disk is on the external USB drive H:, which dropped three times that day (12:32, 13:07, 13:56) and froze the VM
       twice. Both set to off: `powercfg /setacvalueindex SCHEME_CURRENT SUB_DISK DISKIDLE 0` and the USB
       selective-suspend index to 0. Check again after an Armoury Crate update, which resets the power plan.
-- [ ] Start it tier by tier, then leave it idle 10 minutes and measure.
-- [ ] **Gate:** if the cores flap, drop SRV-INF-01, then EDGE-B, and record the profile that holds.
+- [x] Start it tier by tier, then leave it idle 10 minutes and measure (12 Oct 2026, 16:13–16:42, results below).
+- [ ] **Gate: not passed with 23 nodes.** Reduce and measure again (drop SRV-INF-01, then EDGE-B), or free memory on
+      the host first; record the profile that holds.
+
+**Result of the first run (12 Oct 2026).** `report/evidence/resources_supervision.csv`:
+
+| Stage | Nodes | VM RAM used | VM RAM available | VM load | Host RAM free |
+|---|---|---|---|---|---|
+| before | 0 | 0.4 GB | 7.2 GB | 0.2 | 4.8 GB |
+| 1 WAN / edge | 7 | 0.8 GB | 6.8 GB | 1.4 | 4.1 GB |
+| 2 security / management | 6 | 3.3 GB | 4.3 GB | 3.2 | 1.0 GB |
+| 3 core / distribution | 4 | 5.0 GB | 2.6 GB | 8.3 | 0.6 GB |
+| 4 services | 6 | 5.8 GB | 1.8 GB | 7.7 | 0.4 GB |
+
+- Works: BGP 3/3 on EDGE-A, gateways split as designed, pfSense, BMS, DCIM and web site reachable through the proxy,
+  no disk error on H: during the whole run, node disk images clean.
+- Does not hold: during 12 idle minutes both cores logged one burst of gateway changes (HSRP state-change lines
+  CORE-A 9 → 27, CORE-B 37 → 67); host free RAM ended at 0.4 GB (target ≥ 0.5) and a background task of the session was
+  stopped for low host memory at 16:55.
+- Damage from the disk drops found and repaired: SRV-MON-01 booted with a corrupt ext4 root (services down). Repaired
+  offline with `python automation/fsck_servers.py --repair SRV-MON-01`; packages verify clean (`dpkg --verify`); the
+  InnoDB redo log was also broken, so the Zabbix database was re-created with the deployment role (it held defaults
+  only). SRV-BASTION, SRV-CMP-01, SRV-INF-01 and both firewalls are clean. Left to delete on SRV-MON-01:
+  `/var/lib/mysql.broken` (334 MB).
 
 | Test | Command | From | Expected |
 |---|---|---|---|
 | Disk stays awake | `powercfg /query SCHEME_CURRENT SUB_DISK DISKIDLE` | host | AC index `0x00000000` |
 | No disk error | `Get-WinEvent -FilterHashtable @{LogName='System';Id=51;StartTime=(Get-Date).AddHours(-1)}` | host PowerShell | no event |
+| Server filesystems | `python automation/fsck_servers.py SRV-BASTION SRV-CMP-01` (nodes stopped) | host | `e2fsck exit 0` for each |
 | Host memory | `powershell "(Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1MB"` | host | ≥ 0.5 GB |
 | VM load | `python automation/gns3vm.py "cat /proc/loadavg; free -m"` | host | load < 8, swap < 300 MB |
 | Gateways stable | `python automation/labctl.py show CORE-B "show logging \| count HSRP-5-STATECHANGE"` twice, 10 min apart | host | same number |

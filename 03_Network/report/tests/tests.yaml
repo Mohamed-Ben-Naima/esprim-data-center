@@ -28,7 +28,30 @@ sections:
         from: Windows host, folder 03_Network
         command: python automation/gns3vm.py --sudo -f automation/check_disks.sh
         expected: '"No errors were found on the image" on each line, then "images with problems: 0"'
-        verified: null      # the check passed on 12 Oct with an inline command; this script has not completed a run yet
+        verified: 2026-10-12
+
+      - id: PLT-04
+        proves: The filesystem inside a server disk is clean (qemu-img check does not look inside)
+        from: Windows host, folder 03_Network; the nodes must be stopped
+        command: python automation/fsck_servers.py SRV-BASTION SRV-CMP-01
+        expected: '"e2fsck exit 0" for each node. Exit 4 means errors: repair with --repair.'
+        verified: 2026-10-12
+      - id: PLT-05
+        proves: Windows does not spin the VM disk down or suspend its USB link on mains power
+        from: Windows host, PowerShell
+        command: |-
+          powercfg /query SCHEME_CURRENT 0012ee47-9041-4b5d-9b77-535fba8b1442 6738e2c4-e8a5-4a42-b16a-e040e769756e
+          powercfg /query SCHEME_CURRENT 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226
+        expected: "AC index 0x00000000 on both: disk turn-off never, USB selective suspend off"
+        verified: 2026-10-12
+      - id: PLT-06
+        proves: The external disk holding the VM had no error in the last hour
+        from: Windows host, PowerShell
+        command: |-
+          (Get-WinEvent -FilterHashtable @{LogName='System'; StartTime=(Get-Date).AddMinutes(-60)} |
+            Where-Object { $_.ProviderName -match '^disk$|^Ntfs$' -and $_.Id -in 50,51 } | Measure-Object).Count
+        expected: "0"
+        verified: 2026-10-12
 
   - id: EDGE
     title: Providers and edge routers
