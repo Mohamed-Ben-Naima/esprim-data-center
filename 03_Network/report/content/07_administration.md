@@ -66,3 +66,41 @@ Table: Vérification – ADM.1, poste d'administration (12 octobre 2026)
 | Session journalisée | `grep admin-ssh /var/log/remote/all.log` | SYSLOG, console auxiliaire (5041) | Lignes `session start` et `session end` | Conforme (16 lignes après 8 sessions) |
 | Heure locale | `date` | ADMIN-WS puis SYSLOG | Même heure sur les deux | **Limite connue du laboratoire** : fuseau `Africa/Casablanca` des deux côtés, mais ADMIN-WS affiche +00 et SYSLOG +01 (bases de fuseaux horaires différentes dans les deux images). Les journaux sont horodatés par le collecteur : l'ordre des événements n'est pas affecté |
 | Topologie inchangée | `python automation/verify_topology.py` | Hôte | `RESULT: OK`, 60 liens | Conforme |
+
+## Matrice d'accès : tout depuis la zone d'administration, rien depuis ailleurs
+
+Le script `automation/access_matrix.py` lit dans l'inventaire la liste des équipements administrables (alias SSH du
+poste d'administration et interfaces web) et sonde chacun d'eux depuis **trois réseaux** : la zone d'administration
+(ADMIN-WS, VLAN 90), un réseau interne (SRV-INF-01, VLAN 100) et la DMZ (SRV-WEB-01, VLAN 50). Un accès n'est conforme
+que s'il répond depuis ADMIN-WS **et** reste muet depuis les deux autres réseaux ; seul le site web public, déclaré
+`scope: all`, peut répondre aux réseaux internes. Avec l'option `--login`, une vraie session SSH est ouverte sur chaque
+équipement en marche. Un équipement arrêté est signalé « arrêté », jamais en échec.
+
+@include generated/access_matrix.md
+
+Les refus ne sont pas silencieux : ils sont comptés et journalisés par l'équipement qui les prononce.
+
+```text title="Traces des refus sur le collecteur central (12 octobre 2026)"
+CORE-A  %SEC-6-IPACCESSLOGP: list ACL-VLAN100-IN denied tcp 10.100.0.11(57938) -> 10.70.0.12(8080), 1 packet
+FW-A    filterlog: em5,match,block,in,4,...,tcp,60,10.50.0.11,10.10.0.34,37803,22
+CORE-A# show access-lists ACL-VLAN100-IN | include deny
+    180 deny ip any 10.10.0.0 0.0.0.255 log (22 matches)
+    190 deny ip any 10.90.0.0 0.0.0.255 log (20 matches)
+```
+
+> [!WARN] Défaut révélé par la matrice : LEAF-B2 sans SSH
+> Au premier passage, LEAF-B2 refusait la connexion sur le port 22 : le commutateur n'avait plus de clés RSA
+> (`show ip ssh` : *SSH Disabled – Please create RSA keys*), il n'était donc administrable que par sa console.
+> Les clés ont été régénérées (`crypto key generate rsa modulus 2048`) et la configuration sauvegardée ; la matrice
+> est ensuite passée sans échec. Leur conservation après un redémarrage du commutateur reste à constater : la matrice
+> sert de contrôle de non-régression à chaque démarrage du laboratoire.
+
+Table: Vérification – ADM.2, matrice d'accès (12 octobre 2026)
+| Contrôle | Commande | Depuis | Attendu | Résultat |
+|---|---|---|---|---|
+| Matrice complète avec sessions SSH | `python automation/access_matrix.py --login` | Hôte, dossier `03_Network` | Chaque équipement en marche joignable depuis ADMIN-WS, refusé ailleurs ; code de retour 0 | Conforme : 15 accès testés, 0 échec, 11 équipements arrêtés |
+| Sessions SSH réelles | Colonne « Session SSH » de la matrice | ADMIN-WS | Une réponse de chaque équipement | Conforme : EDGE-A/B, CORE-A/B, LEAF-B1/B2, FW-A/B, SRV-INF-01 |
+| Refus comptés par le cœur | `show access-lists ACL-VLAN100-IN` | CORE-A (console 5010) | Compteurs des lignes `deny … log` en hausse | Conforme : 22 et 20 correspondances |
+| Refus journalisés | `grep filterlog /var/log/remote/all.log` | SYSLOG, console auxiliaire (5041) | Lignes `block` pour la source 10.50.0.11 | Conforme : 36 lignes vers le réseau de management |
+| La sonde fonctionne sur chaque source | Port local de contrôle intégré au script | SRV-INF-01, SRV-WEB-01 | `control ok` | Conforme |
+

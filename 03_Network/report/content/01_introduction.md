@@ -83,7 +83,8 @@ Table: Avancement des sous-tâches
 | 6.2 – 6.4 | Autres serveurs (bastion, stockage, sauvegarde, calcul), matrice de flux | En cours |
 | P0 (plan 02) | Base Git propre, profil de travail mesuré, rapport « Test the Lab » | **Terminé** (SRV-MON-01 démarré seulement pour la supervision) |
 | ADM.1 | Poste d'administration `dc/admin-ws:1.0` : portail, alias SSH, sessions journalisées | **Terminé** |
-| ADM.2 – ADM.3 | Matrice d'accès, règles d'accès privilégié | À faire |
+| ADM.2 | Matrice d'accès : joignable depuis la zone d'administration, refusé ailleurs ; SSH rétabli sur LEAF-B2 | **Terminé** |
+| ADM.3 | Règles d'accès privilégié (délais d'inactivité, verrouillage, rebond par le bastion) | À faire |
 | FW.1 – FW.5 | Pare-feux : audit, règles de supervision, bascule côté LAN, matrice de flux | À faire |
 | LOG.1 – LOG.6 | Collecte des journaux : sources, horloges, rétention, consultation | À faire |
 | 7.1 – 7.3 | Supervision (ZBX.1 – ZBX.7, GRF.1 – GRF.5 du plan 02) | À faire |

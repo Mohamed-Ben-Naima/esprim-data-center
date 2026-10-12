@@ -159,20 +159,26 @@ inventory), `inventory/dc_casa.yaml` (image name), `automation/deploy_containers
 | Portal | open Firefox | ADMIN-WS (VNC 5904) | portal page, every link opens |
 | Session logged | `grep "ADMIN-WS" /var/log/remote/all.log \| tail -2` | SYSLOG aux console (5041) | start and end lines of that session |
 
-### ADM.2 Access matrix: everything reachable from the bastion, nothing from elsewhere
+### ADM.2 Access matrix: everything reachable from the bastion, nothing from elsewhere — done 12 Oct 2026
 Files: `automation/access_matrix.py` (new), `report/evidence/access_matrix.csv`,
 `report/content/generated/access_matrix.md`.
-- [ ] For every equipment of the inventory: SSH port and banner, web interface status code, from ADMIN-WS.
+- [x] For every equipment of the inventory: SSH port and banner, web interface status code, from ADMIN-WS.
       Targets: EDGE-A/B, CORE-A/B, LEAF-A1/A2/B1/B2 (management addresses), FW-A/B (SSH and HTTPS), every running
       Linux server (SSH), every web interface.
-- [ ] The same probes from a non-administration network (SRV-INF-01, VLAN 100) must all fail — A.8.3, A.8.22.
-- [ ] Equipment that is stopped is reported as "not running", not as a failure.
+- [x] The same probes from a non-administration network (SRV-INF-01, VLAN 100) must all fail — A.8.3, A.8.22.
+      Added: a third source in the DMZ (SRV-WEB-01), `scope: all` for the public site, a self-check of the probe on
+      each source, and `--login` (real SSH session on every running equipment).
+- [x] Equipment that is stopped is reported as "not running", not as a failure.
+- [x] Result: 15 targets tested, 0 failure, 11 not running. Defect found and fixed: **LEAF-B2 had no RSA keys, SSH
+      was disabled**; keys regenerated and saved. To confirm at the next full restart: LEAF-B2 still answers SSH
+      (run the matrix). LEAF-A1/A2 are off and unchecked.
+- [ ] For LOG.1: CORE-A stamped 19:38 on a message received at 21:14 (device clocks are far off).
 
 | Test | Command | From | Expected |
 |---|---|---|---|
 | Matrix | `python automation/access_matrix.py` | host | every running equipment `reachable` from ADMIN-WS, `refused` from SRV-INF-01 |
 | One by hand | `ssh edge-a`, `ssh fw-a`, `ssh srv-inf-01` | ADMIN-WS terminal | three logins |
-| Refusal is logged | `show access-lists ACL-MGMT-ACCESS` | CORE-A (5010) | hits on `deny any log` after the SRV-INF-01 probes |
+| Refusal is logged | `show access-lists ACL-VLAN100-IN \| include deny` | CORE-A (5010) | match counters grow after the SRV-INF-01 probes (the core ACL refuses before the device does) |
 
 ### ADM.3 Privileged access rules (A.8.2, A.8.5)
 - [ ] Decide and document the two entry points: **ADMIN-WS** (administration desktop, browser and SSH) and

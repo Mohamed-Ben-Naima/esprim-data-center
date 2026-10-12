@@ -342,6 +342,35 @@ sections:
         verified: null
         limit: 'Known lab limit (accepted 12 Oct 2026): both use the zone Africa/Casablanca, but ADMIN-WS shows +00 and SYSLOG +01 because the two images carry different time-zone databases. Log lines are stamped by the collector, so the order of events is not affected.'
 
+  - id: ACC
+    title: Access matrix (who can administer what, and from where)
+    needs: "ADMIN-WS, SRV-INF-01, SRV-WEB-01, firewalls, cores, LEAF-B1/B2 and every equipment you want in the matrix"
+    tests:
+      - id: ACC-01
+        proves: Every running equipment is administered from ADMIN-WS and refused from an internal network and from the DMZ
+        from: Windows host, folder 03_Network
+        command: python automation/access_matrix.py --login
+        expected: 'each running target "reachable" from ADMIN-WS with an SSH answer, "refused" from SRV-INF-01 and SRV-WEB-01 (the public web site is reachable internally by design); last line "0 failure(s)"; stopped equipment shown "not running"'
+        verified: 2026-10-12
+      - id: ACC-02
+        proves: SSH is enabled on a switch (a switch without RSA keys refuses port 22)
+        from: LEAF-B2 console (5020), or any Cisco console
+        command: show ip ssh
+        expected: '"SSH Enabled - version 2.0". If "SSH Disabled": conf t, crypto key generate rsa modulus 2048, end, write memory'
+        verified: 2026-10-12
+      - id: ACC-03
+        proves: A refused attempt from an internal network is counted by the core
+        from: CORE-A console (5010), after ACC-01
+        command: show access-lists ACL-VLAN100-IN | include deny
+        expected: the lines "deny ip any 10.10.0.0" and "deny ip any 10.90.0.0" show matches, more than before the run
+        verified: 2026-10-12
+      - id: ACC-04
+        proves: A refused attempt from the DMZ is logged by the firewall on the central collector
+        from: SYSLOG auxiliary console (5041), after ACC-01
+        command: grep filterlog /var/log/remote/all.log | grep ",10.50.0.11,10.10.0" | tail -2
+        expected: 'lines "em5,match,block,in ... tcp ... 10.50.0.11,10.10.0.x,...,22"'
+        verified: 2026-10-12
+
   - id: PWR
     title: Power simulator and DCIM (scenario T6)
     needs: "BMS-SIM, SRV-DCIM-01, SYSLOG, LEAF-B1/B2, cores, firewalls, SRV-BASTION (or the proxy)"

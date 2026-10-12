@@ -26,6 +26,8 @@ services:
 credentials:
   admin_user: netadmin
   admin_password: "Esprim-DC-2026!"
+  server_user: ubuntu                  # Ubuntu server VMs (set by the GNS3 cloud-init disk)
+  server_password: "ubuntu"
   enable_secret: "Esprim-Enable-2026!"
   snmpv3_user: zbxmon
   snmpv3_auth: "Zbx-Auth-2026!"        # SHA
@@ -283,6 +285,7 @@ internet_uplinks:
 
 # Web interfaces an administrator opens from ADMIN-WS (portal page of the webterm, access matrix).
 # node = equipment that serves the page (it must be running); login = account name, the secret is in `credentials`.
+# scope: admin (default) = reachable from the administration zone only; all = internal networks may reach it too.
 web_interfaces:
   - {name: "pfSense - cluster", node: FW-A, url: "https://10.90.0.1/", login: admin, descr: "Firewall that is master now: rules, NAT, CARP status, logs"}
   - {name: "pfSense - FW-A", node: FW-A, url: "https://10.90.0.2/", login: admin, descr: "First firewall, whatever its role"}
@@ -291,7 +294,7 @@ web_interfaces:
   - {name: "Grafana", node: SRV-MON-01, url: "http://10.60.0.11:3000/", login: admin, descr: "NOC dashboard"}
   - {name: "BMS-SIM", node: BMS-SIM, url: "http://10.70.0.12:8080/", login: "", descr: "Power paths A and B, load, alarms"}
   - {name: "DCIM", node: SRV-DCIM-01, url: "http://10.70.0.11:8080/", login: "", descr: "State of the 96 racks"}
-  - {name: "Web site (DMZ)", node: SRV-WEB-01, url: "https://10.50.0.11/", login: "", descr: "Public site as served inside the DMZ"}
+  - {name: "Web site (DMZ)", node: SRV-WEB-01, url: "https://10.50.0.11/", login: "", scope: all, descr: "Public site as served inside the DMZ"}
 
 # ---------------------------------------------------------------------------------------------------
 # Security policy (PDF Table 18). Ports: alias names resolved in `port_aliases`.
