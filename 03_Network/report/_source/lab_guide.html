@@ -1034,6 +1034,7 @@ Only T6 has been rehearsed (12 Oct 2026). The other scenarios are defined in the
 <tr><td>No failover measurement</td><td>Targets (10 s, 5 s, 1 s) are design values, not yet measured.</td></tr>
 <tr><td>Firewalls use static routes</td><td>The design asked for OSPF including the firewalls. pfSense has no OSPF without an extra package, so static routes to HSRP virtual IPs are used. Documented deviation.</td></tr>
 <tr><td>Small inconsistencies</td><td>The inventory lists SRV-WEB-01 with image <code>nginx:alpine</code> while the project runs <code>dc/web:1.0</code>. One evidence file (<code>CORE-A traceroute</code>) contains a command syntax error instead of a result.</td></tr>
+<tr><td>Local time differs between images</td><td>ADMIN-WS shows +00 and the log collector +01 for the same zone <code>Africa/Casablanca</code>: the two images carry different time-zone databases. Accepted as a lab limit; log lines are stamped by the collector, so the order of events is not affected.</td></tr>
 <tr><td>Power design margin</td><td>Finding from BMS-SIM: 47.1 % load per path exceeds the 45 % warning threshold of the design.</td></tr>
 </tbody>
 </table>

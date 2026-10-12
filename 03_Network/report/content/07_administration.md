@@ -64,5 +64,5 @@ Table: Vérification – ADM.1, poste d'administration (12 octobre 2026)
 | Alias vers un pare-feu | `ssh fw-a hostname` | Terminal d'ADMIN-WS | `fw-a.dc.casa.lab` | Conforme (165 règles lues par `pfctl -sr`) |
 | Portail | Ouvrir Firefox | ADMIN-WS (VNC 5904) | Page « DC-CASA - administration portal » | Conforme |
 | Session journalisée | `grep admin-ssh /var/log/remote/all.log` | SYSLOG, console auxiliaire (5041) | Lignes `session start` et `session end` | Conforme (16 lignes après 8 sessions) |
-| Heure locale | `date` | ADMIN-WS puis SYSLOG | Même heure sur les deux | **Écart** : fuseau `Africa/Casablanca` des deux côtés, mais ADMIN-WS affiche +00 et SYSLOG +01 (bases de fuseaux horaires différentes dans les deux images) ; traité avec le contrôle des horloges (LOG.1) |
+| Heure locale | `date` | ADMIN-WS puis SYSLOG | Même heure sur les deux | **Limite connue du laboratoire** : fuseau `Africa/Casablanca` des deux côtés, mais ADMIN-WS affiche +00 et SYSLOG +01 (bases de fuseaux horaires différentes dans les deux images). Les journaux sont horodatés par le collecteur : l'ordre des événements n'est pas affecté |
 | Topologie inchangée | `python automation/verify_topology.py` | Hôte | `RESULT: OK`, 60 liens | Conforme |

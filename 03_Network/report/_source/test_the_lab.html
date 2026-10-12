@@ -30,7 +30,8 @@ table.t td code { white-space: pre-wrap; word-break: break-word; display: block;
 <h2 style="margin-top:0">How to use this document</h2>
 <ul>
   <li>Each test has an identifier, the command, <b>where to run it</b> (node and console port) and the expected result.</li>
-  <li><b>Last passed</b> is the date the test was really run and gave the expected result. "not run yet" means exactly that.</li>
+  <li><b>Last passed</b> is the date the test was really run and gave the expected result. "not run yet" means exactly that.
+  "known limit" marks a test that does not pass and is accepted as a documented limit of the lab.</li>
   <li>Each section says which nodes must be running. A test fails for the wrong reason if its path is not started.</li>
   <li>Passwords are not printed here: they are in <code>inventory/dc_casa.yaml</code> (section <code>credentials</code>) and in appendix B of the lab guide.</li>
   <li>Source of this document: <code>report/tests/tests.yaml</code>. Rebuild with <code>python report/_source/build_lab_guide.py test_the_lab</code>.</li>

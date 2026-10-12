@@ -60,24 +60,29 @@ def leaf_ports(inv):
 
 def tests():
     data = yaml.safe_load((NET / "report" / "tests" / "tests.yaml").read_text(encoding="utf-8"))
-    out, total, passed = [], 0, 0
+    out, total, passed, limits = [], 0, 0, 0
     for sec in data["sections"]:
         rows = []
         for t in sec["tests"]:
             total += 1
-            if t.get("verified"):
+            expected = html.escape(str(t["expected"]))
+            if t.get("limit"):
+                limits += 1
+                when = '<span class="pill wip">known limit</span>'
+                expected += f'<br><i>{html.escape(t["limit"])}</i>'
+            elif t.get("verified"):
                 passed += 1
                 when = f'<span class="pill ok">{t["verified"]:%d %b %Y}</span>'
             else:
                 when = '<span class="pill todo">not run yet</span>'
             rows.append([t["id"], html.escape(t["proves"]), f"<code>{html.escape(t['command'].strip())}</code>",
-                         html.escape(t["from"]), html.escape(str(t["expected"])), when])
+                         html.escape(t["from"]), expected, when])
         out.append(f'<div class="keep"><h1><span class="n">{sec["id"]}</span>{html.escape(sec["title"])}</h1>'
                    f'<p class="needs"><b>Must be running:</b> {html.escape(sec["needs"])}</p>'
                    + table(["ID", "What it proves", "Command", "Where to run it", "Expected", "Last passed"], rows,
                            ["8%", "19%", "30%", "16%", "18%", "9%"]).replace("<table>", '<table class="t">') + "</div>")
     counts = (f"<div><b>{total}</b>tests</div><div><b>{passed}</b>passed, with date</div>"
-              f"<div><b>{total - passed}</b>not run yet</div><div><b>{data['updated']:%d %b %Y}</b>last update</div>")
+              f"<div><b>{limits}</b>known lab limit</div><div><b>{total - passed - limits}</b>not run yet</div><div><b>{data['updated']:%d %b %Y}</b>last update</div>")
     return "".join(out), counts
 
 

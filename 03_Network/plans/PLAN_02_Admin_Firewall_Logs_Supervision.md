@@ -149,8 +149,8 @@ inventory), `inventory/dc_casa.yaml` (image name), `automation/deploy_containers
 - [x] Found on the way: `deploy_containers.py` lost the console ports when it re-created a node (fixed: ports kept)
       and could not redeploy an image rebuilt under the same tag (added: `deploy_containers.py <NODE>`).
       Web interfaces are listed once in the inventory (`web_interfaces`); report chapter `07_administration.md` created.
-- [ ] Open, moved to LOG.1: ADMIN-WS shows local time +00 while SYSLOG shows +01 for the same zone name
-      (`Africa/Casablanca`): the two images carry different time-zone databases. Decide the lab's reference offset.
+- [x] ADMIN-WS shows local time +00 while SYSLOG shows +01 for the same zone name (`Africa/Casablanca`): the two
+      images carry different time-zone databases. **Documented as a known lab limit** (decision of 12 Oct 2026), not fixed.
 
 | Test | Command | From | Expected |
 |---|---|---|---|
@@ -276,8 +276,8 @@ rotation, files readable by everyone in the container, no way to read the logs e
 Files: `automation/log_audit.py` (new), `report/evidence/log_audit.txt`.
 - [ ] Expected sources come from the inventory (10 network devices, 2 firewalls, servers, simulators, ADMIN-WS).
       Report the silent ones.
-- [ ] Time zone: ADMIN-WS (+00) and SYSLOG (+01) disagree on the offset of `Africa/Casablanca` (found in ADM.1); the
-      Cisco devices are configured `clock timezone MAR 1 0`. Fix one reference and align every image.
+- [x] Time zone: ADMIN-WS (+00) and SYSLOG (+01) disagree on the offset of `Africa/Casablanca` (found in ADM.1).
+      Accepted as a known lab limit; LOG.1 only has to list it with the other clock findings.
 - [ ] Clock check: on 12 Oct the devices stamped their messages about 5 minutes behind the collector. Check
       `show ntp status` on every Cisco device and the NTP state of the firewalls; fix the cause (SRV-INF-01 must run;
       management rule EXT-4 carries NTP).

@@ -3,6 +3,7 @@
 #  (python report/_source/build_lab_guide.py test_the_lab).
 #  verified: date of the last run that gave the expected result, or null when the test was never run.
 #  Never set a date for a test that was not actually run. Passwords are not written here: see the inventory.
+#  limit: text  -> the test does not pass and this is accepted and documented as a limit of the lab.
 # =====================================================================================================
 updated: 2026-10-12
 
@@ -337,8 +338,9 @@ sections:
         proves: The webterm shows the same local time as the log collector
         from: ADMIN-WS auxiliary console (5053), then SYSLOG auxiliary console (5041)
         command: date
-        expected: 'same hour on both. On 12 Oct 2026 it FAILED: zone Africa/Casablanca on both, but ADMIN-WS shows +00 and SYSLOG +01 (different time-zone databases in the two images). To be settled in LOG.1.'
+        expected: same hour on both
         verified: null
+        limit: 'Known lab limit (accepted 12 Oct 2026): both use the zone Africa/Casablanca, but ADMIN-WS shows +00 and SYSLOG +01 because the two images carry different time-zone databases. Log lines are stamped by the collector, so the order of events is not affected.'
 
   - id: PWR
     title: Power simulator and DCIM (scenario T6)
