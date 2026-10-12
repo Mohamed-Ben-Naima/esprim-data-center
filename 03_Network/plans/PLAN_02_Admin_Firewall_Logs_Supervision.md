@@ -1,10 +1,14 @@
-# Plan 02 — Firewall completion, Zabbix and Grafana (DC Casablanca GNS3 lab)
+# Plan 02 — Administration bastion, firewall, log collection, Zabbix and Grafana (DC Casablanca GNS3 lab)
 
-> Executed natively, one sub-task at a time, in this order: P0 → FW → ZBX → GRF. Steps use checkboxes for tracking.
+> Executed natively, one sub-task at a time, in this order: P0 → ADM → FW → LOG → ZBX → GRF → ISO. Steps use checkboxes.
+> Revision 2 (12 Oct 2026): adds the administration webterm, the log collection server, the *Test the Lab* report,
+> the ISO/IEC 27001 access and compliance matrix, and TrueNAS readiness.
 > Every sub-task ends the same way: **test → report → build → progress table → commit** (see "Definition of done").
 
-**Goal:** finish the firewall work, put every device and service under Zabbix supervision, and show it in a Grafana NOC
-dashboard, with each step reproducible from the repository and testable by one documented command.
+**Goal:** every equipment of the lab is explained, configured and reachable by an administrator through one controlled
+entry point, in line with the security standards of the design and ISO/IEC 27001:2022; logs are collected and kept;
+every device and service is supervised in Zabbix and shown in a Grafana NOC dashboard. Each step is reproducible from
+the repository and testable by one documented command.
 
 **Architecture:** nothing is clicked by hand. Firewall changes go through `inventory/dc_casa.yaml` → `gen_pfsense.py`
 → FW-A → XMLRPC sync to FW-B. Zabbix is configured through its JSON-RPC API by one idempotent script that reads the
@@ -28,6 +32,15 @@ design PDF `05_Report/Datacenter_Casablanca_TIA942_GNS3_detaille.pdf` Tables 18,
 - **Web access from the PC:** `python automation/lab_proxy.py start` (again after ADMIN-WS or the VM restarts).
 - **Credentials:** lab-only, stored in the inventory, never typed into scripts.
 - **Commits:** on `main`, message `network(<sub-task>): <what>`, one sub-task per commit.
+- **ISO/IEC 27001:2022 (Annex A) applies to every equipment touched:** access only from the administration zone
+  (A.5.15, A.8.2, A.8.3), authenticated and encrypted administration (A.8.5, A.8.24), configuration in the repository
+  (A.8.9), logs sent to the collector (A.8.15), supervised (A.8.16), clock from SRV-INF-01 (A.8.17), filtered and
+  segregated (A.8.20–A.8.22). A sub-task that adds or changes an equipment states which of these it satisfies and how
+  it was checked; a gap is written down as a deviation, never left silent.
+- **TrueNAS comes later (storage, VLAN 30):** nothing here may block it. Reserved now: address `10.30.0.12`, Zabbix
+  group `DC/Storage`, log source slot, entry in the access matrix. Its web interface is already covered by the ADMIN
+  rule (TCP 443 to internal networks); NFS/iSCSI from VLAN 20 by the core ACL. Capacity warning: TrueNAS asks for about
+  8 GB of RAM, as much as the whole GNS3 VM today, so it will need its own reduced profile.
 
 ## Definition of done (every sub-task)
 
@@ -35,6 +48,8 @@ design PDF `05_Report/Datacenter_Casablanca_TIA942_GNS3_detaille.pdf` Tables 18,
 - [ ] `report/content/06_securite.md` (FW) or `report/content/08_services.md` (ZBX, GRF) gains the sub-task's
       paragraph and a table **"Vérification"** with columns *Contrôle | Commande | Depuis | Attendu | Résultat*.
 - [ ] Progress table in `report/content/01_introduction.md` updated; `report/build.ps1` run without error.
+- [ ] **Test the Lab** report: the sub-task's tests added to `report/tests/tests.yaml` with the date they passed;
+      `python report/_source/build_lab_guide.py test_the_lab` rebuilds `report/Test_the_Lab.pdf`.
 - [ ] `report/_source/lab_guide.html` updated (sections 5, 8, 9, 10) at the end of each grand task, PDF rebuilt.
 - [ ] `git status --short` shows only the sub-task's files; commit made.
 
@@ -50,20 +65,10 @@ design PDF `05_Report/Datacenter_Casablanca_TIA942_GNS3_detaille.pdf` Tables 18,
 
 ## P0 — Preparation
 
-### P0.1 Clean baseline
-Files: everything currently uncommitted (30 paths).
-- [ ] Commit A `network(6.2): bastion and monitoring server deployed from offline repository` — `inventory/dc_casa.yaml`,
-      `configs/pfsense/*.redacted.xml`, `report/content/generated/fw_rules.md`, `automation/deploy_servers.py`,
-      `automation/attach_repo.py`, `automation/build_repo.sh`, `report/evidence/deploy_SRV-*.log*`, `DC_Casablanca_TIA942_R3.gns3`.
-- [ ] Commit B `docs: architecture report (FR docx, EN markdown, diagrams)` — `report/Rapport_Architecture_*`,
-      `report/arch_*.png`, `report/_source/arch_*`, `gen_arch_docx.js`, `topo_url.txt`.
-- [ ] Commit C `network(tools): lab guide PDF, web access proxy` — `automation/lab_proxy.py`,
-      `report/_source/lab_guide.html`, `report/_source/build_lab_guide.py`, `report/DC_Casablanca_Lab_Guide.pdf`.
-
-| Test | Command | From | Expected |
-|---|---|---|---|
-| Tree clean | `git status --short` | host, repo root | no output |
-| Inventory still valid | `python automation/validate_inventory.py` | host, `03_Network` | `RESULT: OK` |
+### P0.1 Clean baseline — done 12 Oct 2026
+- [x] `ca3823f` network(6.2), `16f4429` docs (architecture report), `3e59bc9` network(tools).
+- [ ] Still untracked on purpose: `report/evidence/deploy_SRV-MON-01.log*` (overwritten by a failed run); regenerated
+      and committed in GRF.1.
 
 ### P0.2 Supervision profile (which nodes run during this plan)
 Zabbix must see the network devices, so the edges come back; hall A stays off.
@@ -71,6 +76,7 @@ Files: `automation/lab_up.py` (add profile `supervision`), `report/content/09_mi
 - [ ] Add `--profile supervision` to `lab_up.py`: NAT-A/B, ISP-A/B, SW-OUT/DMZ/MGMT, EDGE-A/B, FW-A/B, CORE-A/B,
       LEAF-B1/B2, SRV-WEB-01, ADMIN-WS, SYSLOG, BMS-SIM, CCTV-SIM, SRV-DCIM-01, SRV-INF-01, SRV-MON-01 (24 nodes).
       Not started: LEAF-A1/A2, SRV-CMP-01/02/03, SRV-STO-01, SRV-BCK-01, SRV-BASTION.
+      ADMIN-WS is the administration entry point of this profile (see ADM); SRV-BASTION is started only for its own tests.
 - [ ] Start it tier by tier, then leave it idle 10 minutes and measure.
 - [ ] **Gate:** if the cores flap, drop SRV-INF-01, then EDGE-B, and record the profile that holds.
 
@@ -80,6 +86,72 @@ Files: `automation/lab_up.py` (add profile `supervision`), `report/content/09_mi
 | VM load | `python automation/gns3vm.py "cat /proc/loadavg; free -m"` | host | load < 8, swap < 300 MB |
 | Gateways stable | `python automation/labctl.py show CORE-B "show logging \| count HSRP-5-STATECHANGE"` twice, 10 min apart | host | same number |
 | Interfaces reachable | `curl --socks5 192.168.75.128:1080 -sk -o NUL -w "%{http_code}" http://10.60.0.11/` | host | `200` |
+
+### P0.3 "Test the Lab" report
+A separate document that answers one question: *how do I check that this equipment works, and from where?*
+Files: `report/tests/tests.yaml` (one entry per test), `report/_source/test_the_lab.html` (layout),
+`report/_source/build_lab_guide.py` (builds both PDFs), `report/Test_the_Lab.pdf`.
+- [ ] One entry per test: id, what it proves, command, where to run it (node and console port), expected result, date
+      of the last successful run. A test never run is shown as "not run yet", never as passed.
+- [ ] Seeded with the tests that passed on 12 Oct 2026; every later sub-task appends its own.
+
+| Test | Command | From | Expected |
+|---|---|---|---|
+| Build | `python report/_source/build_lab_guide.py test_the_lab` | host, `03_Network` | `report/Test_the_Lab.pdf` written |
+| No invented result | `grep -c "verified: null" report/tests/tests.yaml` | host | equals the number of "not run yet" rows in the PDF |
+
+---
+
+## ADM — Administration bastion webterm
+
+ADMIN-WS (webterm container, VLAN 90, `10.90.0.12`) becomes the single place from which an administrator reaches every
+equipment: browser for the web interfaces, SSH for the command line. It already has Firefox, `ssh`, `curl`, `telnet`.
+
+### ADM.1 Image `dc/admin-ws:1.0`
+Files: `docker/admin-ws/Dockerfile` (FROM `gns3/webterm`), `docker/admin-ws/portal.html.tpl`,
+`automation/gen_configs.py` (generates `configs/docker/ADMIN-WS.ssh_config` and `ADMIN-WS.portal.html` from the
+inventory), `inventory/dc_casa.yaml` (image name), `automation/deploy_containers.py`.
+- [ ] Adds `snmp`, `dnsutils`, `netcat-openbsd`; SSH client configuration with one alias per equipment
+      (`ssh core-a` → `netadmin@10.10.0.21`), SSH protocol 2 only, host keys recorded on first use.
+- [ ] Firefox opens on a local portal page listing every web interface (pfSense × 3, Zabbix, Grafana, BMS, DCIM, web
+      site, log viewer) with its role; generated, so TrueNAS appears when it is added to the inventory.
+- [ ] Every SSH session opened from the webterm is announced to the log collector (who, target, start, end) — A.8.15.
+- [ ] Node re-created by `deploy_containers.py`; then `python automation/lab_proxy.py start`.
+
+| Test | Command | From | Expected |
+|---|---|---|---|
+| Tools | `command -v ssh firefox-esr curl snmpget dig nc` | ADMIN-WS aux console (5053) | six paths |
+| Alias | `ssh core-a "show version \| include uptime"` | ADMIN-WS terminal (VNC 5904) | `CORE-A uptime is ...` after the password |
+| Portal | open Firefox | ADMIN-WS (VNC 5904) | portal page, every link opens |
+| Session logged | `grep "ADMIN-WS" /var/log/remote/all.log \| tail -2` | SYSLOG aux console (5041) | start and end lines of that session |
+
+### ADM.2 Access matrix: everything reachable from the bastion, nothing from elsewhere
+Files: `automation/access_matrix.py` (new), `report/evidence/access_matrix.csv`,
+`report/content/generated/access_matrix.md`.
+- [ ] For every equipment of the inventory: SSH port and banner, web interface status code, from ADMIN-WS.
+      Targets: EDGE-A/B, CORE-A/B, LEAF-A1/A2/B1/B2 (management addresses), FW-A/B (SSH and HTTPS), every running
+      Linux server (SSH), every web interface.
+- [ ] The same probes from a non-administration network (SRV-INF-01, VLAN 100) must all fail — A.8.3, A.8.22.
+- [ ] Equipment that is stopped is reported as "not running", not as a failure.
+
+| Test | Command | From | Expected |
+|---|---|---|---|
+| Matrix | `python automation/access_matrix.py` | host | every running equipment `reachable` from ADMIN-WS, `refused` from SRV-INF-01 |
+| One by hand | `ssh edge-a`, `ssh fw-a`, `ssh srv-inf-01` | ADMIN-WS terminal | three logins |
+| Refusal is logged | `show access-lists ACL-MGMT-ACCESS` | CORE-A (5010) | hits on `deny any log` after the SRV-INF-01 probes |
+
+### ADM.3 Privileged access rules (A.8.2, A.8.5)
+- [ ] Decide and document the two entry points: **ADMIN-WS** (administration desktop, browser and SSH) and
+      **SRV-BASTION** (SSH jump host with TOTP second factor and `auditd`, started when its tests run). SSH alias
+      `ssh -J bastion core-a` provided for the path through the jump host.
+- [ ] Session lock and idle timeout on the devices checked (`exec-timeout 10 0` on Cisco, pfSense GUI session timeout).
+- [ ] Default and shared passwords listed with their status (Zabbix default password is removed in ZBX.1).
+
+| Test | Command | From | Expected |
+|---|---|---|---|
+| Idle timeout | open `ssh core-a`, wait 10 min | ADMIN-WS | session closed by the device |
+| Lockout | 5 wrong passwords on `ssh core-a`, then a right one | ADMIN-WS | refused for 120 s; `%SEC_LOGIN-1-QUIET_MODE_ON` in the log collector |
+| Jump host | `ssh -J bastion core-a` (SRV-BASTION running) | ADMIN-WS | login through 10.90.0.11 |
 
 ---
 
@@ -161,6 +233,78 @@ Files: `screenshots/2x_*.png`, `report/content/06_securite.md`, lab guide.
 
 ---
 
+## LOG — Log collection server (SYSLOG, `10.60.0.12`, ISO/IEC 27001 A.8.15–A.8.17)
+
+Today: rsyslog on UDP/TCP 514, one file per source plus `all.log` on a persistent volume, 52 MB after one day, no
+rotation, files readable by everyone in the container, no way to read the logs except the console.
+
+### LOG.1 Audit: who sends, who is missing, are the clocks right
+Files: `automation/log_audit.py` (new), `report/evidence/log_audit.txt`.
+- [ ] Expected sources come from the inventory (10 network devices, 2 firewalls, servers, simulators, ADMIN-WS).
+      Report the silent ones.
+- [ ] Clock check: on 12 Oct the devices stamped their messages about 5 minutes behind the collector. Check
+      `show ntp status` on every Cisco device and the NTP state of the firewalls; fix the cause (SRV-INF-01 must run;
+      management rule EXT-4 carries NTP).
+
+| Test | Command | From | Expected |
+|---|---|---|---|
+| Sources | `python automation/log_audit.py` | host | every running equipment has a file younger than 10 min |
+| Clock | `show ntp status` | each Cisco console | `Clock is synchronized`, reference `10.100.0.11` |
+| Skew | `tail -1 /var/log/remote/10.10.0.21_*.log` | SYSLOG aux console (5041) | device time and reception time differ by < 2 s |
+
+### LOG.2 Retention and protection
+Files: `docker/syslog/Dockerfile`, `docker/syslog/logrotate.conf` (new), image `dc/syslog:1.1`.
+- [ ] Daily rotation, compression, retention period written in the inventory (`services.log_retention_days`).
+- [ ] Directory `0750`, files `0640`; the volume survives a re-creation of the container.
+- [ ] Disk usage of the log volume exposed for Zabbix (item and trigger added in ZBX.6).
+
+| Test | Command | From | Expected |
+|---|---|---|---|
+| Rotation | `logrotate -f /etc/logrotate.d/remote && ls /var/log/remote \| grep -c gz` | SYSLOG aux console | > 0, new messages still arrive |
+| Permissions | `stat -c "%a" /var/log/remote /var/log/remote/all.log` | SYSLOG aux console | `750`, `640` |
+| Persistence | stop and start the node, `ls /var/log/remote \| wc -l` | host, then SYSLOG | same files as before |
+
+### LOG.3 Only known sources, no loss
+Files: `docker/syslog/rsyslog.conf`.
+- [ ] Accept messages only from the lab networks declared in the inventory; drop and count the rest.
+- [ ] Queue on disk so a burst (firewall blocks) is not lost. TLS transport is **not** deployed: written down as a
+      lab deviation with its reason.
+
+| Test | Command | From | Expected |
+|---|---|---|---|
+| Accepted | `logger -n 10.60.0.12 "log-test $(hostname)"` | SRV-INF-01 (5032) | line in `all.log` within 2 s |
+| Config valid | `rsyslogd -N1` | SYSLOG aux console | no error |
+
+### LOG.4 Reading the logs from the administration zone
+A small read-only viewer in the image (search by source, text and time; last lines), HTTPS with a login, port 8443.
+Files: `docker/syslog/viewer.py` (new, standard library), inventory rule `EXT-9` (ADMIN_NET → SYSLOG_SERVER tcp 8443),
+portal entry in ADM.1.
+- [ ] Viewer cannot modify or delete anything (A.8.15: protection of log information).
+- [ ] Firewall rule deployed on FW-A, synced to FW-B.
+
+| Test | Command | From | Expected |
+|---|---|---|---|
+| From the bastion | `curl -sk -u '<user>:<pw>' "https://10.60.0.12:8443/search?q=HSRP" \| head -3` | ADMIN-WS | log lines |
+| No login, no logs | `curl -sk -o /dev/null -w "%{http_code}" https://10.60.0.12:8443/` | ADMIN-WS | `401` |
+| Not from elsewhere | same `curl` | SRV-WEB-01 aux console (5052) | timeout |
+| From the PC | open `https://10.60.0.12:8443` | host browser via proxy | viewer after login |
+
+### LOG.5 The security events that must be there
+- [ ] One deliberate action per event, then find its line: firewall block (rule label), failed and successful login
+      on a Cisco device, configuration change on a Cisco device, pfSense web login, SSH session from ADMIN-WS,
+      BMS state change, CCTV badge event.
+
+| Test | Command | From | Expected |
+|---|---|---|---|
+| Failed login | `ssh baduser@10.10.0.21` then `grep SEC_LOGIN /var/log/remote/10.10.0.21_*.log \| tail -1` | ADMIN-WS, then SYSLOG | `%SEC_LOGIN-4-LOGIN_FAILED` |
+| Config change | `conf t` / `end` on CORE-A, then `grep CONFIG_I ... \| tail -1` | CORE-A, then SYSLOG | `%SYS-5-CONFIG_I ... by netadmin` |
+| Firewall block | `ping -c1 10.10.0.21` from SRV-WEB-01, then `grep "10.50.0.11" all.log \| grep block \| tail -1` | SRV-WEB-01, then SYSLOG | block line with rule T18-9 |
+
+### LOG.6 Evidence and documentation
+- [ ] `08_services.md` section "Journalisation centralisée", Test the Lab entries, lab guide.
+
+---
+
 ## ZBX — Zabbix (PLAN_01 §7.1)
 
 ### ZBX.1 Base and API driver
@@ -182,12 +326,13 @@ Files: `inventory/dc_casa.yaml` (`credentials.zabbix_admin_password`, section `m
 
 ### ZBX.2 Host groups and inventory mapping
 Files: `inventory/dc_casa.yaml` `monitoring:` (group per role, template per platform, interface per device).
-- [ ] Groups `DC/Edge`, `DC/Firewalls`, `DC/Core`, `DC/Leaf`, `DC/Servers`, `DC/Services`; templates found by name
+- [ ] Groups `DC/Edge`, `DC/Firewalls`, `DC/Core`, `DC/Leaf`, `DC/Servers`, `DC/Services`, `DC/Storage` (empty until
+      TrueNAS); templates found by name
       with `template.get` (never by hard-coded id).
 
 | Test | Command | From | Expected |
 |---|---|---|---|
-| Groups | `python automation/zabbix_setup.py status` | host | 6 groups listed |
+| Groups | `python automation/zabbix_setup.py status` | host | 7 groups listed |
 
 ### ZBX.3 Cisco devices by SNMPv3 (EDGE-A/B, CORE-A/B, LEAF-A1/A2/B1/B2)
 Path: SRV-MON-01 → core → firewall LAN rule T18-7 → management VLAN 10 → device.
@@ -321,7 +466,36 @@ Files: `grafana/dashboards/noc.json` (new), `grafana/provisioning/dashboards/dc.
 
 ---
 
+## ISO — Access and compliance matrix (closing task)
+
+### ISO.1 One line per equipment
+Files: `automation/gen_configs.py` (table), `report/content/generated/compliance.md`, `report/content/02_normes.md`,
+lab guide, Test the Lab.
+- [ ] For each of the 31 nodes (and the reserved TrueNAS line): role, how it is administered, from where, how the
+      administrator is authenticated, where its logs go, its time source, where its configuration is kept, how it is
+      supervised, and the Annex A controls covered. Each cell points to the test that proves it.
+- [ ] Every gap is listed as a deviation with its reason (examples known today: no TLS on syslog, SNMP v2c on pfSense,
+      self-signed certificates, default Zabbix password until ZBX.1).
+
+| Test | Command | From | Expected |
+|---|---|---|---|
+| Complete | `python automation/gen_configs.py && grep -c "^| " report/content/generated/compliance.md` | host | 32 equipment lines + header |
+| No empty cell | `grep -c "| |" report/content/generated/compliance.md` | host | `0` |
+
+### ISO.2 Configuration backup and restore (A.8.9, A.8.13)
+- [ ] Zabbix configuration exported by `zabbix_setup.py export` into `configs/zabbix/`; Grafana by provisioning files;
+      pfSense by the redacted `config.xml`; Cisco by the generated configurations.
+- [ ] One restore proven: delete a Zabbix host, `zabbix_setup.py apply`, host back.
+
+| Test | Command | From | Expected |
+|---|---|---|---|
+| Export | `python automation/zabbix_setup.py export && git status --short configs/zabbix` | host | files listed |
+| Restore | delete host CORE-B in Zabbix, `python automation/zabbix_setup.py apply`, `status` | host | CORE-B present and available |
+
+---
+
 ## Not in this plan
 
 Resilience scenarios T1–T5 and M1 with measured convergence (PLAN_01 phase 8), deployment of SRV-CMP/STO/BCK
-(phase 6.2–6.4), SNMP trap reception on SRV-MON-01 (devices already send traps to `10.60.0.11:162`; nothing listens).
+(phase 6.2–6.4), SNMP trap reception on SRV-MON-01 (devices already send traps to `10.60.0.11:162`; nothing listens),
+installation of TrueNAS itself (only its place is reserved here).
