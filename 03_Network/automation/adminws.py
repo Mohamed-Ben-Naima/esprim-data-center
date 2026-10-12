@@ -50,6 +50,24 @@ def ssh_batch(items, timeout=60):
     return res
 
 
+def put(alias, local, remote, timeout=60):
+    """Copy a local file to an equipment (ssh "cat > remote" from ADMIN-WS); returns the exit code."""
+    inv = yaml.safe_load((NET / "inventory" / "dc_casa.yaml").read_text(encoding="utf-8"))
+    c = inv["credentials"]
+    gns3vm.put(Path(local), "/tmp/adminws_put.bin")
+    out = gns3vm.run(f"""c=$(docker ps -q --filter name=ADMIN-WS)
+cat > /tmp/ap_put.sh <<'EOP'
+#!/bin/sh
+case "$1" in *sysadmin@*) echo '{c['server_admin_password']}' ;; *) echo '{c['admin_password']}' ;; esac
+EOP
+chmod 700 /tmp/ap_put.sh; docker cp /tmp/ap_put.sh $c:/tmp/ap_put.sh; docker cp /tmp/adminws_put.bin $c:/tmp/adminws_put.bin
+docker exec -e SSH_ASKPASS=/tmp/ap_put.sh -e SSH_ASKPASS_REQUIRE=force -e DISPLAY=:0 $c sh -c 'timeout {timeout} setsid -w ssh -o NumberOfPasswordPrompts=1 -o LogLevel=ERROR {alias} "cat > {remote}" < /tmp/adminws_put.bin' 2>/dev/null
+echo "@@PUT $?"
+docker exec $c rm -f /tmp/ap_put.sh /tmp/adminws_put.bin; rm -f /tmp/ap_put.sh /tmp/adminws_put.bin""", sudo=True)
+    m = re.search(r"@@PUT (\d+)", out)
+    return int(m.group(1)) if m else 255
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 3:
         sys.exit("usage: python automation/adminws.py <alias> <command>")

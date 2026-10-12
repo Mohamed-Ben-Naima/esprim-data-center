@@ -134,6 +134,7 @@ def build(baseline, fw):
     setv(web, "protocol", "https")
     flag(web, "noantilockout", True)          # GUI reachable only through the explicit ADMIN rule
     flag(web, "loginautocomplete", False)
+    setv(web, "session_timeout", INV["firewall_settings"]["gui_session_timeout_min"])
     setv(sysn, "ssh", None)
     ssh = sysn.find("ssh")
     el(ssh, "enable", "enabled")

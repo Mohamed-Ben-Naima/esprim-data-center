@@ -237,13 +237,17 @@ Files: `automation/fw_audit.py` (new), `report/evidence/fw_audit.txt`.
 | Audit | `python automation/fw_audit.py` | host | `0 differences` |
 | GUI | open `https://10.90.0.1` | host browser via proxy | dashboard, no setup wizard |
 
-### FW.2 Rules needed by supervision
+### FW.2 Rules needed by supervision — done 12 Oct 2026
 Zabbix agent on SRV-BASTION (VLAN 90) cannot reach the Zabbix server today: no ADMIN rule for TCP 10051.
 Files: `inventory/dc_casa.yaml` (rule `EXT-8`: ADMIN_NET → MON_SERVER tcp ZABBIX_TRAPPER), generated files.
-- [ ] Add the rule, validate, `gen_configs.py` (tables), `gen_pfsense.py`, deploy on FW-A, sync to FW-B.
-- [ ] Same deployment: web session timeout of pfSense set to 15 minutes (finding of ADM.3).
-- [ ] Review-focus 2: force FW-B master (`ifconfig carp` maintenance mode on FW-A: *Status > CARP > Enter Persistent
-      CARP Maintenance Mode*), repeat the test, leave maintenance mode.
+- [x] Add the rule, validate, `gen_configs.py` (tables), `gen_pfsense.py`, deploy. New `automation/deploy_pfsense.py`:
+      each firewall receives its own generated file over SSH from ADMIN-WS (FW-B first), checksum and XML checked,
+      previous file kept as `config.xml.before-deploy`, filter reloaded without reboot; `--rollback` restores it.
+      (Each firewall gets its own file because XMLRPC sync does not carry the web-interface settings.)
+- [x] Same deployment: web session timeout of pfSense set to 15 minutes (finding of ADM.3); wizard trigger removed by the script.
+- [x] Review-focus 2: FW-B forced master (`sysctl net.inet.carp.demotion=240` on FW-A), test repeated, FW-A restored
+      (`=-240`). EXT-8 packet counter rises on FW-B only, block of port 3306 logged by FW-B.
+- [ ] Left for ZBX.5 (SRV-MON-01 is off): port 10051 really open end to end from SRV-BASTION.
 
 | Test | Command | From | Expected |
 |---|---|---|---|

@@ -81,8 +81,9 @@ def audit(name, alias, role, res, log):
     states = re.findall(r"carp: (\w+) vhid", carp)
     check(len(states) == 5 and set(states) == {role}, f"CARP: {len(states)} virtual addresses, state {sorted(set(states))} (expected 5 x {role})")
     check(wizard.strip() == "0", "first-time setup wizard trigger absent")
-    timeout = live.find("system/webgui/session_timeout")
-    log(f"  [info] web session timeout: {timeout.text + ' min' if timeout is not None else 'not set (pfSense default, 240 min)'}")
+    want, got = gen.findtext("system/webgui/session_timeout"), live.findtext("system/webgui/session_timeout")
+    check(want == got, f"web session timeout: {got + ' min' if got else 'not set (pfSense default, 240 min)'}"
+                       f" (generated: {want + ' min' if want else 'not set'})")
     return diffs
 
 

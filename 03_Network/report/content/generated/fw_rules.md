@@ -22,6 +22,7 @@ Table: Politique des pare-feux par interface (évaluation de haut en bas)
 | ADMIN | **autoriser** | tcp | ADMIN_NET | any_internal | ADMIN_SVC [22, 443] | Administration -> tous équipements SSH/HTTPS | T18-6 |
 | ADMIN | **autoriser** | udp | ADMIN_NET | any_internal | SNMP [161] | Administration -> SNMP | T18-6 |
 | ADMIN | **autoriser** | tcp | ADMIN_NET | MON_SERVER | [3000, 80] | Administration -> Zabbix/Grafana | T18-6 |
+| ADMIN | **autoriser** | tcp | ADMIN_NET | MON_SERVER | ZABBIX_TRAPPER [10051] | Bastion -> serveur Zabbix (agent actif) | EXT-8 |
 | ADMIN | **autoriser** | tcp | ADMIN_NET | 10.70.0.0/24 | [8080] | Administration -> DCIM/BMS | T18-6 |
 | ADMIN | **autoriser** | icmp | ADMIN_NET | any_internal | — | Administration -> ICMP | T18-6 |
 | ADMIN | **autoriser** | tcp/udp | ADMIN_NET | !RFC1918 | [53, 80, 443, 123] | Administration -> Internet (mises à jour) | EXT-5 |

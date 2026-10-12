@@ -326,6 +326,10 @@ host_aliases:
   INTERNAL_NETS: [10.20.0.0/24, 10.30.0.0/24, 10.40.0.0/24, 10.60.0.0/24, 10.70.0.0/24, 10.80.0.0/24, 10.100.0.0/24]
   RFC1918: [10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16]
 
+# Firewall (pfSense) – settings of the appliances themselves
+firewall_settings:
+  gui_session_timeout_min: 15         # idle web sessions are closed after 15 min (pfSense default: 240), ISO 27001 A.8.5
+
 # Firewall (pfSense) – evaluated top-down per interface, implicit "block + log" at the end.
 firewall_rules:
   WAN:
@@ -350,6 +354,7 @@ firewall_rules:
     - {action: pass, proto: tcp,  src: ADMIN_NET, dst: any_internal, ports: ADMIN_SVC, descr: "Administration -> tous équipements SSH/HTTPS", ref: "T18-6"}
     - {action: pass, proto: udp,  src: ADMIN_NET, dst: any_internal, ports: SNMP, descr: "Administration -> SNMP", ref: "T18-6"}
     - {action: pass, proto: tcp,  src: ADMIN_NET, dst: MON_SERVER, ports: [3000, 80], descr: "Administration -> Zabbix/Grafana", ref: "T18-6"}
+    - {action: pass, proto: tcp,  src: ADMIN_NET, dst: MON_SERVER, ports: ZABBIX_TRAPPER, descr: "Bastion -> serveur Zabbix (agent actif)", ref: "EXT-8"}
     - {action: pass, proto: tcp,  src: ADMIN_NET, dst: 10.70.0.0/24, ports: [8080], descr: "Administration -> DCIM/BMS", ref: "T18-6"}
     - {action: pass, proto: icmp, src: ADMIN_NET, dst: any_internal, descr: "Administration -> ICMP", ref: "T18-6"}
     - {action: pass, proto: tcp/udp, src: ADMIN_NET, dst: "!RFC1918", ports: [53, 80, 443, 123], descr: "Administration -> Internet (mises à jour)", ref: "EXT-5"}

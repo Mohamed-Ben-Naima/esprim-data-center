@@ -166,3 +166,44 @@ Table: Vérification – FW.1, audit des pare-feux (12 octobre 2026)
 | Même nombre de règles | `pfctl -sr` compté sur les deux pare-feux | FW-A et FW-B | Nombres égaux | Conforme : 165 et 165 |
 | Tableau de bord sans assistant | Ouvrir `https://10.90.0.1` | Navigateur de l'hôte par le proxy, ou ADMIN-WS | Page « Status: Dashboard » | Conforme |
 
+## Déploiement sans redémarrage et règles de supervision
+
+Le premier déploiement remplaçait `config.xml` puis redémarrait le pare-feu, par la console. Le script
+`automation/deploy_pfsense.py` reprend la même idée – on déploie **le fichier généré**, jamais une retouche à la main –
+mais par SSH depuis le poste d'administration et sans coupure :
+
+Table: Chaîne de déploiement des pare-feux (depuis le 12 octobre 2026)
+| Étape | Action | Garde-fou |
+|---|---|---|
+| 1. Ordre | Le pare-feu de secours (FW-B) d'abord, le maître (FW-A) ensuite | Un fichier défectueux n'atteint jamais le maître |
+| 2. Transfert | Copie du fichier généré dans `/tmp/config.new` | Empreinte MD5 comparée au fichier local, `xmllint`, nom d'hôte attendu ; arrêt avant toute installation en cas d'écart |
+| 3. Sauvegarde | `config.xml` en service copié en `config.xml.before-deploy` | Retour arrière : `deploy_pfsense.py --rollback FW-x` |
+| 4. Installation | Remplacement de `/cf/conf/config.xml`, purge du cache de configuration, suppression de `trigger_initial_wizard` | – |
+| 5. Application | `/etc/rc.filter_configure` (rechargement du filtrage, sans redémarrage) | Nombre de règles chargées et rôles CARP affichés |
+| 6. Contrôle | `python automation/fw_audit.py` | `0 difference(s)` |
+
+Ce déploiement apporte deux changements, tous deux issus de l'inventaire :
+
+- la règle **EXT-8** (zone ADMIN vers le serveur de supervision, TCP 10051), nécessaire à l'agent Zabbix actif du
+  bastion ; elle figure dans le tableau des règles ci-dessus ;
+- le **délai de session de l'interface web** des pare-feux, ramené de 4 heures (valeur par défaut) à 15 minutes
+  (`firewall_settings.gui_session_timeout_min`), écart relevé lors du contrôle des accès privilégiés.
+
+Avant le déploiement, l'audit signalait précisément ces écarts (10 différences : section `filter`, section `aliases`,
+règle EXT-8 absente de pf, délai de session, sur chacun des deux pare-feux) ; après, il n'en signale plus aucune.
+
+Table: Vérification – FW.2, déploiement et règle de supervision (12 octobre 2026)
+| Contrôle | Commande | Depuis | Attendu | Résultat |
+|---|---|---|---|---|
+| Audit avant déploiement | `python automation/fw_audit.py` | Hôte | Les changements en attente sont signalés | Conforme : 10 différences, toutes attendues |
+| Déploiement | `python automation/deploy_pfsense.py` | Hôte | « checksum identical, XML valid », « installed » sur FW-B puis FW-A | Conforme |
+| Audit après déploiement | `python automation/fw_audit.py` | Hôte | `0 difference(s)`, 33 règles sur 33, délai de session 15 min | Conforme : 166 lignes pf sur chaque pare-feu |
+| La règle laisse passer | Tentative vers `10.60.0.11:10051`, puis compteur de la règle (`pfctl -vvsr`) | SRV-BASTION, puis FW-A | Compteur de paquets d'EXT-8 en hausse | Conforme : 2 → 7 paquets |
+| Le port voisin reste fermé | Tentative vers `10.60.0.11:3306`, puis `/var/log/filter.log` | SRV-BASTION, puis FW-A | Ligne `block` sur `em6.90` | Conforme, également reçue par le collecteur |
+| Même comportement sur FW-B | FW-A rétrogradé (`sysctl net.inet.carp.demotion=240`), mêmes tentatives | SRV-BASTION, puis FW-B | FW-B MASTER sur les cinq VIP ; compteur d'EXT-8 en hausse sur FW-B ; blocage journalisé par FW-B | Conforme : 2 → 5 paquets sur FW-B, 7 → 7 sur FW-A |
+| Retour à la normale | `sysctl net.inet.carp.demotion=-240` | FW-A | FW-A MASTER, FW-B BACKUP, démotion 0 | Conforme |
+| Accès au travers des pare-feux | Interface web et tableau de bord BMS | Navigateur de l'hôte par le proxy | Réponses HTTP 200 | Conforme |
+
+Le serveur de supervision étant arrêté pendant ces travaux (capacité de l'hôte), la preuve finale – le port 10051
+réellement ouvert de bout en bout – sera apportée avec la mise en service des agents Zabbix (ZBX.5).
+

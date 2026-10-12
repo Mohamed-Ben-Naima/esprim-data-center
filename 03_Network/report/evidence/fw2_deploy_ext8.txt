@@ -1,0 +1,15 @@
+# FW.2 - deployment and supervision rule - 2026-10-12 22:2x
+# audit before: 10 difference(s) (filter, aliases, EXT-8 not loaded, session timeout; on both) - see fw_audit_before_fw2.txt
+== FW-B: transferred, checksum identical, XML valid, hostname matches; installed | 166 | 5
+== FW-A: transferred, checksum identical, XML valid, hostname matches; installed
+# audit after: 0 difference(s), 33/33 rule descriptions, 166 pf lines, session timeout 15 min - see fw_audit.txt
+=== FW-A master
+[bastion] port 10051 rc=124 (no listener: SRV-MON-01 off) ; port 3306 rc=124
+EXT-8 packets  FW-A: 2 -> 7   FW-B: 0 -> 0
+[fw-a] filter.log: em6.90,match,block,in,tcp,60,10.90.0.11,10.60.0.11,50788,3306,0
+=== FW-B master (FW-A demoted: sysctl net.inet.carp.demotion=240)
+[fw-a] 5 BACKUP   [fw-b] 5 MASTER
+EXT-8 packets  FW-A: 7 -> 7   FW-B: 2 -> 5
+[fw-b] filter.log: em6.90,match,block,in,tcp,60,10.90.0.11,10.60.0.11,52598,3306,0
+=== restore (sysctl net.inet.carp.demotion=-240)
+[fw-a] net.inet.carp.demotion: 0 ; 5 MASTER   [fw-b] 5 BACKUP

@@ -157,6 +157,46 @@ sections:
         expected: the number of loaded pf lines (165 on 12 Oct), the same on fw-b
         verified: 2026-10-12
 
+      - id: FW-09
+        proves: A change of the inventory reaches both firewalls without reboot, and nothing else changes
+        from: Windows host, folder 03_Network
+        command: |-
+          python automation/gen_pfsense.py
+          python automation/deploy_pfsense.py
+          python automation/fw_audit.py
+        expected: 'for FW-B then FW-A: "transferred, checksum identical, XML valid, hostname matches" and "installed"; then the audit ends with "0 difference(s)"'
+        verified: 2026-10-12
+      - id: FW-10
+        proves: Rule EXT-8 lets the administration zone reach the Zabbix server port, and only that port
+        from: SRV-BASTION (ssh bastion from ADMIN-WS), then FW-A shell
+        command: |-
+          timeout 4 bash -c '</dev/tcp/10.60.0.11/10051'; timeout 4 bash -c '</dev/tcp/10.60.0.11/3306'
+          pfctl -vvsr | grep -A1 EXT-8
+          grep ',10.90.0.11,10.60.0.11,' /var/log/filter.log | tail -1
+        expected: 'the "Packets:" counter of EXT-8 rises after the first attempt; the second attempt leaves a line "em6.90,match,block,in ... 3306"'
+        verified: 2026-10-12
+      - id: FW-11
+        proves: The same policy applies when FW-B is the master
+        from: FW-A shell, then SRV-BASTION, then FW-B shell
+        command: |-
+          sysctl net.inet.carp.demotion=240        (on FW-A: FW-B becomes master of the five addresses)
+          ... repeat FW-10, reading the counter and the log on FW-B ...
+          sysctl net.inet.carp.demotion=-240       (on FW-A: back to normal)
+        expected: 'FW-B shows 5 x MASTER; the EXT-8 counter rises on FW-B and not on FW-A; the block is in the log of FW-B; after the last command FW-A is 5 x MASTER again and "net.inet.carp.demotion: 0"'
+        verified: 2026-10-12
+      - id: FW-12
+        proves: The web interface of the firewalls closes idle sessions after 15 minutes
+        from: Windows host, folder 03_Network
+        command: python automation/fw_audit.py
+        expected: 'line "[ok] web session timeout: 15 min (generated: 15 min)" for FW-A and FW-B'
+        verified: 2026-10-12
+      - id: FW-13
+        proves: The Zabbix server port is really open end to end from the bastion (needs SRV-MON-01 running)
+        from: SRV-BASTION (ssh bastion from ADMIN-WS)
+        command: timeout 3 bash -c '</dev/tcp/10.60.0.11/10051' && echo open
+        expected: open
+        verified: null
+
   - id: CORE
     title: Core and leaf switches
     needs: "CORE-A, CORE-B, LEAF-B1, LEAF-B2 (firewalls and edge tier for CORE-06)"
