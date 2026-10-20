@@ -1,10 +1,11 @@
 """Start the lab in stages and measure resources after each stage (plan §2.3).
 
-  python automation/lab_up.py [--settle 150] [--from N] [--profile full|supervision]
+  python automation/lab_up.py [--settle 150] [--from N] [--profile full|supervision|demo]
 Each stage is started, left to settle, then measured: GNS3 VM memory, KSM shared pages, swap, load average,
 host free RAM. Results -> report/evidence/resources_stages.csv (+ printed table).
 Profile "supervision" (PLAN_02 P0.2) leaves hall A, the undeployed servers and SRV-BASTION off: it is what the
 15.7 GB host carries together with SRV-MON-01. Results -> report/evidence/resources_supervision.csv.
+Profile "demo" (PLAN_03 S1) is "supervision" minus EDGE-B and CCTV-SIM: EDGE-A alone keeps BGP to ISP-A.
 """
 import csv
 import re
@@ -28,6 +29,7 @@ STAGES = [
 OFF = {"full": set(),
        "supervision": {"LEAF-A1", "LEAF-A2", "SRV-BASTION", "SRV-CMP-01", "SRV-CMP-02", "SRV-CMP-03", "SRV-STO-01",
                        "SRV-BCK-01"}}
+OFF["demo"] = OFF["supervision"] | {"EDGE-B", "CCTV-SIM"}
 
 
 def measure():
