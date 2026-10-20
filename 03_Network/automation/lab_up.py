@@ -67,6 +67,11 @@ def main():
         m = measure()
         rows.append(dict(stage=stage, nodes=len(names), **m))
         print("   ", m, flush=True)
+    # the boot peak pushes idle pages of the routers into the GNS3 VM swap; a core that has to page them back in
+    # stalls for seconds and its HSRP peer takes over (PLAN_03 S1): bring them back to RAM once everything is up
+    out = gns3vm.run("sudo swapoff -a && sudo swapon -a && sudo sysctl -q -w vm.swappiness=10; free -m | awk '/Swap:/{print $3}'",
+                     sudo=True)
+    print("swap flushed back to RAM, swap used now (MB):", out.strip(), flush=True)
     path = NET / "report" / "evidence" / ("resources_stages.csv" if profile == "full" else f"resources_{profile}.csv")
     if rows:
         with open(path, "w", newline="", encoding="utf-8") as f:
