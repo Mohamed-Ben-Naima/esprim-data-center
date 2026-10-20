@@ -449,9 +449,11 @@ def gen_core(name, d):
               f" ip address {ip} {mask(v['subnet'])}", " no ip redirects", " no ip proxy-arp"]
         if vid in INV["data_vlans"]:
             L.append(f" ip access-group ACL-VLAN{vid}-IN in")
+        # 1 s / 3 s: with 250/750 ms on eight groups the emulated IOSvL2 cores miss hellos under load and HSRP
+        # flaps without end (PLAN_03 S1, 20 Oct 2026); failover takes ~3 s instead of < 1 s (lab deviation)
         L += [" ip ospf 1 area 0",
               " standby version 2", f" standby {vid} ip {vip}", f" standby {vid} priority {prio}",
-              f" standby {vid} preempt delay minimum 30", f" standby {vid} timers msec 250 msec 750",
+              f" standby {vid} preempt delay minimum 30", f" standby {vid} timers 1 3",
               f" standby {vid} authentication md5 key-string {hk}", f" standby {vid} name HSRP-VLAN{vid}"]
         if vid == 902:
             L += [" ip ospf authentication message-digest", f" ip ospf message-digest-key 1 md5 {C['ospf_key']}"]
