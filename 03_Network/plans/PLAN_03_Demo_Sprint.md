@@ -23,22 +23,30 @@ trims them for the demo.
 
 ## Phases
 
-### S1 — Demo profile up and stable (≈ 45 min)
-- [ ] Add `--profile demo` to `automation/lab_up.py`: supervision profile **minus EDGE-B and CCTV-SIM** (keep SRV-INF-01:
+### S1 — Demo profile up and stable (≈ 45 min) — done 20 Oct 2026 (DEMO.1–DEMO.5)
+- [x] Add `--profile demo` to `automation/lab_up.py`: supervision profile **minus EDGE-B and CCTV-SIM** (keep SRV-INF-01:
       NTP/DNS; EDGE-A alone keeps BGP to ISP-A). Adjust after measuring if the gate fails.
-- [ ] `python automation/lab_up.py --profile demo`, then `lab_proxy.py start`.
-- [ ] Gate (idle 10 min): host free ≥ 0.5 GB, VM load < 8, HSRP state-change count unchanged on CORE-B, Zabbix
+      → adjusted: **SRV-INF-01 also off** (gate B failed with it). No NTP/DNS during the demo.
+- [x] `python automation/lab_up.py --profile demo`, then `lab_proxy.py start`.
+- [x] Gate (idle 10 min): host free ≥ 0.5 GB, VM load < 8, HSRP state-change count unchanged on CORE-B, Zabbix
       `http://10.60.0.11/` and Grafana `:3000` answer through the proxy.
-- [ ] SRV-MON-01 housekeeping: `deploy_servers.py --accounts-only SRV-MON-01` (still pending from ADM.4), delete
+      → two fixes were needed: core HSRP timers 250/750 ms → **1 s / 3 s** (DEMO.2, live + saved), and the GNS3 VM swap
+      flushed after boot (CORE-A had 144 MB swapped out; `lab_up.py` now does `swapoff/swapon`, swappiness 10).
+      Count with `show standby | include state change` (the logging buffer wraps). Details:
+      `report/evidence/demo_s1_gate.txt`. Host RAM stays tight (0.5–0.7 GB free; another Claude window ≈ 0.65 GB).
+- [x] SRV-MON-01 housekeeping: `deploy_servers.py --accounts-only SRV-MON-01` (still pending from ADM.4), delete
       `/var/lib/mysql.broken`, `systemctl is-active mariadb zabbix-server nginx grafana-server` = 4 × active.
-- [ ] `python automation/access_matrix.py` still 0 failure (re-run after a full restart).
+      → accounts-ok; `/var/lib/mysql.broken` was already gone; 4 × active.
+- [x] `python automation/access_matrix.py` still 0 failure (re-run after a full restart).
+      → 16 tested, 0 failure (internal-network leg not probed: SRV-INF-01 off). Re-run in S6.
 
 ### S2 — Zabbix base and devices (PLAN_02 ZBX.1–ZBX.5) (≈ 2 h)
 - [ ] `automation/zabbix_setup.py` (`check` / `apply` / `status`), JSON-RPC through the SOCKS proxy, standard library,
       inventory section `monitoring:` (groups, templates by name, interfaces) + `credentials.zabbix_admin_password`.
 - [ ] apply: Admin password from inventory, timezone `Africa/Casablanca`, groups `DC/*`.
 - [ ] Prove SNMPv3 by hand from SRV-MON-01 (`snmpget ... 10.10.0.21`), then hosts: running Cisco devices (SNMPv3
-      authPriv `zbxmon`), stopped ones in maintenance `demo-off`; FW-A/FW-B SNMP v2c; agents on SRV-MON-01, SRV-INF-01.
+      authPriv `zbxmon`), stopped ones in maintenance `demo-off`; FW-A/FW-B SNMP v2c; agents on SRV-MON-01 (SRV-INF-01 is off in the demo
+      profile: add it in maintenance `demo-off`).
 - [ ] `zabbix_setup.py status`: every running host available. Fallback if SNMP to a device fails: ICMP-only host for it.
 
 ### S3 — Zabbix services + Grafana base (ZBX.6, GRF.1–GRF.3) (≈ 2 h)
@@ -59,7 +67,8 @@ trims them for the demo.
 
 ### S5 — Log server for the demo (LOG.1, LOG.2, LOG.4, LOG.5 trimmed) (≈ 2 h)
 - [ ] Quick audit: which running equipment has a file in `/var/log/remote` younger than 10 min; fix silent ones if cheap.
-      Cisco NTP to SRV-INF-01 if not synced (`show ntp status`).
+      Cisco NTP to SRV-INF-01 if not synced (`show ntp status`) — SRV-INF-01 is off in the demo profile: skip NTP
+      (known limit) rather than add load.
 - [ ] Image `dc/syslog:1.1`: logrotate daily + compression, dir 0750 / files 0640, read-only viewer `viewer.py`
       (standard library, HTTPS 8443, login, search by source/text, last lines). Redeploy with
       `deploy_containers.py SYSLOG` — volume must survive (check file count before/after).
