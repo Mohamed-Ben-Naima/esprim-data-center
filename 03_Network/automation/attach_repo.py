@@ -9,7 +9,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 import labctl  # noqa: E402
 
-ISO = "dc-lab-repo-focal-v2.iso"
+ISO = "dc-lab-repo-focal-v2.iso"     # build_repo.sh now builds v3 (+ plugins/): switch once it is built (PLAN_02 GRF.2)
 api = labctl.Gns3()
 P = api.project()
 for name in sys.argv[1:]:

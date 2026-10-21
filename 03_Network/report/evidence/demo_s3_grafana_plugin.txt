@@ -1,0 +1,14 @@
+# PLAN_03 S3 / GRF.2 Zabbix plugin, offline - 2026-10-21 06:05:27
+# zip downloaded on the PC from grafana.com (6.8.0 linux-amd64, Grafana dependency >=11.6.0; installed Grafana 13.2.3)
+# sha256 published by grafana.com: 121c752d9c6e4bb694b6247cfbed3395652f4ee3153f6236ddb525f4803a8931
+# copied with adminws.put (PC -> GNS3 VM -> ADMIN-WS -> ssh SRV-MON-01:/tmp), unpacked by the Grafana role
+$ sha256sum /tmp/alexanderzobnin-zabbix-app-6.8.0.linux_amd64.zip
+121c752d9c6e4bb694b6247cfbed3395652f4ee3153f6236ddb525f4803a8931  /tmp/alexanderzobnin-zabbix-app-6.8.0.linux_amd64.zip
+$ grafana-cli plugins ls
+installed plugins:
+
+alexanderzobnin-zabbix-app @ 6.8.0
+$ ls -l /var/lib/grafana/plugins/alexanderzobnin-zabbix-app/datasource/gpx_*
+-rwxr-xr-x 1 grafana grafana 27660450 Oct 21 06:03 /var/lib/grafana/plugins/alexanderzobnin-zabbix-app/datasource/gpx_zabbix-datasource_linux_amd64
+$ curl --socks5 ... -u admin:<pw> http://10.60.0.11:3000/api/plugins/alexanderzobnin-zabbix-app/settings  (selected keys)
+id = alexanderzobnin-zabbix-app | enabled = True | version = 6.8.0 | signature = valid

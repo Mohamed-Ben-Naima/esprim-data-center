@@ -1,0 +1,6 @@
+# Enables the Zabbix app (PLAN_02 GRF.2); the plugin itself is unpacked offline by the Grafana role.
+apiVersion: 1
+apps:
+  - type: alexanderzobnin-zabbix-app
+    org_id: 1
+    disabled: false

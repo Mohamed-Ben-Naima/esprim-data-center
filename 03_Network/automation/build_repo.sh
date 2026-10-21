@@ -7,7 +7,12 @@
 # install from a controlled internal mirror anyway.
 set -euo pipefail
 OUT=/opt/gns3/labrepo
-ISO=/opt/gns3/images/QEMU/dc-lab-repo-focal-v2.iso
+ISO=/opt/gns3/images/QEMU/dc-lab-repo-focal-v3.iso     # v3 adds plugins/ (Grafana Zabbix app); attach_repo.py still names v2
+# Grafana plugins shipped in plugins/ (the Grafana role of deploy_servers.py unpacks them from /mnt/dcrepo/plugins/).
+# Keep in step with inventory monitoring.grafana.plugin (version, zip name, sha256).
+PLUGIN_ZIP=alexanderzobnin-zabbix-app-6.8.0.linux_amd64.zip
+PLUGIN_URL='https://grafana.com/api/plugins/alexanderzobnin-zabbix-app/versions/6.8.0/download?os=linux&arch=amd64'
+PLUGIN_SHA256=121c752d9c6e4bb694b6247cfbed3395652f4ee3153f6236ddb525f4803a8931
 PKGS="dnsmasq chrony nfs-kernel-server tgt rsync python3 openssl iperf3 keepalived curl dnsutils snmp
       libpam-google-authenticator auditd
       zabbix-agent zabbix-server-mysql zabbix-frontend-php zabbix-nginx-conf zabbix-sql-scripts
@@ -44,6 +49,10 @@ cp /tmp/zabbix-release_latest_6.0+ubuntu20.04_all.deb /out/pool/
 cd /out/pool && for f in *%3a*; do [ -e "$f" ] && mv "$f" "$(echo "$f" | sed "s/_[0-9]*%3a/_/")"; done
 cd /out && dpkg-scanpackages -m pool /dev/null 2>/dev/null > Packages && gzip -9k Packages
 echo "downloaded: $(ls pool | wc -l) .deb, $(du -sh pool | cut -f1)"
+mkdir -p /out/plugins && cd /out/plugins
+wget -q -O '"$PLUGIN_ZIP"' "'"$PLUGIN_URL"'"
+echo "'"$PLUGIN_SHA256"'  '"$PLUGIN_ZIP"'" | sha256sum -c
+cd /out
 # build from the repository directory itself so that pool/ is kept (file arguments are merged at the ISO root)
 genisoimage -quiet -V DCREPO -r -J -o /tmp/dc-lab-repo.iso /out && mv /tmp/dc-lab-repo.iso /out/dc-lab-repo.iso
 '
