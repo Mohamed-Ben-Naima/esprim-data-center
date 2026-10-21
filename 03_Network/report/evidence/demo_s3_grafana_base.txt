@@ -1,0 +1,21 @@
+# PLAN_03 S3 / GRF.1 Grafana base - 2026-10-21 06:05:20 - from the host through lab_proxy (SOCKS 192.168.75.128:1080)
+# applied by: python automation/deploy_servers.py --role=grafana SRV-MON-01 (GF_* block in /etc/default/grafana-server)
+$ curl --socks5 ... http://10.60.0.11:3000/api/health
+{
+  "database": "ok",
+  "version": "13.2.3",
+  "commit": "90ffed056f0884267356c12a0eeb72a022af53f1"
+}
+$ curl --socks5 ... -u admin:<pw> http://10.60.0.11:3000/api/org
+{"id":1,"name":"Main Org.","address":{"address1":"","address2":"","city":"","zipCode":"","state":"","country":""}}
+$ curl --socks5 ... -o NUL -w %{http_code} http://10.60.0.11:3000/api/dashboards/home   (no credentials)
+401
+$ curl --socks5 ... -u admin:<pw> http://10.60.0.11:3000/api/admin/settings  (selected keys)
+users.allow_sign_up = false
+auth.anonymous.enabled = false
+server.root_url = http://10.60.0.11:3000/
+date_formats.default_timezone = Africa/Casablanca
+$ systemctl is-enabled grafana-server; systemctl is-active grafana-server  (SRV-MON-01)
+enabled
+active
+-rw-r----- 1 root grafana 657 Oct 21 06:03 /etc/default/grafana-server

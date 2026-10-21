@@ -43,6 +43,7 @@ credentials:
   zabbix_db_password: "Zbx-Db-2026!"
   grafana_admin_password: "Grafana-DC-2026!"
   zabbix_admin_password: "Zbx-Supervision-2026!"   # replaces the default Admin / zabbix (zabbix_setup.py apply)
+  zabbix_grafana_password: "Zbx-NocRead-2026!"     # read-only Zabbix account `grafana` used by the Grafana data source
 
 # ---------------------------------------------------------------------------------------------------
 # VLANs (PDF Table 15 + technical VLANs). gw_type: core = HSRP on CORE-A/B, fw = CARP on FW-A/B
@@ -326,6 +327,13 @@ monitoring:
   # ZBX.6 services (group DC/Services), polled from SRV-MON-01: one HTTP-agent item reads the JSON (`source`), dependent
   # items pick values with JSONPath (`default` = value when the key is absent), `web` = web scenario, `icmp` = ping.
   # Thresholds: design Table 22 (path load > 45 % warning, > 50 % high: N+N redundancy no longer assured).
+  # Grafana on SRV-MON-01 (GRF.1-GRF.3): settings applied as GF_* variables, plugin installed offline from its zip
+  # (/mnt/dcrepo/plugins/ once the repository ISO carries it, else copied to /tmp by hand), checked against sha256.
+  grafana:
+    root_url: http://10.60.0.11:3000/
+    plugin: {id: alexanderzobnin-zabbix-app, version: 6.8.0, zip: alexanderzobnin-zabbix-app-6.8.0.linux_amd64.zip,
+             sha256: 121c752d9c6e4bb694b6247cfbed3395652f4ee3153f6236ddb525f4803a8931}
+    zabbix_user: grafana           # Zabbix "User role" (no configuration menu), read on every DC/* group
   services:
     BMS-SIM:
       source: {key: bms.state, url: "http://10.70.0.12:8080/api/state", delay: 10s}

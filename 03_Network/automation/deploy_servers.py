@@ -3,6 +3,7 @@
   python automation/deploy_servers.py SRV-INF-01 [SRV-MON-01 ...]   (default: all VM servers in the inventory)
   python automation/deploy_servers.py --base-only SRV-CMP-01           (network/system only, no role packages)
   python automation/deploy_servers.py --accounts-only SRV-INF-01       (administration account and SSH policy only)
+  python automation/deploy_servers.py --role=grafana SRV-MON-01        (re-run one role only, packages already there)
 
 Base (every VM): hostname, timezone, netplan (bond0 active-backup on the two NICs, or single NIC), cloud-init
 network config disabled, journald -> rsyslog forwarding to SYSLOG, NTP via systemd-timesyncd -> SRV-INF-01.
@@ -19,6 +20,51 @@ import labctl  # noqa: E402
 NET = Path(__file__).resolve().parents[1]
 INV = yaml.safe_load((NET / "inventory" / "dc_casa.yaml").read_text(encoding="utf-8"))
 S, SITE = INV["services"], INV["site"]
+
+
+def grafana_role():
+    """Grafana (PLAN_02 GRF.1–GRF.3): settings as GF_* variables of the service (no anonymous access, no sign-up,
+    root_url, timezone), Zabbix plugin unpacked from its zip (offline, sha256 checked), data source and app enabled by
+    the provisioning files of grafana/provisioning/. The data source password is passed in the service environment."""
+    g, c, mon = INV["monitoring"]["grafana"], INV["credentials"], INV["monitoring"]
+    pl = g["plugin"]
+    prov = "".join(
+        f"cat > /etc/grafana/provisioning/{f.parent.name}/{f.name} <<'EOF'\n{f.read_text(encoding='utf-8')}EOF\n"
+        f"chown root:grafana /etc/grafana/provisioning/{f.parent.name}/{f.name}; "
+        f"chmod 0640 /etc/grafana/provisioning/{f.parent.name}/{f.name}\n"
+        for f in sorted((NET / "grafana" / "provisioning").glob("*/*.yaml")))
+    return f"""export DEBIAN_FRONTEND=noninteractive
+dpkg -s grafana >/dev/null 2>&1 || apt-get install -y -q grafana >/dev/null
+sed -i -e 's/^;\\?http_port = .*/http_port = 3000/' -e 's/^;\\?admin_password = .*/admin_password = {c['grafana_admin_password']}/' /etc/grafana/grafana.ini
+# settings: one marked block in the service environment file (re-run = same block)
+sed -i '/^# >>> dc-casa/,/^# <<< dc-casa/d' /etc/default/grafana-server
+cat >> /etc/default/grafana-server <<'EOF'
+# >>> dc-casa (automation/deploy_servers.py, PLAN_02 GRF.1-GRF.3)
+GF_SERVER_ROOT_URL={g['root_url']}
+GF_USERS_ALLOW_SIGN_UP=false
+GF_AUTH_ANONYMOUS_ENABLED=false
+GF_DATE_FORMATS_DEFAULT_TIMEZONE={mon['timezone']}
+ZABBIX_GRAFANA_PASSWORD={c['zabbix_grafana_password']}
+# <<< dc-casa
+EOF
+chown root:grafana /etc/default/grafana-server; chmod 0640 /etc/default/grafana-server
+# Zabbix plugin, offline: repository ISO first, else a copy left in /tmp (the lab Internet path is too slow)
+D=/var/lib/grafana/plugins/{pl['id']}
+have=$(python3 -c "import json; print(json.load(open('$D/plugin.json'))['info']['version'])" 2>/dev/null || true)
+if [ "$have" != "{pl['version']}" ]; then
+  src=$(ls /mnt/dcrepo/plugins/{pl['zip']} /tmp/{pl['zip']} 2>/dev/null | head -1)
+  if [ -z "$src" ]; then echo "plugin zip {pl['zip']} not found"; exit 1; fi
+  echo "{pl['sha256']}  $src" | sha256sum -c --quiet
+  rm -rf "$D"; mkdir -p /var/lib/grafana/plugins
+  python3 -m zipfile -e "$src" /var/lib/grafana/plugins/
+  chmod 0755 "$D"/datasource/gpx_*; chown -R grafana:grafana "$D"
+  echo "plugin {pl['id']} {pl['version']} installed from $src"
+fi
+# provisioning (data source, app)
+{prov}systemctl daemon-reload; systemctl enable grafana-server >/dev/null 2>&1; systemctl restart grafana-server
+for i in $(seq 1 60); do curl -s -m2 http://127.0.0.1:3000/api/health | grep -q '"ok"' && break; sleep 2; done
+systemctl is-active grafana-server"""
+
 
 ROLE_SCRIPTS = {
     "dns": f"""DEBIAN_FRONTEND=noninteractive apt-get install -y -q dnsmasq >/dev/null
@@ -150,13 +196,7 @@ chown www-data:www-data /etc/zabbix/web/zabbix.conf.php
 systemctl enable zabbix-server nginx php7.4-fpm >/dev/null 2>&1
 systemctl restart zabbix-server php7.4-fpm nginx
 sleep 3; systemctl is-active zabbix-server nginx mariadb""",
-    "grafana": f"""export DEBIAN_FRONTEND=noninteractive
-apt-get install -y -q grafana >/dev/null
-sed -i -e 's/^;\\?http_port = .*/http_port = 3000/' -e 's/^;\\?admin_password = .*/admin_password = {INV['credentials']['grafana_admin_password']}/' /etc/grafana/grafana.ini
-systemctl daemon-reload; systemctl enable --now grafana-server
-# Zabbix data source plugin (small download through the lab Internet path)
-timeout 600 grafana-cli plugins install alexanderzobnin-zabbix-app >/dev/null 2>&1 || echo 'plugin download failed (lab bandwidth) - can be retried'
-systemctl restart grafana-server; sleep 5; systemctl is-active grafana-server""",
+    "grafana": grafana_role(),
 }
 
 
@@ -233,7 +273,20 @@ def accounts(lx, name, s):
     return rc
 
 
-def deploy(api, p, name, base_only=False, accounts_only=False):
+def run_role(lx, name, role):
+    print(f"[{name}] role {role} ...", flush=True)
+    if role.startswith("keepalived"):
+        body = keepalived(150 if role.endswith("master") else 100)
+    else:
+        body = ROLE_SCRIPTS.get(role, "true")
+    lx.put_file("/root/role.sh", "set -e\n" + body + "\n", "700")
+    # the script holds secrets of the inventory: removed once run
+    rc, out = lx.run("bash /root/role.sh > /root/role.log 2>&1; r=$?; tail -4 /root/role.log; rm -f /root/role.sh; (exit $r)", 1500)
+    print(f"[{name}] role {role}: rc={rc} {out[-300:]}")
+    return rc
+
+
+def deploy(api, p, name, base_only=False, accounts_only=False, roles=None):
     s = INV["servers"][name]
     tmpl, script = base_script(name, s)
     with labctl.Console.for_node(api, p, name) as c:
@@ -241,6 +294,10 @@ def deploy(api, p, name, base_only=False, accounts_only=False):
         lx.login()
         if accounts_only:
             accounts(lx, name, s)
+            return
+        if roles:
+            for role in roles:
+                run_role(lx, name, role)
             return
         rc, nics = lx.run("ls /sys/class/net | grep -E '^(ens|eth|enp)' | sort | tr '\\n' ' '")
         nics = nics.split()
@@ -288,14 +345,7 @@ def deploy(api, p, name, base_only=False, accounts_only=False):
         rc, out = lx.run("DEBIAN_FRONTEND=noninteractive apt-get update -q > /root/apt.log 2>&1; echo apt-update-rc=$?; grep -c '^Err' /root/apt.log", 1500)
         print(f"[{name}] {out}")
         for role in s["roles"] + ["zabbix-agent"]:
-            print(f"[{name}] role {role} ...", flush=True)
-            if role.startswith("keepalived"):
-                body = keepalived(150 if role.endswith("master") else 100)
-            else:
-                body = ROLE_SCRIPTS.get(role, "true")
-            lx.put_file("/root/role.sh", "set -e\n" + body + "\n", "700")
-            rc, out = lx.run("bash /root/role.sh > /root/role.log 2>&1; r=$?; tail -4 /root/role.log; (exit $r)", 1500)
-            print(f"[{name}] role {role}: rc={rc} {out[-300:]}")
+            run_role(lx, name, role)
         # final resolver: internal DNS (dnsmasq on SRV-INF-01 manages its own resolv.conf)
         if "dns" not in s["roles"]:
             lx.run("ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf")
@@ -307,8 +357,9 @@ if __name__ == "__main__":
     args = sys.argv[1:]
     base_only = "--base-only" in args
     accounts_only = "--accounts-only" in args
+    roles = [r for a in args if a.startswith("--role=") for r in a.split("=", 1)[1].split(",")]
     names = [a for a in args if not a.startswith("--")] or [n for n, s in INV["servers"].items() if s["kind"] == "vm"]
     api = labctl.Gns3()
     p = api.project()
     for n in names:
-        deploy(api, p, n, base_only, accounts_only)
+        deploy(api, p, n, base_only, accounts_only, roles)
