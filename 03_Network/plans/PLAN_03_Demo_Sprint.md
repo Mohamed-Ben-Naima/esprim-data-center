@@ -56,6 +56,9 @@ trims them for the demo.
       hold the ICMP items; the extra `ICMP Ping` template collides). pfSense "DHCP/DNS server is not running" triggers
       disabled on FW-A/FW-B (off by design). `demo-off` = EDGE-B, LEAF-A1/A2, SRV-INF-01, SRV-BASTION (no data);
       their first ICMP problems stay open but **suppressed** — S4 panels must hide suppressed problems.
+      The 4 pfSense DHCP/DNS problems also stay in `problem.get` (disabled trigger, value still 1; the Zabbix frontend
+      hides them). S4: problem panels = monitored/enabled triggers only, suppressed hidden (`trigger.get
+      only_true+monitored` = 3, all suppressed ICMP).
       Evidence: `report/evidence/demo_s2_snmp_proof.txt`, `demo_s2_zabbix_apply.txt`.
 - [x] `zabbix_setup.py status`: every running host available. Fallback if SNMP to a device fails: ICMP-only host for it.
       → 13 hosts, 8 running ones available (6 Cisco SNMPv3, 2 pfSense v2c, SRV-MON-01 agent), 0 failure, no fallback
