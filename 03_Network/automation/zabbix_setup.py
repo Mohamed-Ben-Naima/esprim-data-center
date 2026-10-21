@@ -140,8 +140,7 @@ def apply():
     # 1. Admin password from the inventory
     if login(z, allow_default=True) == "default":
         admin = z.call("user.get", {"output": ["userid"], "filter": {"username": "Admin"}})[0]
-        z.call("user.update", {"userid": admin["userid"], "current_passwd": DEFAULT_PASSWORD,
-                               "passwd": C["zabbix_admin_password"]})
+        z.call("user.update", {"userid": admin["userid"], "passwd": C["zabbix_admin_password"]})   # 6.0: no current_passwd
         z.login(C["zabbix_admin_password"])
         print("Admin password: replaced by the inventory one")
     else:

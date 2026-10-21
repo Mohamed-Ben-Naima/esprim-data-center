@@ -1,0 +1,49 @@
+# DEMO.7/DEMO.8 - python automation/zabbix_setup.py apply (2026-10-21, first runs)
+## run 1 (base) - stopped on the hosts step (password policy / duplicate icmpping, fixed in inventory)
+Admin password: replaced by the inventory one
+timezone: set to Africa/Casablanca
+group created: DC/Edge
+group created: DC/Firewalls
+group created: DC/Core
+group created: DC/Leaf
+group created: DC/Servers
+group created: DC/Services
+group created: DC/Storage
+host renamed: Zabbix server -> SRV-MON-01
+## run 2 (hosts)
+Admin password: already the inventory one
+timezone: Africa/Casablanca (unchanged)
+host created: EDGE-A
+host created: EDGE-B
+host created: FW-A
+host created: FW-B
+host created: CORE-A
+host created: CORE-B
+host created: LEAF-A1
+host created: LEAF-A2
+host created: LEAF-B1
+host created: LEAF-B2
+host SRV-MON-01: updated (interface updated)
+host created: SRV-INF-01
+host created: SRV-BASTION
+maintenance demo-off: EDGE-B, LEAF-A1, LEAF-A2, SRV-BASTION, SRV-INF-01
+## run 3 (idempotency)
+Admin password: already the inventory one
+timezone: Africa/Casablanca (unchanged)
+host EDGE-A: up to date
+host EDGE-B: up to date
+host FW-A: up to date
+host FW-B: up to date
+host CORE-A: up to date
+host CORE-B: up to date
+host LEAF-A1: up to date
+host LEAF-A2: up to date
+host LEAF-B1: up to date
+host LEAF-B2: up to date
+host SRV-MON-01: up to date
+host SRV-INF-01: up to date
+host SRV-BASTION: up to date
+maintenance demo-off: EDGE-B, LEAF-A1, LEAF-A2, SRV-BASTION, SRV-INF-01
+
+## old password Admin / zabbix
+refused: user.login: Incorrect user name or password or account is temporarily blocked.
