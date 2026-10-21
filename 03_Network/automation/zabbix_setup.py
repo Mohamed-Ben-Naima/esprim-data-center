@@ -107,7 +107,8 @@ def wanted_hosts():
         else:   # snmpv2: pfSense answers on its LAN (transit int) address only
             iface = {"type": IF_SNMP, "ip": INV["transit"]["int"][name], "port": "161",
                      "details": {"version": "2", "bulk": "1", "community": cred["snmp_ro_community"]}}
-        out.append({"name": name, "group": g[d["role"]], "templates": how["templates"], "interface": iface})
+        out.append({"name": name, "group": g[d["role"]], "templates": how["templates"], "interface": iface,
+                    "off_triggers": how.get("off_triggers", [])})
     for name, a in MON["agents"].items():
         active = a["mode"] == "active"
         out.append({"name": name, "group": g["server"],
@@ -202,7 +203,17 @@ def apply():
                     z.call("hostinterface.update", dict(w["interface"], interfaceid=i["interfaceid"], useip="1"))
                     changed.append("interface updated")
         print(f"host {w['name']}: {'updated (' + ', '.join(changed) + ')' if changed else 'up to date'}")
-    # 5. maintenance for the hosts whose node is stopped
+    # 5. template triggers that do not apply to this design (inventory `off_triggers`): disabled on the host
+    for w in want:
+        if not w.get("off_triggers"):
+            continue
+        trg = z.call("trigger.get", {"output": ["description", "status"], "host": w["name"],
+                                     "filter": {"description": w["off_triggers"]}})
+        for t in trg:
+            if t["status"] == "0":
+                z.call("trigger.update", {"triggerid": t["triggerid"], "status": 1})
+                print(f"trigger disabled on {w['name']}: {t['description']}")
+    # 6. maintenance for the hosts whose node is stopped
     off = sorted(stopped_nodes() & {w["name"] for w in want})
     ids = {h["host"]: h["hostid"] for h in z.call("host.get", {"output": ["host"], "filter": {"host": off}})} if off else {}
     m = z.call("maintenance.get", {"output": ["maintenanceid"], "filter": {"name": MON["maintenance"]}})
@@ -231,7 +242,7 @@ def status():
     ours = set(MON["groups"].values())
     groups = z.call("hostgroup.get", {"output": ["name"], "filter": {"name": sorted(ours)}, "selectHosts": ["host"]})
     print(f"groups ({len(groups)}):", ", ".join(f"{g['name']} [{len(g['hosts'])}]" for g in sorted(groups, key=lambda g: g["name"])))
-    hosts = z.call("host.get", {"output": ["host", "maintenance_status", "active_available"],
+    hosts = z.call("host.get", {"output": ["host", "maintenance_status"],
                                 "groupids": [g["groupid"] for g in groups],
                                 "selectInterfaces": ["type", "ip", "available", "error"],
                                 "selectParentTemplates": ["host"], "sortfield": "host"})
@@ -241,7 +252,7 @@ def status():
         maint = "yes" if h["maintenance_status"] == "1" else "-"
         tpls = ", ".join(t["host"] for t in h["parentTemplates"])
         rows = [(("agent" if i["type"] == "1" else "snmp") + " " + i["ip"], AVAIL[i["available"]], i["error"])
-                for i in h["interfaces"]] or [("agent active", AVAIL[h["active_available"]], "")]
+                for i in h["interfaces"]] or [("agent active", "unknown", "")]    # 6.0 has no availability for active-only hosts
         for where, state, err in rows:
             if state != "available" and maint == "-":
                 bad += 1

@@ -1,0 +1,20 @@
+# DEMO.8 - SNMP proved by hand from SRV-MON-01 (2026-10-21 ~05:12), via ssh srv-mon-01 from ADMIN-WS
+# snmp tools installed from the offline repo: apt-get install snmp (5.8+dfsg-2ubuntu2.9)
+# v3: snmpget -v3 -l authPriv -u zbxmon -a SHA -A <auth> -x AES -X <priv> -Oqv <ip> sysName.0 ; v2c: snmpget -v2c -c <community>
+10.10.0.1: "EDGE-A.dc.casa.lab"
+10.10.0.21: "CORE-A.dc.casa.lab"
+10.10.0.22: "CORE-B.dc.casa.lab"
+10.10.0.33: "LEAF-B1.dc.casa.lab"
+10.10.0.34: snmpget: Unknown user name
+10.254.2.4: "fw-a.dc.casa.lab"
+10.254.2.5: "fw-b.dc.casa.lab"
+
+LEAF-B2 'Unknown user': running-config had the group but no zbxmon user (SNMPv3 users are not shown in
+running-config; the user was missing from the device). Fix: line 'snmp-server user zbxmon ...' of configs/LEAF-B2.cfg
+pushed on the console, write memory. show snmp user -> zbxmon, SHA, AES128, G-MONITORING, nonvolatile.
+10.10.0.34 (after fix): "LEAF-B2.dc.casa.lab"
+
+# device side, CORE-A (ssh core-a from ADMIN-WS)
+show snmp user -> User name: zbxmon / Group-name: G-MONITORING
+show access-lists ACL-MGMT-ACCESS -> 20 permit 10.60.0.0, wildcard bits 0.0.0.255 (9 matches)
+show processes cpu: IP SNMP 0.03 % / SNMP ENGINE 0.02 % (1 min)

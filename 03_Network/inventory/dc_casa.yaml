@@ -313,7 +313,12 @@ monitoring:
   platforms:                       # these SNMP templates already hold the ICMP ping/loss/latency items
     iosv:    {interface: snmpv3, templates: ["Cisco IOS by SNMP"]}
     iosvl2:  {interface: snmpv3, templates: ["Cisco IOS by SNMP"]}
-    pfsense: {interface: snmpv2, templates: ["PFSense by SNMP"]}
+    pfsense:
+      interface: snmpv2
+      templates: ["PFSense by SNMP"]
+      off_triggers:                # by design: DHCP off everywhere, DNS resolver off (DNS = SRV-INF-01), gen_pfsense.py
+        - "PFSense: DHCP server is not running"
+        - "PFSense: DNS server is not running"
   agents:                          # Ubuntu servers with zabbix-agent (servers not deployed yet are not listed)
     SRV-MON-01:  {mode: passive}   # the server itself; replaces the default "Zabbix server" host
     SRV-INF-01:  {mode: passive}   # TCP 10050 from VLAN 60 (core ACL T18-7)
