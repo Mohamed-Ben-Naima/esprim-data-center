@@ -42,6 +42,7 @@ credentials:
   carp_password: "Carp-DC-2026"
   zabbix_db_password: "Zbx-Db-2026!"
   grafana_admin_password: "Grafana-DC-2026!"
+  zabbix_admin_password: "Zbx-Admin-2026!"   # replaces the default Admin / zabbix (zabbix_setup.py apply)
 
 # ---------------------------------------------------------------------------------------------------
 # VLANs (PDF Table 15 + technical VLANs). gw_type: core = HSRP on CORE-A/B, fw = CARP on FW-A/B
@@ -298,6 +299,25 @@ web_interfaces:
   - {name: "BMS-SIM", node: BMS-SIM, url: "http://10.70.0.12:8080/", login: "", descr: "Power paths A and B, load, alarms"}
   - {name: "DCIM", node: SRV-DCIM-01, url: "http://10.70.0.11:8080/", login: "", descr: "State of the 96 racks"}
   - {name: "Web site (DMZ)", node: SRV-WEB-01, url: "https://10.50.0.11/", login: "", scope: all, descr: "Public site as served inside the DMZ"}
+
+# ---------------------------------------------------------------------------------------------------
+# Supervision (Zabbix 6.0 on SRV-MON-01, PLAN_02 ZBX). Applied by automation/zabbix_setup.py through the lab proxy.
+# Hosts come from `devices` (platform -> how it is polled, role -> group) and from `monitoring.agents`.
+# Address polled: Cisco = mgmt.ip (VLAN 10), pfSense = its LAN address on transit.int, servers = their ip.
+# ---------------------------------------------------------------------------------------------------
+monitoring:
+  api: http://10.60.0.11/api_jsonrpc.php
+  timezone: Africa/Casablanca
+  maintenance: demo-off            # hosts whose GNS3 node is stopped: no data collected, no alarm (review focus 3)
+  groups: {edge: DC/Edge, firewall: DC/Firewalls, core: DC/Core, leaf: DC/Leaf, server: DC/Servers, service: DC/Services, storage: DC/Storage}
+  platforms:
+    iosv:    {interface: snmpv3, templates: ["Cisco IOS by SNMP", "ICMP Ping"]}
+    iosvl2:  {interface: snmpv3, templates: ["Cisco IOS by SNMP", "ICMP Ping"]}
+    pfsense: {interface: snmpv2, templates: ["PFSense by SNMP", "ICMP Ping"]}
+  agents:                          # Ubuntu servers with zabbix-agent (servers not deployed yet are not listed)
+    SRV-MON-01:  {mode: passive}   # the server itself; replaces the default "Zabbix server" host
+    SRV-INF-01:  {mode: passive}   # TCP 10050 from VLAN 60 (core ACL T18-7)
+    SRV-BASTION: {mode: active}    # VLAN 90 reaches the server on TCP 10051 (rule EXT-8)
 
 # ---------------------------------------------------------------------------------------------------
 # Security policy (PDF Table 18). Ports: alias names resolved in `port_aliases`.
