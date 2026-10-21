@@ -331,6 +331,7 @@ monitoring:
   # (/mnt/dcrepo/plugins/ once the repository ISO carries it, else copied to /tmp by hand), checked against sha256.
   grafana:
     root_url: http://10.60.0.11:3000/
+    home_dashboard: noc.json       # grafana/dashboards/, shown after login
     plugin: {id: alexanderzobnin-zabbix-app, version: 6.8.0, zip: alexanderzobnin-zabbix-app-6.8.0.linux_amd64.zip,
              sha256: 121c752d9c6e4bb694b6247cfbed3395652f4ee3153f6236ddb525f4803a8931}
     zabbix_user: grafana           # Zabbix "User role" (no configuration menu), read on every DC/* group

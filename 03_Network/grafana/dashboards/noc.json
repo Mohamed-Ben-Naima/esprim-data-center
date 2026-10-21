@@ -1,0 +1,2395 @@
+{
+ "uid": "dc-noc",
+ "title": "NOC – DC Casablanca",
+ "tags": [
+  "dc-casablanca",
+  "noc"
+ ],
+ "timezone": "",
+ "editable": false,
+ "graphTooltip": 1,
+ "refresh": "10s",
+ "schemaVersion": 39,
+ "version": 1,
+ "time": {
+  "from": "now-30m",
+  "to": "now"
+ },
+ "timepicker": {
+  "refresh_intervals": [
+   "10s",
+   "30s",
+   "1m"
+  ]
+ },
+ "templating": {
+  "list": []
+ },
+ "annotations": {
+  "list": []
+ },
+ "links": [],
+ "panels": [
+  {
+   "id": 1,
+   "type": "row",
+   "title": "Énergie",
+   "collapsed": false,
+   "gridPos": {
+    "x": 0,
+    "y": 0,
+    "w": 24,
+    "h": 1
+   },
+   "panels": []
+  },
+  {
+   "id": 2,
+   "type": "gauge",
+   "title": "Chemin A – charge",
+   "description": "Seuils Table 22 : 45 % avertissement, 50 % redondance N+N non assurée",
+   "datasource": {
+    "type": "alexanderzobnin-zabbix-datasource",
+    "uid": "zabbix"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 1,
+    "w": 4,
+    "h": 6
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "alexanderzobnin-zabbix-datasource",
+      "uid": "zabbix"
+     },
+     "queryType": "0",
+     "group": {
+      "filter": "DC/Services"
+     },
+     "host": {
+      "filter": "BMS-SIM"
+     },
+     "application": {
+      "filter": ""
+     },
+     "itemTag": {
+      "filter": ""
+     },
+     "item": {
+      "filter": "Charge chemin A"
+     },
+     "functions": [],
+     "options": {
+      "showDisabledItems": false,
+      "skipEmptyValues": false,
+      "disableDataAlignment": false,
+      "useZabbixValueMapping": false
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "orange",
+        "value": 45
+       },
+       {
+        "color": "red",
+        "value": 50
+       }
+      ]
+     },
+     "mappings": [],
+     "color": {
+      "mode": "thresholds"
+     },
+     "decimals": 1,
+     "min": 0,
+     "max": 100
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "showThresholdMarkers": true,
+    "showThresholdLabels": false
+   }
+  },
+  {
+   "id": 3,
+   "type": "gauge",
+   "title": "Chemin B – charge",
+   "description": "Seuils Table 22 : 45 % avertissement, 50 % redondance N+N non assurée",
+   "datasource": {
+    "type": "alexanderzobnin-zabbix-datasource",
+    "uid": "zabbix"
+   },
+   "gridPos": {
+    "x": 4,
+    "y": 1,
+    "w": 4,
+    "h": 6
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "alexanderzobnin-zabbix-datasource",
+      "uid": "zabbix"
+     },
+     "queryType": "0",
+     "group": {
+      "filter": "DC/Services"
+     },
+     "host": {
+      "filter": "BMS-SIM"
+     },
+     "application": {
+      "filter": ""
+     },
+     "itemTag": {
+      "filter": ""
+     },
+     "item": {
+      "filter": "Charge chemin B"
+     },
+     "functions": [],
+     "options": {
+      "showDisabledItems": false,
+      "skipEmptyValues": false,
+      "disableDataAlignment": false,
+      "useZabbixValueMapping": false
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "orange",
+        "value": 45
+       },
+       {
+        "color": "red",
+        "value": 50
+       }
+      ]
+     },
+     "mappings": [],
+     "color": {
+      "mode": "thresholds"
+     },
+     "decimals": 1,
+     "min": 0,
+     "max": 100
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "showThresholdMarkers": true,
+    "showThresholdLabels": false
+   }
+  },
+  {
+   "id": 4,
+   "type": "stat",
+   "title": "Chemin A",
+   "description": "",
+   "datasource": {
+    "type": "alexanderzobnin-zabbix-datasource",
+    "uid": "zabbix"
+   },
+   "gridPos": {
+    "x": 8,
+    "y": 1,
+    "w": 3,
+    "h": 3
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "alexanderzobnin-zabbix-datasource",
+      "uid": "zabbix"
+     },
+     "queryType": "2",
+     "group": {
+      "filter": "DC/Services"
+     },
+     "host": {
+      "filter": "BMS-SIM"
+     },
+     "application": {
+      "filter": ""
+     },
+     "itemTag": {
+      "filter": ""
+     },
+     "item": {
+      "filter": "État chemin A"
+     },
+     "functions": [],
+     "options": {
+      "showDisabledItems": false,
+      "skipEmptyValues": false,
+      "disableDataAlignment": false,
+      "useZabbixValueMapping": false
+     },
+     "textFilter": "",
+     "useCaptureGroups": false
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     },
+     "mappings": [
+      {
+       "type": "value",
+       "options": {
+        "POWERED": {
+         "text": "POWERED",
+         "color": "green",
+         "index": 0
+        },
+        "OK": {
+         "text": "OK",
+         "color": "green",
+         "index": 1
+        },
+        "WARNING": {
+         "text": "WARNING",
+         "color": "orange",
+         "index": 2
+        },
+        "DOWN": {
+         "text": "DOWN",
+         "color": "red",
+         "index": 3
+        },
+        "CRITICAL": {
+         "text": "CRITICAL",
+         "color": "red",
+         "index": 4
+        }
+       }
+      }
+     ],
+     "color": {
+      "mode": "thresholds"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto",
+    "wideLayout": true,
+    "showPercentChange": false
+   }
+  },
+  {
+   "id": 5,
+   "type": "stat",
+   "title": "Chemin B",
+   "description": "",
+   "datasource": {
+    "type": "alexanderzobnin-zabbix-datasource",
+    "uid": "zabbix"
+   },
+   "gridPos": {
+    "x": 11,
+    "y": 1,
+    "w": 3,
+    "h": 3
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "alexanderzobnin-zabbix-datasource",
+      "uid": "zabbix"
+     },
+     "queryType": "2",
+     "group": {
+      "filter": "DC/Services"
+     },
+     "host": {
+      "filter": "BMS-SIM"
+     },
+     "application": {
+      "filter": ""
+     },
+     "itemTag": {
+      "filter": ""
+     },
+     "item": {
+      "filter": "État chemin B"
+     },
+     "functions": [],
+     "options": {
+      "showDisabledItems": false,
+      "skipEmptyValues": false,
+      "disableDataAlignment": false,
+      "useZabbixValueMapping": false
+     },
+     "textFilter": "",
+     "useCaptureGroups": false
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     },
+     "mappings": [
+      {
+       "type": "value",
+       "options": {
+        "POWERED": {
+         "text": "POWERED",
+         "color": "green",
+         "index": 0
+        },
+        "OK": {
+         "text": "OK",
+         "color": "green",
+         "index": 1
+        },
+        "WARNING": {
+         "text": "WARNING",
+         "color": "orange",
+         "index": 2
+        },
+        "DOWN": {
+         "text": "DOWN",
+         "color": "red",
+         "index": 3
+        },
+        "CRITICAL": {
+         "text": "CRITICAL",
+         "color": "red",
+         "index": 4
+        }
+       }
+      }
+     ],
+     "color": {
+      "mode": "thresholds"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto",
+    "wideLayout": true,
+    "showPercentChange": false
+   }
+  },
+  {
+   "id": 6,
+   "type": "stat",
+   "title": "GTB",
+   "description": "",
+   "datasource": {
+    "type": "alexanderzobnin-zabbix-datasource",
+    "uid": "zabbix"
+   },
+   "gridPos": {
+    "x": 8,
+    "y": 4,
+    "w": 6,
+    "h": 3
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "alexanderzobnin-zabbix-datasource",
+      "uid": "zabbix"
+     },
+     "queryType": "2",
+     "group": {
+      "filter": "DC/Services"
+     },
+     "host": {
+      "filter": "BMS-SIM"
+     },
+     "application": {
+      "filter": ""
+     },
+     "itemTag": {
+      "filter": ""
+     },
+     "item": {
+      "filter": "État global GTB"
+     },
+     "functions": [],
+     "options": {
+      "showDisabledItems": false,
+      "skipEmptyValues": false,
+      "disableDataAlignment": false,
+      "useZabbixValueMapping": false
+     },
+     "textFilter": "",
+     "useCaptureGroups": false
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     },
+     "mappings": [
+      {
+       "type": "value",
+       "options": {
+        "POWERED": {
+         "text": "POWERED",
+         "color": "green",
+         "index": 0
+        },
+        "OK": {
+         "text": "OK",
+         "color": "green",
+         "index": 1
+        },
+        "WARNING": {
+         "text": "WARNING",
+         "color": "orange",
+         "index": 2
+        },
+        "DOWN": {
+         "text": "DOWN",
+         "color": "red",
+         "index": 3
+        },
+        "CRITICAL": {
+         "text": "CRITICAL",
+         "color": "red",
+         "index": 4
+        }
+       }
+      }
+     ],
+     "color": {
+      "mode": "thresholds"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto",
+    "wideLayout": true,
+    "showPercentChange": false
+   }
+  },
+  {
+   "id": 7,
+   "type": "stat",
+   "title": "Baies OK",
+   "description": "",
+   "datasource": {
+    "type": "alexanderzobnin-zabbix-datasource",
+    "uid": "zabbix"
+   },
+   "gridPos": {
+    "x": 14,
+    "y": 1,
+    "w": 3,
+    "h": 6
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "alexanderzobnin-zabbix-datasource",
+      "uid": "zabbix"
+     },
+     "queryType": "0",
+     "group": {
+      "filter": "DC/Services"
+     },
+     "host": {
+      "filter": "SRV-DCIM-01"
+     },
+     "application": {
+      "filter": ""
+     },
+     "itemTag": {
+      "filter": ""
+     },
+     "item": {
+      "filter": "Baies OK"
+     },
+     "functions": [],
+     "options": {
+      "showDisabledItems": false,
+      "skipEmptyValues": false,
+      "disableDataAlignment": false,
+      "useZabbixValueMapping": false
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "red",
+        "value": null
+       },
+       {
+        "color": "green",
+        "value": 96
+       }
+      ]
+     },
+     "mappings": [],
+     "color": {
+      "mode": "thresholds"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto",
+    "wideLayout": true,
+    "showPercentChange": false
+   }
+  },
+  {
+   "id": 8,
+   "type": "stat",
+   "title": "Baies DEGRADED",
+   "description": "",
+   "datasource": {
+    "type": "alexanderzobnin-zabbix-datasource",
+    "uid": "zabbix"
+   },
+   "gridPos": {
+    "x": 17,
+    "y": 1,
+    "w": 3,
+    "h": 6
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "alexanderzobnin-zabbix-datasource",
+      "uid": "zabbix"
+     },
+     "queryType": "0",
+     "group": {
+      "filter": "DC/Services"
+     },
+     "host": {
+      "filter": "SRV-DCIM-01"
+     },
+     "application": {
+      "filter": ""
+     },
+     "itemTag": {
+      "filter": ""
+     },
+     "item": {
+      "filter": "Baies DEGRADED"
+     },
+     "functions": [],
+     "options": {
+      "showDisabledItems": false,
+      "skipEmptyValues": false,
+      "disableDataAlignment": false,
+      "useZabbixValueMapping": false
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "orange",
+        "value": 1
+       }
+      ]
+     },
+     "mappings": [],
+     "color": {
+      "mode": "thresholds"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto",
+    "wideLayout": true,
+    "showPercentChange": false
+   }
+  },
+  {
+   "id": 9,
+   "type": "stat",
+   "title": "Baies DOWN",
+   "description": "",
+   "datasource": {
+    "type": "alexanderzobnin-zabbix-datasource",
+    "uid": "zabbix"
+   },
+   "gridPos": {
+    "x": 20,
+    "y": 1,
+    "w": 4,
+    "h": 6
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "alexanderzobnin-zabbix-datasource",
+      "uid": "zabbix"
+     },
+     "queryType": "0",
+     "group": {
+      "filter": "DC/Services"
+     },
+     "host": {
+      "filter": "SRV-DCIM-01"
+     },
+     "application": {
+      "filter": ""
+     },
+     "itemTag": {
+      "filter": ""
+     },
+     "item": {
+      "filter": "Baies DOWN"
+     },
+     "functions": [],
+     "options": {
+      "showDisabledItems": false,
+      "skipEmptyValues": false,
+      "disableDataAlignment": false,
+      "useZabbixValueMapping": false
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "red",
+        "value": 1
+       }
+      ]
+     },
+     "mappings": [],
+     "color": {
+      "mode": "thresholds"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto",
+    "wideLayout": true,
+    "showPercentChange": false
+   }
+  },
+  {
+   "id": 10,
+   "type": "timeseries",
+   "title": "Charge des chemins A / B",
+   "description": "",
+   "datasource": {
+    "type": "alexanderzobnin-zabbix-datasource",
+    "uid": "zabbix"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 7,
+    "w": 12,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "alexanderzobnin-zabbix-datasource",
+      "uid": "zabbix"
+     },
+     "queryType": "0",
+     "group": {
+      "filter": "DC/Services"
+     },
+     "host": {
+      "filter": "BMS-SIM"
+     },
+     "application": {
+      "filter": ""
+     },
+     "itemTag": {
+      "filter": ""
+     },
+     "item": {
+      "filter": "Charge chemin A"
+     },
+     "functions": [],
+     "options": {
+      "showDisabledItems": false,
+      "skipEmptyValues": false,
+      "disableDataAlignment": false,
+      "useZabbixValueMapping": false
+     }
+    },
+    {
+     "refId": "B",
+     "datasource": {
+      "type": "alexanderzobnin-zabbix-datasource",
+      "uid": "zabbix"
+     },
+     "queryType": "0",
+     "group": {
+      "filter": "DC/Services"
+     },
+     "host": {
+      "filter": "BMS-SIM"
+     },
+     "application": {
+      "filter": ""
+     },
+     "itemTag": {
+      "filter": ""
+     },
+     "item": {
+      "filter": "Charge chemin B"
+     },
+     "functions": [],
+     "options": {
+      "showDisabledItems": false,
+      "skipEmptyValues": false,
+      "disableDataAlignment": false,
+      "useZabbixValueMapping": false
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "orange",
+        "value": 45
+       },
+       {
+        "color": "red",
+        "value": 50
+       }
+      ]
+     },
+     "mappings": [],
+     "color": {
+      "mode": "thresholds"
+     },
+     "min": 0,
+     "max": 100
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*chemin A.*"
+      },
+      "properties": [
+       {
+        "id": "displayName",
+        "value": "Chemin A"
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*chemin B.*"
+      },
+      "properties": [
+       {
+        "id": "displayName",
+        "value": "Chemin B"
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom",
+     "showLegend": true
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   }
+  },
+  {
+   "id": 11,
+   "type": "stat",
+   "title": "Charge IT",
+   "description": "",
+   "datasource": {
+    "type": "alexanderzobnin-zabbix-datasource",
+    "uid": "zabbix"
+   },
+   "gridPos": {
+    "x": 12,
+    "y": 7,
+    "w": 6,
+    "h": 3
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "alexanderzobnin-zabbix-datasource",
+      "uid": "zabbix"
+     },
+     "queryType": "0",
+     "group": {
+      "filter": "DC/Services"
+     },
+     "host": {
+      "filter": "BMS-SIM"
+     },
+     "application": {
+      "filter": ""
+     },
+     "itemTag": {
+      "filter": ""
+     },
+     "item": {
+      "filter": "Charge IT"
+     },
+     "functions": [],
+     "options": {
+      "showDisabledItems": false,
+      "skipEmptyValues": false,
+      "disableDataAlignment": false,
+      "useZabbixValueMapping": false
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "kwatt",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "blue",
+        "value": null
+       }
+      ]
+     },
+     "mappings": [],
+     "color": {
+      "mode": "thresholds"
+     },
+     "decimals": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto",
+    "wideLayout": true,
+    "showPercentChange": false
+   }
+  },
+  {
+   "id": 12,
+   "type": "stat",
+   "title": "PUE",
+   "description": "",
+   "datasource": {
+    "type": "alexanderzobnin-zabbix-datasource",
+    "uid": "zabbix"
+   },
+   "gridPos": {
+    "x": 18,
+    "y": 7,
+    "w": 6,
+    "h": 3
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "alexanderzobnin-zabbix-datasource",
+      "uid": "zabbix"
+     },
+     "queryType": "0",
+     "group": {
+      "filter": "DC/Services"
+     },
+     "host": {
+      "filter": "BMS-SIM"
+     },
+     "application": {
+      "filter": ""
+     },
+     "itemTag": {
+      "filter": ""
+     },
+     "item": {
+      "filter": "PUE"
+     },
+     "functions": [],
+     "options": {
+      "showDisabledItems": false,
+      "skipEmptyValues": false,
+      "disableDataAlignment": false,
+      "useZabbixValueMapping": false
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "none",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "blue",
+        "value": null
+       }
+      ]
+     },
+     "mappings": [],
+     "color": {
+      "mode": "thresholds"
+     },
+     "decimals": 2
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto",
+    "wideLayout": true,
+    "showPercentChange": false
+   }
+  },
+  {
+   "id": 13,
+   "type": "stat",
+   "title": "Température entrée max",
+   "description": "",
+   "datasource": {
+    "type": "alexanderzobnin-zabbix-datasource",
+    "uid": "zabbix"
+   },
+   "gridPos": {
+    "x": 12,
+    "y": 10,
+    "w": 6,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "alexanderzobnin-zabbix-datasource",
+      "uid": "zabbix"
+     },
+     "queryType": "0",
+     "group": {
+      "filter": "DC/Services"
+     },
+     "host": {
+      "filter": "SRV-DCIM-01"
+     },
+     "application": {
+      "filter": ""
+     },
+     "itemTag": {
+      "filter": ""
+     },
+     "item": {
+      "filter": "Température entrée max"
+     },
+     "functions": [],
+     "options": {
+      "showDisabledItems": false,
+      "skipEmptyValues": false,
+      "disableDataAlignment": false,
+      "useZabbixValueMapping": false
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "celsius",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "orange",
+        "value": 27
+       },
+       {
+        "color": "red",
+        "value": 32
+       }
+      ]
+     },
+     "mappings": [],
+     "color": {
+      "mode": "thresholds"
+     },
+     "decimals": 1
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto",
+    "wideLayout": true,
+    "showPercentChange": false
+   }
+  },
+  {
+   "id": 14,
+   "type": "stat",
+   "title": "Alarmes GTB actives",
+   "description": "",
+   "datasource": {
+    "type": "alexanderzobnin-zabbix-datasource",
+    "uid": "zabbix"
+   },
+   "gridPos": {
+    "x": 18,
+    "y": 10,
+    "w": 6,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "alexanderzobnin-zabbix-datasource",
+      "uid": "zabbix"
+     },
+     "queryType": "0",
+     "group": {
+      "filter": "DC/Services"
+     },
+     "host": {
+      "filter": "BMS-SIM"
+     },
+     "application": {
+      "filter": ""
+     },
+     "itemTag": {
+      "filter": ""
+     },
+     "item": {
+      "filter": "Alarmes GTB actives"
+     },
+     "functions": [],
+     "options": {
+      "showDisabledItems": false,
+      "skipEmptyValues": false,
+      "disableDataAlignment": false,
+      "useZabbixValueMapping": false
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "none",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "orange",
+        "value": 3
+       },
+       {
+        "color": "red",
+        "value": 4
+       }
+      ]
+     },
+     "mappings": [],
+     "color": {
+      "mode": "thresholds"
+     },
+     "decimals": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto",
+    "wideLayout": true,
+    "showPercentChange": false
+   }
+  },
+  {
+   "id": 15,
+   "type": "row",
+   "title": "Réseau",
+   "collapsed": false,
+   "gridPos": {
+    "x": 0,
+    "y": 15,
+    "w": 24,
+    "h": 1
+   },
+   "panels": []
+  },
+  {
+   "id": 16,
+   "type": "stat",
+   "title": "Disponibilité bordure / cœur / distribution (ICMP)",
+   "description": "Équipements de l'arrêt « demo » (EDGE-B, LEAF-A1/A2) en maintenance, non affichés",
+   "datasource": {
+    "type": "alexanderzobnin-zabbix-datasource",
+    "uid": "zabbix"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 16,
+    "w": 12,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "alexanderzobnin-zabbix-datasource",
+      "uid": "zabbix"
+     },
+     "queryType": "0",
+     "group": {
+      "filter": "/DC\\/(Edge|Core|Leaf)/"
+     },
+     "host": {
+      "filter": "/^(EDGE-A|CORE-A|CORE-B|LEAF-B1|LEAF-B2)$/"
+     },
+     "application": {
+      "filter": ""
+     },
+     "itemTag": {
+      "filter": ""
+     },
+     "item": {
+      "filter": "ICMP ping"
+     },
+     "functions": [],
+     "options": {
+      "showDisabledItems": false,
+      "skipEmptyValues": false,
+      "disableDataAlignment": false,
+      "useZabbixValueMapping": false
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "red",
+        "value": null
+       },
+       {
+        "color": "green",
+        "value": 1
+       }
+      ]
+     },
+     "mappings": [
+      {
+       "type": "value",
+       "options": {
+        "1": {
+         "text": "UP",
+         "color": "green",
+         "index": 0
+        },
+        "0": {
+         "text": "DOWN",
+         "color": "red",
+         "index": 1
+        }
+       }
+      }
+     ],
+     "color": {
+      "mode": "thresholds"
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": "(.*): ICMP ping"
+      },
+      "properties": [
+       {
+        "id": "displayName",
+        "value": "$1"
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/.*/",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value_and_name",
+    "justifyMode": "center",
+    "orientation": "auto",
+    "wideLayout": true,
+    "showPercentChange": false
+   }
+  },
+  {
+   "id": 17,
+   "type": "timeseries",
+   "title": "Trafic EDGE-A – liens opérateurs (Gi0/0 ISP-A, Gi0/1 ISP-B)",
+   "description": "",
+   "datasource": {
+    "type": "alexanderzobnin-zabbix-datasource",
+    "uid": "zabbix"
+   },
+   "gridPos": {
+    "x": 12,
+    "y": 16,
+    "w": 12,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "alexanderzobnin-zabbix-datasource",
+      "uid": "zabbix"
+     },
+     "queryType": "0",
+     "group": {
+      "filter": "DC/Edge"
+     },
+     "host": {
+      "filter": "EDGE-A"
+     },
+     "application": {
+      "filter": ""
+     },
+     "itemTag": {
+      "filter": ""
+     },
+     "item": {
+      "filter": "/Interface Gi0\\/[01].*: Bits (received|sent)/"
+     },
+     "functions": [],
+     "options": {
+      "showDisabledItems": false,
+      "skipEmptyValues": false,
+      "disableDataAlignment": false,
+      "useZabbixValueMapping": false
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "bps",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     },
+     "mappings": [],
+     "color": {
+      "mode": "thresholds"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom",
+     "showLegend": true
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   }
+  },
+  {
+   "id": 18,
+   "type": "timeseries",
+   "title": "Temps de réponse ICMP",
+   "description": "",
+   "datasource": {
+    "type": "alexanderzobnin-zabbix-datasource",
+    "uid": "zabbix"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 20,
+    "w": 12,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "alexanderzobnin-zabbix-datasource",
+      "uid": "zabbix"
+     },
+     "queryType": "0",
+     "group": {
+      "filter": "/DC\\/(Edge|Core|Leaf)/"
+     },
+     "host": {
+      "filter": "/^(EDGE-A|CORE-A|CORE-B|LEAF-B1|LEAF-B2)$/"
+     },
+     "application": {
+      "filter": ""
+     },
+     "itemTag": {
+      "filter": ""
+     },
+     "item": {
+      "filter": "ICMP response time"
+     },
+     "functions": [],
+     "options": {
+      "showDisabledItems": false,
+      "skipEmptyValues": false,
+      "disableDataAlignment": false,
+      "useZabbixValueMapping": false
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     },
+     "mappings": [],
+     "color": {
+      "mode": "thresholds"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "right",
+     "showLegend": true
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   }
+  },
+  {
+   "id": 19,
+   "type": "row",
+   "title": "Sécurité",
+   "collapsed": false,
+   "gridPos": {
+    "x": 0,
+    "y": 25,
+    "w": 24,
+    "h": 1
+   },
+   "panels": []
+  },
+  {
+   "id": 20,
+   "type": "stat",
+   "title": "Pare-feux (ICMP)",
+   "description": "",
+   "datasource": {
+    "type": "alexanderzobnin-zabbix-datasource",
+    "uid": "zabbix"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 26,
+    "w": 6,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "alexanderzobnin-zabbix-datasource",
+      "uid": "zabbix"
+     },
+     "queryType": "0",
+     "group": {
+      "filter": "DC/Firewalls"
+     },
+     "host": {
+      "filter": "/FW-[AB]/"
+     },
+     "application": {
+      "filter": ""
+     },
+     "itemTag": {
+      "filter": ""
+     },
+     "item": {
+      "filter": "ICMP ping"
+     },
+     "functions": [],
+     "options": {
+      "showDisabledItems": false,
+      "skipEmptyValues": false,
+      "disableDataAlignment": false,
+      "useZabbixValueMapping": false
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "red",
+        "value": null
+       },
+       {
+        "color": "green",
+        "value": 1
+       }
+      ]
+     },
+     "mappings": [
+      {
+       "type": "value",
+       "options": {
+        "1": {
+         "text": "UP",
+         "color": "green",
+         "index": 0
+        },
+        "0": {
+         "text": "DOWN",
+         "color": "red",
+         "index": 1
+        }
+       }
+      }
+     ],
+     "color": {
+      "mode": "thresholds"
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": "(.*): ICMP ping"
+      },
+      "properties": [
+       {
+        "id": "displayName",
+        "value": "$1"
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/.*/",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value_and_name",
+    "justifyMode": "center",
+    "orientation": "auto",
+    "wideLayout": true,
+    "showPercentChange": false
+   }
+  },
+  {
+   "id": 21,
+   "type": "timeseries",
+   "title": "Pare-feux – états (table pf)",
+   "description": "",
+   "datasource": {
+    "type": "alexanderzobnin-zabbix-datasource",
+    "uid": "zabbix"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 30,
+    "w": 6,
+    "h": 6
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "alexanderzobnin-zabbix-datasource",
+      "uid": "zabbix"
+     },
+     "queryType": "0",
+     "group": {
+      "filter": "DC/Firewalls"
+     },
+     "host": {
+      "filter": "/FW-[AB]/"
+     },
+     "application": {
+      "filter": ""
+     },
+     "itemTag": {
+      "filter": ""
+     },
+     "item": {
+      "filter": "PF_STATES"
+     },
+     "functions": [],
+     "options": {
+      "showDisabledItems": false,
+      "skipEmptyValues": false,
+      "disableDataAlignment": false,
+      "useZabbixValueMapping": false
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       }
+      ]
+     },
+     "mappings": [],
+     "color": {
+      "mode": "thresholds"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom",
+     "showLegend": true
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   }
+  },
+  {
+   "id": 22,
+   "type": "alexanderzobnin-zabbix-triggers-panel",
+   "title": "Problèmes actifs (hors maintenance)",
+   "datasource": {
+    "type": "alexanderzobnin-zabbix-datasource",
+    "uid": "zabbix"
+   },
+   "gridPos": {
+    "x": 6,
+    "y": 26,
+    "w": 18,
+    "h": 10
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "alexanderzobnin-zabbix-datasource",
+      "uid": "zabbix"
+     },
+     "queryType": "5",
+     "group": {
+      "filter": "/.*/"
+     },
+     "host": {
+      "filter": "/.*/"
+     },
+     "application": {
+      "filter": ""
+     },
+     "itemTag": {
+      "filter": ""
+     },
+     "proxy": {
+      "filter": ""
+     },
+     "trigger": {
+      "filter": ""
+     },
+     "tags": {
+      "filter": ""
+     },
+     "functions": [],
+     "options": {
+      "hostsInMaintenance": false,
+      "showProblems": "problems",
+      "minSeverity": 0,
+      "acknowledged": 2,
+      "sortProblems": "priority",
+      "limit": 50,
+      "hostProxy": false,
+      "severities": [
+       0,
+       1,
+       2,
+       3,
+       4,
+       5
+      ]
+     }
+    }
+   ],
+   "options": {
+    "layout": "table",
+    "fontSize": "100%",
+    "pageSize": 10,
+    "showTags": false,
+    "hostField": true,
+    "hostTechNameField": false,
+    "hostGroups": false,
+    "hostProxy": false,
+    "severityField": true,
+    "statusField": true,
+    "statusIcon": true,
+    "ackField": false,
+    "ageField": true,
+    "descriptionField": false,
+    "highlightNewEvents": true,
+    "highlightNewerThan": "1h",
+    "customLastChangeFormat": false,
+    "allowDangerousHTML": false,
+    "resizedColumns": []
+   }
+  },
+  {
+   "id": 23,
+   "type": "row",
+   "title": "Infrastructure",
+   "collapsed": false,
+   "gridPos": {
+    "x": 0,
+    "y": 37,
+    "w": 24,
+    "h": 1
+   },
+   "panels": []
+  },
+  {
+   "id": 24,
+   "type": "gauge",
+   "title": "SRV-MON-01 – CPU",
+   "description": "",
+   "datasource": {
+    "type": "alexanderzobnin-zabbix-datasource",
+    "uid": "zabbix"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 38,
+    "w": 4,
+    "h": 5
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "alexanderzobnin-zabbix-datasource",
+      "uid": "zabbix"
+     },
+     "queryType": "0",
+     "group": {
+      "filter": "DC/Servers"
+     },
+     "host": {
+      "filter": "SRV-MON-01"
+     },
+     "application": {
+      "filter": ""
+     },
+     "itemTag": {
+      "filter": ""
+     },
+     "item": {
+      "filter": "CPU utilization"
+     },
+     "functions": [],
+     "options": {
+      "showDisabledItems": false,
+      "skipEmptyValues": false,
+      "disableDataAlignment": false,
+      "useZabbixValueMapping": false
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "orange",
+        "value": 80
+       },
+       {
+        "color": "red",
+        "value": 90
+       }
+      ]
+     },
+     "mappings": [],
+     "color": {
+      "mode": "thresholds"
+     },
+     "decimals": 1,
+     "min": 0,
+     "max": 100
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "showThresholdMarkers": true,
+    "showThresholdLabels": false
+   }
+  },
+  {
+   "id": 25,
+   "type": "gauge",
+   "title": "SRV-MON-01 – mémoire",
+   "description": "",
+   "datasource": {
+    "type": "alexanderzobnin-zabbix-datasource",
+    "uid": "zabbix"
+   },
+   "gridPos": {
+    "x": 4,
+    "y": 38,
+    "w": 4,
+    "h": 5
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "alexanderzobnin-zabbix-datasource",
+      "uid": "zabbix"
+     },
+     "queryType": "0",
+     "group": {
+      "filter": "DC/Servers"
+     },
+     "host": {
+      "filter": "SRV-MON-01"
+     },
+     "application": {
+      "filter": ""
+     },
+     "itemTag": {
+      "filter": ""
+     },
+     "item": {
+      "filter": "Memory utilization"
+     },
+     "functions": [],
+     "options": {
+      "showDisabledItems": false,
+      "skipEmptyValues": false,
+      "disableDataAlignment": false,
+      "useZabbixValueMapping": false
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "orange",
+        "value": 80
+       },
+       {
+        "color": "red",
+        "value": 90
+       }
+      ]
+     },
+     "mappings": [],
+     "color": {
+      "mode": "thresholds"
+     },
+     "decimals": 1,
+     "min": 0,
+     "max": 100
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "showThresholdMarkers": true,
+    "showThresholdLabels": false
+   }
+  },
+  {
+   "id": 26,
+   "type": "gauge",
+   "title": "SRV-MON-01 – disque /",
+   "description": "",
+   "datasource": {
+    "type": "alexanderzobnin-zabbix-datasource",
+    "uid": "zabbix"
+   },
+   "gridPos": {
+    "x": 8,
+    "y": 38,
+    "w": 4,
+    "h": 5
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "alexanderzobnin-zabbix-datasource",
+      "uid": "zabbix"
+     },
+     "queryType": "0",
+     "group": {
+      "filter": "DC/Servers"
+     },
+     "host": {
+      "filter": "SRV-MON-01"
+     },
+     "application": {
+      "filter": ""
+     },
+     "itemTag": {
+      "filter": ""
+     },
+     "item": {
+      "filter": "/: Space utilization"
+     },
+     "functions": [],
+     "options": {
+      "showDisabledItems": false,
+      "skipEmptyValues": false,
+      "disableDataAlignment": false,
+      "useZabbixValueMapping": false
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "orange",
+        "value": 80
+       },
+       {
+        "color": "red",
+        "value": 90
+       }
+      ]
+     },
+     "mappings": [],
+     "color": {
+      "mode": "thresholds"
+     },
+     "decimals": 1,
+     "min": 0,
+     "max": 100
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "showThresholdMarkers": true,
+    "showThresholdLabels": false
+   }
+  },
+  {
+   "id": 27,
+   "type": "stat",
+   "title": "Site web DMZ",
+   "description": "",
+   "datasource": {
+    "type": "alexanderzobnin-zabbix-datasource",
+    "uid": "zabbix"
+   },
+   "gridPos": {
+    "x": 12,
+    "y": 38,
+    "w": 6,
+    "h": 5
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "alexanderzobnin-zabbix-datasource",
+      "uid": "zabbix"
+     },
+     "queryType": "0",
+     "group": {
+      "filter": "DC/Services"
+     },
+     "host": {
+      "filter": "SRV-WEB-01"
+     },
+     "application": {
+      "filter": ""
+     },
+     "itemTag": {
+      "filter": ""
+     },
+     "item": {
+      "filter": "Failed step of scenario \"Site web DMZ\""
+     },
+     "functions": [],
+     "options": {
+      "showDisabledItems": false,
+      "skipEmptyValues": false,
+      "disableDataAlignment": false,
+      "useZabbixValueMapping": false
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "red",
+        "value": 1
+       }
+      ]
+     },
+     "mappings": [
+      {
+       "type": "value",
+       "options": {
+        "0": {
+         "text": "OK",
+         "color": "green",
+         "index": 0
+        }
+       }
+      },
+      {
+       "type": "range",
+       "options": {
+        "from": 1,
+        "to": 99,
+        "result": {
+         "text": "ÉCHEC",
+         "color": "red",
+         "index": 1
+        }
+       }
+      }
+     ],
+     "color": {
+      "mode": "thresholds"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto",
+    "wideLayout": true,
+    "showPercentChange": false
+   }
+  },
+  {
+   "id": 28,
+   "type": "stat",
+   "title": "Collecteur syslog",
+   "description": "",
+   "datasource": {
+    "type": "alexanderzobnin-zabbix-datasource",
+    "uid": "zabbix"
+   },
+   "gridPos": {
+    "x": 18,
+    "y": 38,
+    "w": 6,
+    "h": 5
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "alexanderzobnin-zabbix-datasource",
+      "uid": "zabbix"
+     },
+     "queryType": "0",
+     "group": {
+      "filter": "DC/Services"
+     },
+     "host": {
+      "filter": "SYSLOG"
+     },
+     "application": {
+      "filter": ""
+     },
+     "itemTag": {
+      "filter": ""
+     },
+     "item": {
+      "filter": "ICMP ping"
+     },
+     "functions": [],
+     "options": {
+      "showDisabledItems": false,
+      "skipEmptyValues": false,
+      "disableDataAlignment": false,
+      "useZabbixValueMapping": false
+     }
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "red",
+        "value": null
+       },
+       {
+        "color": "green",
+        "value": 1
+       }
+      ]
+     },
+     "mappings": [
+      {
+       "type": "value",
+       "options": {
+        "1": {
+         "text": "UP",
+         "color": "green",
+         "index": 0
+        },
+        "0": {
+         "text": "DOWN",
+         "color": "red",
+         "index": 1
+        }
+       }
+      }
+     ],
+     "color": {
+      "mode": "thresholds"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto",
+    "wideLayout": true,
+    "showPercentChange": false
+   }
+  }
+ ]
+}

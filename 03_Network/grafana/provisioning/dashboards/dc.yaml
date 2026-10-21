@@ -1,0 +1,13 @@
+# Dashboards of the repository (PLAN_02 GRF.4): grafana/dashboards/*.json, copied to /var/lib/grafana/dashboards/dc by
+# the Grafana role of automation/deploy_servers.py. Read-only in the UI: change the JSON in the repository.
+apiVersion: 1
+providers:
+  - name: dc-casablanca
+    orgId: 1
+    folder: DC Casablanca
+    type: file
+    disableDeletion: true
+    allowUiUpdates: false
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards/dc

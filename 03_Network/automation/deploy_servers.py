@@ -9,6 +9,7 @@ Base (every VM): hostname, timezone, netplan (bond0 active-backup on the two NIC
 network config disabled, journald -> rsyslog forwarding to SYSLOG, NTP via systemd-timesyncd -> SRV-INF-01.
 Roles (packages come from the real Internet through FW SNAT 192.0.2.10): see ROLE_SCRIPTS.
 """
+import json
 import sys
 from pathlib import Path
 
@@ -23,9 +24,9 @@ S, SITE = INV["services"], INV["site"]
 
 
 def grafana_role():
-    """Grafana (PLAN_02 GRF.1–GRF.3): settings as GF_* variables of the service (no anonymous access, no sign-up,
+    """Grafana (PLAN_02 GRF.1–GRF.4): settings as GF_* variables of the service (no anonymous access, no sign-up,
     root_url, timezone), Zabbix plugin unpacked from its zip (offline, sha256 checked), data source and app enabled by
-    the provisioning files of grafana/provisioning/. The data source password is passed in the service environment."""
+    the provisioning files of grafana/provisioning/, dashboards of grafana/dashboards/. The data source password is passed in the service environment."""
     g, c, mon = INV["monitoring"]["grafana"], INV["credentials"], INV["monitoring"]
     pl = g["plugin"]
     prov = "".join(
@@ -33,6 +34,12 @@ def grafana_role():
         f"chown root:grafana /etc/grafana/provisioning/{f.parent.name}/{f.name}; "
         f"chmod 0640 /etc/grafana/provisioning/{f.parent.name}/{f.name}\n"
         for f in sorted((NET / "grafana" / "provisioning").glob("*/*.yaml")))
+    # dashboards sent compact (the role script travels over the serial console)
+    boards = "mkdir -p /var/lib/grafana/dashboards/dc\n" + "".join(
+        f"cat > /var/lib/grafana/dashboards/dc/{f.name} <<'DCJSON'\n"
+        f"{json.dumps(json.loads(f.read_text(encoding='utf-8')), ensure_ascii=False, separators=(',', ':'))}\nDCJSON\n"
+        for f in sorted((NET / "grafana" / "dashboards").glob("*.json"))) + \
+        "chown -R root:grafana /var/lib/grafana/dashboards; chmod -R u=rwX,g=rX,o= /var/lib/grafana/dashboards\n"
     return f"""export DEBIAN_FRONTEND=noninteractive
 dpkg -s grafana >/dev/null 2>&1 || apt-get install -y -q grafana >/dev/null
 sed -i -e 's/^;\\?http_port = .*/http_port = 3000/' -e 's/^;\\?admin_password = .*/admin_password = {c['grafana_admin_password']}/' /etc/grafana/grafana.ini
@@ -44,6 +51,7 @@ GF_SERVER_ROOT_URL={g['root_url']}
 GF_USERS_ALLOW_SIGN_UP=false
 GF_AUTH_ANONYMOUS_ENABLED=false
 GF_DATE_FORMATS_DEFAULT_TIMEZONE={mon['timezone']}
+GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/dc/{g['home_dashboard']}
 ZABBIX_GRAFANA_PASSWORD={c['zabbix_grafana_password']}
 # <<< dc-casa
 EOF
@@ -60,8 +68,8 @@ if [ "$have" != "{pl['version']}" ]; then
   chmod 0755 "$D"/datasource/gpx_*; chown -R grafana:grafana "$D"
   echo "plugin {pl['id']} {pl['version']} installed from $src"
 fi
-# provisioning (data source, app)
-{prov}systemctl daemon-reload; systemctl enable grafana-server >/dev/null 2>&1; systemctl restart grafana-server
+# provisioning (data source, app, dashboards) and the dashboards themselves
+{prov}{boards}systemctl daemon-reload; systemctl enable grafana-server >/dev/null 2>&1; systemctl restart grafana-server
 for i in $(seq 1 60); do curl -s -m2 http://127.0.0.1:3000/api/health | grep -q '"ok"' && break; sleep 2; done
 systemctl is-active grafana-server"""
 
