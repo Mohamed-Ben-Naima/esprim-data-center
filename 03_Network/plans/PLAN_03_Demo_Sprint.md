@@ -66,16 +66,36 @@ trims them for the demo.
       Not run (node off in the demo profile): agent port to SRV-INF-01, "refused elsewhere" from SRV-BASTION.
       After a cold start (S6): re-run `apply` (maintenance follows the stopped nodes) then `status`.
 
-### S3 — Zabbix services + Grafana base (ZBX.6, GRF.1–GRF.3) (≈ 2 h)
-- [ ] HTTP-agent items on BMS-SIM `/api/state` (path A/B load, state, status) + triggers (45 % warning, 50 % high, not
+### S3 — Zabbix services + Grafana base (ZBX.6, GRF.1–GRF.3) (≈ 2 h) — done 21 Oct 2026 (DEMO.10–DEMO.14)
+- [x] HTTP-agent items on BMS-SIM `/api/state` (path A/B load, state, status) + triggers (45 % warning, 50 % high, not
       POWERED disaster); DCIM `/api/summary` racks; web check `https://10.50.0.11/health`; ICMP SYSLOG.
-- [ ] Power test: `api/set?UTILITY-A=DOWN&UPS-A=DOWN&GENERATOR=DOWN` → problem ≤ 30 s, `api/reset` → resolved.
-- [ ] Grafana: `allow_sign_up=false`, anonymous off, timezone, `root_url`.
-- [ ] Zabbix plugin **offline**: download the zip on the PC (pick a version compatible with the installed Grafana:
+      → inventory `monitoring.services` → `zabbix_setup.py apply` (group DC/Services, 4 hosts: BMS-SIM, SRV-DCIM-01,
+      SRV-WEB-01, SYSLOG). One HTTP-agent master item per API (10 s) + dependent JSONPath items. Keys for S4:
+      `bms.path.load[A|B]`, `bms.path.state[A|B]`, `bms.status`, `bms.alarms`, `bms.it_load`, `bms.pue`,
+      `dcim.racks[OK|DEGRADED|DOWN]`, `dcim.inlet.max`, web scenario "Site web DMZ" (`web.test.fail[Site web DMZ]`),
+      `icmpping`/`icmppingsec` on SYSLOG. Trigger names in French; 45 % warning depends on the 50 % high one.
+      Nominal = 2 warnings "Charge chemin A/B > 45 %" (47.1 %). `status` now shows service items + service problems:
+      17 hosts, 0 running host not available. Evidence: `report/evidence/demo_s3_zabbix_services.txt`.
+- [x] Power test: `api/set?UTILITY-A=DOWN&UPS-A=DOWN&GENERATOR=DOWN` → problem ≤ 30 s, `api/reset` → resolved.
+      → `python automation/power_test.py` (reuse in S4/S6): disaster "Chemin A hors tension" + high "Charge chemin B >
+      50 %" + high "Baies en mode dégradé" in 6.3 s / 9.5 s, resolved in 6.3 s. Evidence: `demo_s3_power_test.txt`.
+- [x] Grafana: `allow_sign_up=false`, anonymous off, timezone, `root_url`.
+      → Grafana role of `deploy_servers.py` (new `--role=grafana SRV-MON-01`, console): GF_* block in
+      `/etc/default/grafana-server` (0640). Home without login = 401. Evidence: `demo_s3_grafana_base.txt`.
+- [x] Zabbix plugin **offline**: download the zip on the PC (pick a version compatible with the installed Grafana:
       check `grafana-server -v` first), copy it into SRV-MON-01 (via the GNS3 VM, `vm_fileserver.py` / `gns3vm.py`),
       unzip into `/var/lib/grafana/plugins/`, enable the app. Then record the zip in `build_repo.sh` for later.
-- [ ] Zabbix read-only user `grafana`; data source provisioned in `/etc/grafana/provisioning/datasources/zabbix.yaml`;
+      → Grafana 13.2.3; plugin **6.8.0** linux-amd64 (needs ≥ 11.6; 6.9.1 skipped, 15 days old), sha256 checked,
+      copied with `adminws.put` to `/tmp`, unpacked by the role, app enabled by `grafana/provisioning/plugins/`.
+      `build_repo.sh` ships it in `plugins/` of ISO **v3** (not rebuilt; `attach_repo.py` stays on v2 until then).
+- [x] Zabbix read-only user `grafana`; data source provisioned in `/etc/grafana/provisioning/datasources/zabbix.yaml`;
       *Test* button OK.
+      → user group "Grafana (read-only)" (read on DC/*), built-in "User role"; data source uid `zabbix` (default,
+      not editable), password from the service environment. Health = "Zabbix API version 6.0.48"; write call as
+      grafana refused. Evidence: `demo_s3_grafana_datasource.txt`.
+      S4 note: the role copies `grafana/provisioning/*/*.yaml` only — add the dashboard provider yaml there and
+      extend the role to copy `grafana/dashboards/*.json`. Re-run: `deploy_servers.py --role=grafana SRV-MON-01`
+      (plugin already installed: the /tmp zip is not needed again).
 
 ### S4 — NOC dashboard (GRF.4) (≈ 1.5 h)
 - [ ] `03_Network/grafana/dashboards/noc.json` + provisioning, home dashboard. Rows Énergie / Réseau / Sécurité /
