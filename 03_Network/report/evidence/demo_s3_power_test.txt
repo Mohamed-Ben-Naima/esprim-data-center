@@ -1,0 +1,30 @@
+# PLAN_03 S3 power test - python automation/power_test.py - 2026-10-21
+before: 05:56:55
+    warning  BMS-SIM: Charge chemin A > 45 %
+    warning  BMS-SIM: Charge chemin B > 45 %
+
+05:57:01 SRV-MON-01: curl 'http://10.70.0.12:8080/api/set?UTILITY-A=DOWN&UPS-A=DOWN&GENERATOR=DOWN' -> rc=0
+ "elements": {
+  "UTILITY-A": "DOWN",
+  "UTILITY-B": "UP",
+  "UPS-A": "DOWN",
+  "UPS-B": "UP",
+  "GENERATOR": "DOWN"
+ },
+problems 'Chemin A hors tension' + 'Baies en mode dégradé' after: 9.5 s
+    disaster BMS-SIM: Chemin A hors tension
+    high     BMS-SIM: Charge chemin B > 50 %
+    high     SRV-DCIM-01: Baies en mode dégradé (un seul chemin)
+
+05:57:15 SRV-MON-01: curl http://10.70.0.12:8080/api/reset -> rc=0
+ "elements": {
+  "UTILITY-A": "UP",
+  "UTILITY-B": "UP",
+  "UPS-A": "UP",
+  "UPS-B": "UP",
+  "GENERATOR": "UP"
+ },
+power problems resolved after: 6.3 s
+    warning  BMS-SIM: Charge chemin A > 45 %
+    warning  BMS-SIM: Charge chemin B > 45 %
+exit=0
