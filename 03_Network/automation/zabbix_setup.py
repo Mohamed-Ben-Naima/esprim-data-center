@@ -227,6 +227,42 @@ def apply_services(z, group_ids):
         print(f"service {name}: {'; '.join(notes) if notes else 'up to date'}")
 
 
+def apply_grafana_user(z, group_ids):
+    """GRF.3: read-only account for the Grafana data source - built-in "User role" (no configuration menu), one user
+    group with read permission on every DC/* group. The password is checked by logging in with it."""
+    name, group = MON["grafana"]["zabbix_user"], "Grafana (read-only)"
+    rights = [{"id": group_ids[g], "permission": 2} for g in sorted(set(MON["groups"].values()))]   # 2 = read
+    notes = []
+    ug = z.call("usergroup.get", {"output": ["usrgrpid"], "filter": {"name": group}, "selectRights": "extend"})
+    if not ug:
+        gid = z.call("usergroup.create", {"name": group, "rights": rights})["usrgrpids"][0]
+        notes.append("user group created")
+    else:
+        gid = ug[0]["usrgrpid"]
+        if sorted((r["id"], str(r["permission"])) for r in ug[0]["rights"]) != \
+                sorted((r["id"], str(r["permission"])) for r in rights):
+            z.call("usergroup.update", {"usrgrpid": gid, "rights": rights})
+            notes.append("rights updated")
+    roleid = z.call("role.get", {"output": ["roleid"], "filter": {"name": "User role"}})[0]["roleid"]
+    u = z.call("user.get", {"output": ["userid", "roleid"], "filter": {"username": name}, "selectUsrgrps": ["usrgrpid"]})
+    if not u:
+        z.call("user.create", {"username": name, "name": "Grafana NOC", "passwd": C["zabbix_grafana_password"],
+                               "roleid": roleid, "usrgrps": [{"usrgrpid": gid}]})
+        notes.append("user created")
+    else:
+        if u[0]["roleid"] != roleid or [g["usrgrpid"] for g in u[0]["usrgrps"]] != [gid]:
+            z.call("user.update", {"userid": u[0]["userid"], "roleid": roleid, "usrgrps": [{"usrgrpid": gid}]})
+            notes.append("role/group updated")
+        try:
+            probe = Zabbix()
+            probe.auth = probe.call("user.login", {"username": name, "password": C["zabbix_grafana_password"]})
+            probe.call("user.logout")
+        except ZabbixError:
+            z.call("user.update", {"userid": u[0]["userid"], "passwd": C["zabbix_grafana_password"]})
+            notes.append("password set from the inventory")
+    print(f"user {name}: {', '.join(notes) if notes else 'up to date'}")
+
+
 def stopped_nodes():
     api = labctl.Gns3()
     return {n["name"] for n in api.nodes(api.project()) if n["status"] != "started"}
@@ -325,6 +361,8 @@ def apply():
                 print(f"trigger disabled on {w['name']}: {t['description']}")
     # 6. services: power, racks, web site, log collector (ZBX.6)
     apply_services(z, have)
+    # 6b. read-only account of the Grafana data source (GRF.3)
+    apply_grafana_user(z, have)
     # 7. maintenance for the hosts whose node is stopped
     off = sorted(stopped_nodes() & ({w["name"] for w in want} | set(MON["services"])))
     ids = {h["host"]: h["hostid"] for h in z.call("host.get", {"output": ["host"], "filter": {"host": off}})} if off else {}

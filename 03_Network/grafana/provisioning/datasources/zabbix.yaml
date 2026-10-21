@@ -1,0 +1,21 @@
+# Grafana data source "Zabbix" (PLAN_02 GRF.3), copied to /etc/grafana/provisioning/datasources/ by the Grafana role
+# of automation/deploy_servers.py. Read-only Zabbix account `grafana` (zabbix_setup.py apply); its password comes from
+# the service environment (/etc/default/grafana-server, written by the role from the inventory), not from this file.
+apiVersion: 1
+datasources:
+  - name: Zabbix
+    uid: zabbix
+    type: alexanderzobnin-zabbix-datasource
+    access: proxy
+    url: http://127.0.0.1/api_jsonrpc.php
+    isDefault: true
+    editable: false
+    jsonData:
+      username: grafana
+      trends: true
+      trendsFrom: 7d
+      trendsRange: 4d
+      cacheTTL: 1m
+      timeout: 30
+    secureJsonData:
+      password: $ZABBIX_GRAFANA_PASSWORD

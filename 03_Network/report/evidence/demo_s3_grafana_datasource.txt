@@ -1,0 +1,11 @@
+# PLAN_03 S3 / GRF.3 data source by provisioning - 2026-10-21 06:05:34
+# Zabbix user 'grafana' by: python automation/zabbix_setup.py apply
+user grafana: up to date
+$ curl --socks5 ... -u admin:<pw> http://10.60.0.11:3000/api/datasources/name/Zabbix  (selected keys)
+name = Zabbix | type = alexanderzobnin-zabbix-datasource | url = http://127.0.0.1/api_jsonrpc.php | user = grafana | provisioned (readOnly) = True | default = True
+$ curl --socks5 ... -u admin:<pw> http://10.60.0.11:3000/api/datasources/uid/zabbix/health   (= the Test button)
+{"message":"Zabbix API version 6.0.48","status":"OK"}
+# read-only: Zabbix API as 'grafana'
+login grafana: ok | hosts readable: 17
+role: {'name': 'User role', 'type': '1'} (type 1 = User: no Configuration menu)
+write refused: hostgroup.create: No permissions to call "hostgroup.create".
