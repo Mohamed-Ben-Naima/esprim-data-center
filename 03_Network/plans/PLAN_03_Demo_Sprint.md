@@ -40,14 +40,28 @@ trims them for the demo.
 - [x] `python automation/access_matrix.py` still 0 failure (re-run after a full restart).
       → 16 tested, 0 failure (internal-network leg not probed: SRV-INF-01 off). Re-run in S6.
 
-### S2 — Zabbix base and devices (PLAN_02 ZBX.1–ZBX.5) (≈ 2 h)
-- [ ] `automation/zabbix_setup.py` (`check` / `apply` / `status`), JSON-RPC through the SOCKS proxy, standard library,
+### S2 — Zabbix base and devices (PLAN_02 ZBX.1–ZBX.5) (≈ 2 h) — done 21 Oct 2026 (DEMO.6–DEMO.9)
+- [x] `automation/zabbix_setup.py` (`check` / `apply` / `status`), JSON-RPC through the SOCKS proxy, standard library,
       inventory section `monitoring:` (groups, templates by name, interfaces) + `credentials.zabbix_admin_password`.
-- [ ] apply: Admin password from inventory, timezone `Africa/Casablanca`, groups `DC/*`.
-- [ ] Prove SNMPv3 by hand from SRV-MON-01 (`snmpget ... 10.10.0.21`), then hosts: running Cisco devices (SNMPv3
+      → hosts derived from the inventory: `devices` platform → template/interface, role → group; `monitoring.agents`
+      for the Linux servers; `off_triggers` per platform. `check` = API 6.0.48, login, server collecting.
+- [x] apply: Admin password from inventory, timezone `Africa/Casablanca`, groups `DC/*`.
+      → password is `Zbx-Supervision-2026!` (6.0 refuses a password containing the user name); Admin / zabbix refused.
+      The package's "Zabbix server" host became SRV-MON-01 (agent on 10.60.0.11, not 127.0.0.1). Re-run = all up to date.
+- [x] Prove SNMPv3 by hand from SRV-MON-01 (`snmpget ... 10.10.0.21`), then hosts: running Cisco devices (SNMPv3
       authPriv `zbxmon`), stopped ones in maintenance `demo-off`; FW-A/FW-B SNMP v2c; agents on SRV-MON-01 (SRV-INF-01 is off in the demo
       profile: add it in maintenance `demo-off`).
-- [ ] `zabbix_setup.py status`: every running host available. Fallback if SNMP to a device fails: ICMP-only host for it.
+      → `snmp` installed on SRV-MON-01 from the offline repo. **LEAF-B2 had lost its SNMPv3 user** ("Unknown user"):
+      re-applied from `configs/LEAF-B2.cfg` and saved. Templates `Cisco IOS by SNMP` / `PFSense by SNMP` (they already
+      hold the ICMP items; the extra `ICMP Ping` template collides). pfSense "DHCP/DNS server is not running" triggers
+      disabled on FW-A/FW-B (off by design). `demo-off` = EDGE-B, LEAF-A1/A2, SRV-INF-01, SRV-BASTION (no data);
+      their first ICMP problems stay open but **suppressed** — S4 panels must hide suppressed problems.
+      Evidence: `report/evidence/demo_s2_snmp_proof.txt`, `demo_s2_zabbix_apply.txt`.
+- [x] `zabbix_setup.py status`: every running host available. Fallback if SNMP to a device fails: ICMP-only host for it.
+      → 13 hosts, 8 running ones available (6 Cisco SNMPv3, 2 pfSense v2c, SRV-MON-01 agent), 0 failure, no fallback
+      needed. SNMP polling did not move the CORE-A/CORE-B HSRP counters. Evidence: `demo_s2_zabbix_status.txt`.
+      Not run (node off in the demo profile): agent port to SRV-INF-01, "refused elsewhere" from SRV-BASTION.
+      After a cold start (S6): re-run `apply` (maintenance follows the stopped nodes) then `status`.
 
 ### S3 — Zabbix services + Grafana base (ZBX.6, GRF.1–GRF.3) (≈ 2 h)
 - [ ] HTTP-agent items on BMS-SIM `/api/state` (path A/B load, state, status) + triggers (45 % warning, 50 % high, not

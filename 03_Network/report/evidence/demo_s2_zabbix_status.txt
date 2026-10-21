@@ -1,0 +1,31 @@
+groups (7): DC/Core [2], DC/Edge [2], DC/Firewalls [2], DC/Leaf [4], DC/Servers [3], DC/Services [0], DC/Storage [0]
+host         interface                state        maintenance templates
+CORE-A       snmp 10.10.0.21          available    -           Cisco IOS by SNMP
+CORE-B       snmp 10.10.0.22          available    -           Cisco IOS by SNMP
+EDGE-A       snmp 10.10.0.1           available    -           Cisco IOS by SNMP
+EDGE-B       snmp 10.10.0.2           unknown      yes         Cisco IOS by SNMP
+FW-A         snmp 10.254.2.4          available    -           PFSense by SNMP
+FW-B         snmp 10.254.2.5          available    -           PFSense by SNMP
+LEAF-A1      snmp 10.10.0.31          unknown      yes         Cisco IOS by SNMP
+LEAF-A2      snmp 10.10.0.32          unknown      yes         Cisco IOS by SNMP
+LEAF-B1      snmp 10.10.0.33          available    -           Cisco IOS by SNMP
+LEAF-B2      snmp 10.10.0.34          available    -           Cisco IOS by SNMP
+SRV-BASTION  agent active             unknown      yes         Linux by Zabbix agent active
+SRV-INF-01   agent 10.100.0.11        unknown      yes         Linux by Zabbix agent
+SRV-MON-01   agent 10.60.0.11         available    -           Linux by Zabbix agent, Zabbix server health
+
+13 hosts, 0 running host(s) not available
+
+# open problems 05:38: 7 - 3 suppressed (demo-off maintenance)
+   PFSense: DHCP server is not running 
+   PFSense: DNS server is not running 
+   Cisco IOS: Unavailable by ICMP ping (suppressed)
+   PFSense: DHCP server is not running 
+   PFSense: DNS server is not running 
+   Cisco IOS: Unavailable by ICMP ping (suppressed)
+   Cisco IOS: Unavailable by ICMP ping (suppressed)
+
+# soak with SNMP polling, 2026-10-21 05:26:33 -> 05:37:08 (host clock)
+CORE-B show standby | include state change: 499 2 487 529 2 2 487 499 at both ends -> unchanged
+CORE-A: last state change 06:33-06:41 elapsed (IOS clock), i.e. before S1 - no new change
+GNS3 VM load 3.71 / 3.87 / 4.07, swap 0 MB; host free 0.86 GB                          -> PASS
