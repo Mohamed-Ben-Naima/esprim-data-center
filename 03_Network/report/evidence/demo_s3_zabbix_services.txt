@@ -1,0 +1,57 @@
+# PLAN_03 S3 / ZBX.6 - 2026-10-21 05:55:19 - sources read by hand from SRV-MON-01
+ "path_load_pct": {
+  "A": 47.1,
+  "B": 47.1
+ "by_status": {
+  "OK": 96
+ },
+OK SRV-WEB-01 (TLS)
+10.60.0.12 is alive
+
+# python automation/zabbix_setup.py apply (second run, idempotent)
+Admin password: already the inventory one
+timezone: Africa/Casablanca (unchanged)
+host EDGE-A: up to date
+host EDGE-B: up to date
+host FW-A: up to date
+host FW-B: up to date
+host CORE-A: up to date
+host CORE-B: up to date
+host LEAF-A1: up to date
+host LEAF-A2: up to date
+host LEAF-B1: up to date
+host LEAF-B2: up to date
+host SRV-MON-01: up to date
+host SRV-INF-01: up to date
+host SRV-BASTION: up to date
+service BMS-SIM: up to date
+service SRV-DCIM-01: up to date
+service SRV-WEB-01: up to date
+service SYSLOG: up to date
+maintenance demo-off: EDGE-B, LEAF-A1, LEAF-A2, SRV-BASTION, SRV-INF-01
+
+# python automation/zabbix_setup.py status
+groups (7): DC/Core [2], DC/Edge [2], DC/Firewalls [2], DC/Leaf [4], DC/Servers [3], DC/Services [4], DC/Storage [0]
+host         interface                state        maintenance templates
+BMS-SIM      service 9 items          ok           -           bms.alarms=2  bms.it_load=942  bms.path.load[A]=47.1  bms.path.load[B]=47.1  bms.path.state[A]=POWERED  bms.path.state[B]=POWERED  bms.pue=1.45  bms.status=WARNING
+CORE-A       snmp 10.10.0.21          available    -           Cisco IOS by SNMP
+CORE-B       snmp 10.10.0.22          available    -           Cisco IOS by SNMP
+EDGE-A       snmp 10.10.0.1           available    -           Cisco IOS by SNMP
+EDGE-B       snmp 10.10.0.2           unknown      yes         Cisco IOS by SNMP
+FW-A         snmp 10.254.2.4          available    -           PFSense by SNMP
+FW-B         snmp 10.254.2.5          available    -           PFSense by SNMP
+LEAF-A1      snmp 10.10.0.31          unknown      yes         Cisco IOS by SNMP
+LEAF-A2      snmp 10.10.0.32          unknown      yes         Cisco IOS by SNMP
+LEAF-B1      snmp 10.10.0.33          available    -           Cisco IOS by SNMP
+LEAF-B2      snmp 10.10.0.34          available    -           Cisco IOS by SNMP
+SRV-BASTION  agent active             unknown      yes         Linux by Zabbix agent active
+SRV-DCIM-01  service 5 items          ok           -           dcim.inlet.max=31.8  dcim.racks[DEGRADED]=0  dcim.racks[DOWN]=0  dcim.racks[OK]=96
+SRV-INF-01   agent 10.100.0.11        unknown      yes         Linux by Zabbix agent
+SRV-MON-01   agent 10.60.0.11         available    -           Linux by Zabbix agent, Zabbix server health
+SRV-WEB-01   service 6 items          ok           -           web.test.fail[Site web DMZ]=0
+SYSLOG       service 2 items          ok           -           icmpping=1
+
+17 hosts, 0 running host(s) not available
+service problems (2):
+  05:52:12 warning  BMS-SIM: Charge chemin A > 45 %
+  05:52:12 warning  BMS-SIM: Charge chemin B > 45 %

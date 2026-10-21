@@ -323,6 +323,48 @@ monitoring:
     SRV-MON-01:  {mode: passive}   # the server itself; replaces the default "Zabbix server" host
     SRV-INF-01:  {mode: passive}   # TCP 10050 from VLAN 60 (core ACL T18-7)
     SRV-BASTION: {mode: active}    # VLAN 90 reaches the server on TCP 10051 (rule EXT-8)
+  # ZBX.6 services (group DC/Services), polled from SRV-MON-01: one HTTP-agent item reads the JSON (`source`), dependent
+  # items pick values with JSONPath (`default` = value when the key is absent), `web` = web scenario, `icmp` = ping.
+  # Thresholds: design Table 22 (path load > 45 % warning, > 50 % high: N+N redundancy no longer assured).
+  services:
+    BMS-SIM:
+      source: {key: bms.state, url: "http://10.70.0.12:8080/api/state", delay: 10s}
+      items:
+        - {key: "bms.path.load[A]",  name: "Charge chemin A",       path: "$.path_load_pct.A", type: float, units: "%"}
+        - {key: "bms.path.load[B]",  name: "Charge chemin B",       path: "$.path_load_pct.B", type: float, units: "%"}
+        - {key: "bms.path.state[A]", name: "État chemin A",         path: "$.paths.A",         type: char}
+        - {key: "bms.path.state[B]", name: "État chemin B",         path: "$.paths.B",         type: char}
+        - {key: bms.status,          name: "État global GTB",       path: "$.status",          type: char}
+        - {key: bms.alarms,          name: "Alarmes GTB actives",   path: "$.alarms.length()", type: uint}
+        - {key: bms.it_load,         name: "Charge IT",             path: "$.it_load_kw",      type: float, units: kW}
+        - {key: bms.pue,             name: "PUE",                   path: "$.pue",             type: float}
+      triggers:
+        - {name: "Charge chemin A > 50 %", expr: "last(/BMS-SIM/bms.path.load[A])>50", severity: high}
+        - {name: "Charge chemin B > 50 %", expr: "last(/BMS-SIM/bms.path.load[B])>50", severity: high}
+        - {name: "Charge chemin A > 45 %", expr: "last(/BMS-SIM/bms.path.load[A])>45", severity: warning, depends: "Charge chemin A > 50 %"}
+        - {name: "Charge chemin B > 45 %", expr: "last(/BMS-SIM/bms.path.load[B])>45", severity: warning, depends: "Charge chemin B > 50 %"}
+        - {name: "Chemin A hors tension", expr: 'last(/BMS-SIM/bms.path.state[A])<>"POWERED"', severity: disaster}
+        - {name: "Chemin B hors tension", expr: 'last(/BMS-SIM/bms.path.state[B])<>"POWERED"', severity: disaster}
+        - {name: "API GTB sans réponse (60 s)", expr: "nodata(/BMS-SIM/bms.status,60s)=1", severity: average}
+    SRV-DCIM-01:
+      source: {key: dcim.summary, url: "http://10.70.0.11:8080/api/summary", delay: 10s}
+      items:
+        - {key: "dcim.racks[OK]",       name: "Baies OK",               path: "$.by_status.OK",       type: uint, default: 0}
+        - {key: "dcim.racks[DEGRADED]", name: "Baies DEGRADED",         path: "$.by_status.DEGRADED", type: uint, default: 0}
+        - {key: "dcim.racks[DOWN]",     name: "Baies DOWN",             path: "$.by_status.DOWN",     type: uint, default: 0}
+        - {key: dcim.inlet.max,         name: "Température entrée max", path: "$.max_inlet_c",        type: float, units: "°C"}
+      triggers:
+        - {name: "Baies en mode dégradé (un seul chemin)", expr: "last(/SRV-DCIM-01/dcim.racks[DEGRADED])>0", severity: high}
+        - {name: "Baies hors tension", expr: "last(/SRV-DCIM-01/dcim.racks[DOWN])>0", severity: disaster}
+        - {name: "API DCIM sans réponse (60 s)", expr: "nodata(/SRV-DCIM-01/dcim.racks[OK],60s)=1", severity: average}
+    SRV-WEB-01:
+      web: {name: "Site web DMZ", url: "https://10.50.0.11/health", required: "OK SRV-WEB-01", delay: 30s}
+      triggers:
+        - {name: "Site web DMZ en échec", expr: "last(/SRV-WEB-01/web.test.fail[Site web DMZ])<>0", severity: high}
+    SYSLOG:
+      icmp: true
+      triggers:
+        - {name: "Collecteur syslog injoignable (ICMP)", expr: "max(/SYSLOG/icmpping,#3)=0", severity: high}
 
 # ---------------------------------------------------------------------------------------------------
 # Security policy (PDF Table 18). Ports: alias names resolved in `port_aliases`.

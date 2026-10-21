@@ -1,7 +1,7 @@
-"""zabbix_setup – configure Zabbix (SRV-MON-01) from the inventory, over its JSON-RPC API (PLAN_02 ZBX.1–ZBX.5).
+"""zabbix_setup – configure Zabbix (SRV-MON-01) from the inventory, over its JSON-RPC API (PLAN_02 ZBX.1–ZBX.6).
 
   python automation/zabbix_setup.py check     API version, login, is the server process collecting
-  python automation/zabbix_setup.py apply     Admin password, timezone, groups, hosts, maintenance (idempotent)
+  python automation/zabbix_setup.py apply     Admin password, timezone, groups, hosts, services, maintenance (idempotent)
   python automation/zabbix_setup.py status    groups, hosts, interface availability, maintenance
 
 The API is reached through the lab proxy (`python automation/lab_proxy.py start`): a SOCKS5 connection opened from the
@@ -31,6 +31,10 @@ PROXY = ("192.168.75.128", 1080)
 DEFAULT_PASSWORD = "zabbix"            # Zabbix package default, replaced by `apply`
 IF_AGENT, IF_SNMP = 1, 2
 AVAIL = {"0": "unknown", "1": "available", "2": "UNAVAILABLE"}
+SIMPLE, HTTP_AGENT, DEPENDENT = 3, 19, 18                 # item types
+VTYPE = {"float": 0, "char": 1, "uint": 3, "text": 4}
+SEVERITY = {"info": 1, "warning": 2, "average": 3, "high": 4, "disaster": 5}
+JSONPATH, ON_FAIL_SET = 12, 2                              # preprocessing step type, error handler "set value to"
 
 
 # ------------------------------------------------------------------------------------------ transport
@@ -115,6 +119,112 @@ def wanted_hosts():
                     "templates": ["Linux by Zabbix agent active" if active else "Linux by Zabbix agent"],
                     "interface": None if active else {"type": IF_AGENT, "ip": INV["servers"][name]["ip"], "port": "10050"}})
     return out
+
+
+def wanted_items(name, svc, interfaceid, master_itemid=None):
+    """Item bodies of a service host (`monitoring.services`), keyed by item key. Dependent items need the master id."""
+    out = {}
+    src = svc.get("source")
+    if src:
+        out[src["key"]] = {"name": f"{name} API", "key_": src["key"], "type": HTTP_AGENT, "value_type": VTYPE["text"],
+                           "url": src["url"], "delay": src["delay"], "timeout": "5s", "history": "1h"}
+        for i in svc["items"]:
+            step = {"type": JSONPATH, "params": i["path"], "error_handler": 0, "error_handler_params": ""}
+            if "default" in i:
+                step.update(error_handler=ON_FAIL_SET, error_handler_params=str(i["default"]))
+            out[i["key"]] = {"name": i["name"], "key_": i["key"], "type": DEPENDENT, "value_type": VTYPE[i["type"]],
+                             "master_itemid": master_itemid, "delay": "0", "units": i.get("units", ""),
+                             "preprocessing": [step]}
+    if svc.get("icmp"):
+        out["icmpping"] = {"name": "ICMP ping", "key_": "icmpping", "type": SIMPLE, "value_type": VTYPE["uint"],
+                           "delay": "30s", "interfaceid": interfaceid}
+        out["icmppingsec"] = {"name": "ICMP temps de réponse", "key_": "icmppingsec", "type": SIMPLE,
+                              "value_type": VTYPE["float"], "delay": "30s", "units": "s", "interfaceid": interfaceid}
+    return out
+
+
+def differs(have, want):
+    for k, v in want.items():
+        if k == "preprocessing":
+            got = [{f: str(p[f]) for f in ("type", "params", "error_handler", "error_handler_params")}
+                   for p in have.get("preprocessing", [])]
+            if got != [{f: str(p[f]) for f in p} for p in v]:
+                return True
+        elif str(have.get(k)) != str(v):
+            return True
+    return False
+
+
+def apply_services(z, group_ids):
+    """ZBX.6: service hosts in DC/Services with HTTP-agent + dependent items, web scenario, ICMP, triggers."""
+    gid = group_ids[MON["groups"]["service"]]
+    for name, svc in MON["services"].items():
+        notes = []
+        ip = INV["servers"][name]["ip"]
+        h = z.call("host.get", {"output": ["hostid"], "filter": {"host": name}, "selectInterfaces": ["interfaceid", "ip"]})
+        if not h:
+            body = {"host": name, "groups": [{"groupid": gid}]}
+            if svc.get("icmp"):     # simple checks need an interface; the agent type is only its address holder
+                body["interfaces"] = [{"type": IF_AGENT, "main": "1", "useip": "1", "ip": ip, "dns": "", "port": "10050"}]
+            hostid = z.call("host.create", body)["hostids"][0]
+            notes.append("host created")
+            h = z.call("host.get", {"output": ["hostid"], "hostids": hostid, "selectInterfaces": ["interfaceid", "ip"]})
+        else:
+            z.call("host.update", {"hostid": h[0]["hostid"], "groups": [{"groupid": gid}]})
+        hostid = h[0]["hostid"]
+        ifid = h[0]["interfaces"][0]["interfaceid"] if h[0]["interfaces"] else None
+        # items: master first (dependent items point at it), then the others
+        have = {i["key_"]: i for i in z.call("item.get", {"output": "extend", "hostids": hostid,
+                                                          "selectPreprocessing": "extend", "webitems": False})}
+        master = svc.get("source", {}).get("key")
+        order = ([master] if master else []) + [k for k in wanted_items(name, svc, ifid) if k != master]
+        for key in order:
+            mid = have[master]["itemid"] if master in have else None
+            want = wanted_items(name, svc, ifid, mid)[key]
+            if key not in have:
+                r = z.call("item.create", dict(want, hostid=hostid))
+                have[key] = dict(want, itemid=r["itemids"][0])
+                notes.append(f"item {key} created")
+            elif differs(have[key], want):
+                z.call("item.update", dict(want, itemid=have[key]["itemid"]))
+                notes.append(f"item {key} updated")
+        # web scenario
+        web = svc.get("web")
+        if web:
+            want = {"name": web["name"], "delay": web["delay"], "retries": 2, "verify_peer": 0, "verify_host": 0,
+                    "steps": [{"name": "health", "no": 1, "url": web["url"], "required": web["required"],
+                               "status_codes": "200", "timeout": "5s"}]}
+            cur = z.call("httptest.get", {"output": "extend", "hostids": hostid, "selectSteps": "extend",
+                                          "filter": {"name": web["name"]}})
+            if not cur:
+                z.call("httptest.create", dict(want, hostid=hostid))
+                notes.append("web scenario created")
+            else:
+                s = cur[0]["steps"][0] if cur[0]["steps"] else {}
+                if differs(cur[0], {k: v for k, v in want.items() if k != "steps"}) or \
+                        differs(s, {k: v for k, v in want["steps"][0].items()}):
+                    z.call("httptest.update", dict(want, httptestid=cur[0]["httptestid"]))
+                    notes.append("web scenario updated")
+        # triggers, then their dependencies (by name, on the same host)
+        cur = {t["description"]: t for t in z.call("trigger.get", {"output": ["description", "expression", "priority"],
+                                                                    "hostids": hostid, "expandExpression": True,
+                                                                    "selectDependencies": ["triggerid"]})}
+        for t in svc.get("triggers", []):
+            want = {"description": t["name"], "expression": t["expr"], "priority": SEVERITY[t["severity"]]}
+            if t["name"] not in cur:
+                tid = z.call("trigger.create", want)["triggerids"][0]
+                cur[t["name"]] = dict(want, triggerid=tid, dependencies=[])
+                notes.append(f"trigger created: {t['name']}")
+            elif differs(cur[t["name"]], want):
+                z.call("trigger.update", dict(want, triggerid=cur[t["name"]]["triggerid"]))
+                notes.append(f"trigger updated: {t['name']}")
+        for t in svc.get("triggers", []):
+            deps = [cur[t["depends"]]["triggerid"]] if t.get("depends") else []
+            if sorted(d["triggerid"] for d in cur[t["name"]]["dependencies"]) != deps:
+                z.call("trigger.update", {"triggerid": cur[t["name"]]["triggerid"],
+                                          "dependencies": [{"triggerid": d} for d in deps]})
+                notes.append(f"dependency set: {t['name']}")
+        print(f"service {name}: {'; '.join(notes) if notes else 'up to date'}")
 
 
 def stopped_nodes():
@@ -213,8 +323,10 @@ def apply():
             if t["status"] == "0":
                 z.call("trigger.update", {"triggerid": t["triggerid"], "status": 1})
                 print(f"trigger disabled on {w['name']}: {t['description']}")
-    # 6. maintenance for the hosts whose node is stopped
-    off = sorted(stopped_nodes() & {w["name"] for w in want})
+    # 6. services: power, racks, web site, log collector (ZBX.6)
+    apply_services(z, have)
+    # 7. maintenance for the hosts whose node is stopped
+    off = sorted(stopped_nodes() & ({w["name"] for w in want} | set(MON["services"])))
     ids = {h["host"]: h["hostid"] for h in z.call("host.get", {"output": ["host"], "filter": {"host": off}})} if off else {}
     m = z.call("maintenance.get", {"output": ["maintenanceid"], "filter": {"name": MON["maintenance"]}})
     if not off:
@@ -251,6 +363,18 @@ def status():
     for h in hosts:
         maint = "yes" if h["maintenance_status"] == "1" else "-"
         tpls = ", ".join(t["host"] for t in h["parentTemplates"])
+        if h["host"] in MON["services"]:      # no agent/SNMP: healthy when every item (web ones too) got a fresh value
+            items = z.call("item.get", {"output": ["key_", "state", "lastclock", "lastvalue", "error"],
+                                        "hostids": h["hostid"], "webitems": True})
+            stale = [i["key_"] for i in items if not i["key_"].startswith("web.test.error")      # value on failure only
+                     and (i["state"] != "0" or int(i["lastclock"]) < time.time() - 120)]
+            if (stale or not items) and maint == "-":
+                bad += 1
+            shown = [i for i in items if i["key_"] in svc_keys(h["host"])]
+            print(f"{h['host']:12} {'service ' + str(len(items)) + ' items':24} "
+                  f"{('stale: ' + ', '.join(stale)) if stale else 'ok':12} {maint:11} "
+                  + "  ".join(f"{i['key_']}={i['lastvalue']}" for i in shown))
+            continue
         rows = [(("agent" if i["type"] == "1" else "snmp") + " " + i["ip"], AVAIL[i["available"]], i["error"])
                 for i in h["interfaces"]] or [("agent active", "unknown", "")]    # 6.0 has no availability for active-only hosts
         for where, state, err in rows:
@@ -258,7 +382,26 @@ def status():
                 bad += 1
             print(f"{h['host']:12} {where:24} {state:12} {maint:11} {tpls}" + (f"  ({err})" if err and maint == "-" else ""))
     print(f"\n{len(hosts)} hosts, {bad} running host(s) not available")
+    # open problems of the service hosts (what the NOC Énergie row shows), dependent ones hidden like the frontend
+    svc = [h["hostid"] for h in hosts if h["host"] in MON["services"]]
+    if svc:
+        trg = z.call("trigger.get", {"output": ["description", "priority", "lastchange"], "hostids": svc,
+                                     "only_true": True, "monitored": True, "skipDependent": True,
+                                     "filter": {"value": 1}, "selectHosts": ["host"], "sortfield": "priority",
+                                     "sortorder": "DESC"})
+        print(f"service problems ({len(trg)}):")
+        for t in trg:
+            sev = {v: k for k, v in SEVERITY.items()}[int(t["priority"])]
+            print(f"  {time.strftime('%H:%M:%S', time.localtime(int(t['lastchange'])))} {sev:8} "
+                  f"{t['hosts'][0]['host']}: {t['description']}")
     return 1 if bad else 0
+
+
+def svc_keys(name):
+    """Keys whose last value `status` prints for a service host (all of them except the raw JSON)."""
+    s = MON["services"][name]
+    keys = [i["key"] for i in s.get("items", [])] + (["icmpping"] if s.get("icmp") else [])
+    return keys + ([f"web.test.fail[{s['web']['name']}]"] if s.get("web") else [])
 
 
 if __name__ == "__main__":
