@@ -65,7 +65,7 @@ Host srv-sto-01
 
 Host srv-bck-01
     HostName 10.40.0.11
-    User sysadmin
+    User truenas_admin
 
 Host srv-inf-01
     HostName 10.100.0.11

@@ -44,6 +44,7 @@ credentials:
   grafana_admin_password: "Grafana-DC-2026!"
   zabbix_admin_password: "Zbx-Supervision-2026!"   # replaces the default Admin / zabbix (zabbix_setup.py apply)
   zabbix_grafana_password: "Zbx-NocRead-2026!"     # read-only Zabbix account `grafana` used by the Grafana data source
+  truenas_admin_password: "TrueNAS-DC-2026!"       # SRV-BCK-01 (TrueNAS SCALE) web UI account truenas_admin (PLAN_04)
 
 # ---------------------------------------------------------------------------------------------------
 # VLANs (PDF Table 15 + technical VLANs). gw_type: core = HSRP on CORE-A/B, fw = CARP on FW-A/B
@@ -272,7 +273,7 @@ servers:
   SRV-CMP-02:  {kind: vm,     tia: EDA-A, vlan: 20,  ip: 10.20.0.12,  bond: true,  roles: [app-8443, keepalived-backup, iperf3], vip: 10.20.0.10}
   SRV-CMP-03:  {kind: vm,     tia: EDA-A, vlan: 20,  ip: 10.20.0.13,  bond: true,  roles: [app-8443, iperf3]}
   SRV-STO-01:  {kind: vm,     tia: EDA-A, vlan: 30,  ip: 10.30.0.11,  bond: true,  roles: [nfs, iscsi]}
-  SRV-BCK-01:  {kind: vm,     tia: EDA-B, vlan: 40,  ip: 10.40.0.11,  bond: true,  roles: [backup-rsyncd]}
+  SRV-BCK-01:  {kind: vm,     tia: EDA-B, vlan: 40,  ip: 10.40.0.11,  bond: true,  roles: [nas, backup-pull, snapshots], platform: truenas, ram: 3072, cpus: 2}
   SRV-INF-01:  {kind: vm,     tia: EDA-B, vlan: 100, ip: 10.100.0.11, bond: true,  roles: [dns, ntp, dhcp]}
   SRV-MON-01:  {kind: vm,     tia: EDA-B, vlan: 60,  ip: 10.60.0.11,  bond: true,  roles: [zabbix, grafana], ram: 1536}
   SRV-DCIM-01: {kind: docker, tia: EDA-B, vlan: 70,  ip: 10.70.0.11,  bond: true,  roles: [dcim], image: "dc/dcim:1.0"}
@@ -282,6 +283,26 @@ servers:
   SRV-WEB-01:  {kind: docker, tia: DMZ,   vlan: 50,  ip: 10.50.0.11,  bond: false, roles: [web], image: "nginx:alpine"}
   SRV-BASTION: {kind: vm,     tia: MDA,   vlan: 90,  ip: 10.90.0.11,  bond: false, roles: [bastion, mfa]}
   ADMIN-WS:    {kind: docker, tia: MDA,   vlan: 90,  ip: 10.90.0.12,  bond: false, roles: [admin-desktop, admin-bastion], image: "dc/admin-ws:1.0"}
+
+# SRV-BCK-01 = TrueNAS SCALE backup repository (PLAN_04, decisions D1-D7). Hall B, the other hall than the data.
+# Pull model: the NAS pulls with rsync over SSH from a read-only account `backup` on each source (no rsync daemon in
+# TrueNAS 24.10+); servers hold no credential to the backups. Applied by automation/truenas_setup.py.
+truenas:
+  iso: TrueNAS-SCALE-25.10.7.iso                 # E:\ on the PC, /opt/gns3/images/QEMU/ in the GNS3 VM
+  iso_sha256: 54ce9441ce66966a392e28f63604ca3c2c083d0bec4db7bb5af2f74f7a007c8e
+  admin_user: truenas_admin
+  disks: {boot_gb: 16, data_gb: 8, data_count: 2}
+  install_ram: 4096                              # RAM during the installation, then servers.SRV-BCK-01.ram
+  lagg: {proto: FAILOVER, members: [nic0, nic1]} # nic0 -> LEAF-B1 Gi0/2 (primary), nic1 -> LEAF-B2 Gi0/2
+  pool: {name: tank, layout: MIRROR}
+  datasets: [backups, backups/servers, backups/configs]
+  snapshots:                                     # periodic snapshot tasks on tank/backups (recursive)
+    - {name: hourly, schedule: "0 * * * *", lifetime: 24 HOUR}
+    - {name: daily,  schedule: "0 1 * * *", lifetime: 14 DAY}
+  pull:                                          # rsync tasks (pull over SSH, account `backup`, read-only), 02:00
+    SRV-MON-01: [/var/backups/dc, /etc]          # /var/backups/dc = nightly Zabbix DB dump + Grafana data
+    SRV-INF-01: [/etc]
+  ui_session_timeout_min: 15
 
 # Uplink to the real Internet (lab convenience, GNS3 NAT nodes – libvirt virbr0 in the GNS3 VM)
 internet_uplinks:
@@ -298,6 +319,7 @@ web_interfaces:
   - {name: "Zabbix", node: SRV-MON-01, url: "http://10.60.0.11/", login: Admin, descr: "Supervision: hosts, problems, latest data"}
   - {name: "Grafana", node: SRV-MON-01, url: "http://10.60.0.11:3000/", login: admin, descr: "NOC dashboard"}
   - {name: "BMS-SIM", node: BMS-SIM, url: "http://10.70.0.12:8080/", login: "", descr: "Power paths A and B, load, alarms"}
+  - {name: "TrueNAS", node: SRV-BCK-01, url: "https://10.40.0.11/", login: truenas_admin, descr: "Backup NAS: pool, snapshots, backup tasks"}
   - {name: "DCIM", node: SRV-DCIM-01, url: "http://10.70.0.11:8080/", login: "", descr: "State of the 96 racks"}
   - {name: "Web site (DMZ)", node: SRV-WEB-01, url: "https://10.50.0.11/", login: "", scope: all, descr: "Public site as served inside the DMZ"}
 
@@ -324,6 +346,8 @@ monitoring:
     SRV-MON-01:  {mode: passive}   # the server itself; replaces the default "Zabbix server" host
     SRV-INF-01:  {mode: passive}   # TCP 10050 from VLAN 60 (core ACL T18-7)
     SRV-BASTION: {mode: active}    # VLAN 90 reaches the server on TCP 10051 (rule EXT-8)
+  snmp_servers:                    # servers polled by SNMPv3 (zbxmon) instead of an agent (PLAN_04 NAS.6)
+    SRV-BCK-01: {templates: ["TrueNAS by SNMP"], fallback: ["Linux by SNMP"]}
   # ZBX.6 services (group DC/Services), polled from SRV-MON-01: one HTTP-agent item reads the JSON (`source`), dependent
   # items pick values with JSONPath (`default` = value when the key is absent), `web` = web scenario, `icmp` = ping.
   # Thresholds: design Table 22 (path load > 45 % warning, > 50 % high: N+N redundancy no longer assured).
@@ -382,7 +406,7 @@ port_aliases:
   WEB: [80, 443]
   APP: [8443]
   STORAGE: [2049, 3260, 111]
-  BACKUP_AGENT: [873]
+  BACKUP_PULL: [22]                # rsync over SSH, initiated by the NAS (PLAN_04 D3; replaces the 873 push agent)
   DNS: [53]
   NTP: [123]
   ADMIN_SVC: [22, 443]
@@ -449,10 +473,12 @@ core_acl:
   per_vlan:
     20:  [{proto: tcp, dst: 10.30.0.0/24, ports: [2049, 3260, 111], descr: "Serveurs -> stockage NFS/iSCSI", ref: "T18-3"},
           {proto: udp, dst: 10.30.0.0/24, ports: [2049, 111], descr: "NFS UDP", ref: "T18-3"},
-          {proto: tcp, dst: 10.40.0.0/24, ports: [873], descr: "Serveurs -> agent de sauvegarde", ref: "T18-4"},
           {proto: 112, dst: 224.0.0.18, descr: "VRRP keepalived", ref: "HA"}]
-    30:  [{proto: tcp, dst: 10.40.0.0/24, ports: [873], descr: "Stockage -> sauvegarde", ref: "T18-4"}]
-    40:  []
+    30:  []
+    40:  [{proto: tcp, dst: 10.20.0.0/24, ports: [22], descr: "NAS -> serveurs, sauvegarde tirée (rsync/SSH)", ref: "T18-4/NAS"},
+          {proto: tcp, dst: 10.30.0.0/24, ports: [22], descr: "NAS -> stockage, sauvegarde tirée (rsync/SSH)", ref: "T18-4/NAS"},
+          {proto: tcp, dst: 10.60.0.11, ports: [22], descr: "NAS -> SRV-MON-01, sauvegarde tirée", ref: "T18-4/NAS"},
+          {proto: tcp, dst: 10.100.0.11, ports: [22], descr: "NAS -> SRV-INF-01, sauvegarde tirée", ref: "T18-4/NAS"}]
     60:  [{proto: udp, dst: any, ports: [161], descr: "Supervision -> SNMP", ref: "T18-7"},
           {proto: tcp, dst: any, ports: [10050], descr: "Supervision -> agents Zabbix", ref: "T18-7"},
           {proto: tcp, dst: 10.70.0.0/24, ports: [8080], descr: "Supervision -> API BMS/DCIM", ref: "T18-7"},

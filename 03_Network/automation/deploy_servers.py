@@ -366,7 +366,8 @@ if __name__ == "__main__":
     base_only = "--base-only" in args
     accounts_only = "--accounts-only" in args
     roles = [r for a in args if a.startswith("--role=") for r in a.split("=", 1)[1].split(",")]
-    names = [a for a in args if not a.startswith("--")] or [n for n, s in INV["servers"].items() if s["kind"] == "vm"]
+    names = [a for a in args if not a.startswith("--")] or [n for n, s in INV["servers"].items()
+                                                         if s["kind"] == "vm" and s.get("platform") != "truenas"]
     api = labctl.Gns3()
     p = api.project()
     for n in names:

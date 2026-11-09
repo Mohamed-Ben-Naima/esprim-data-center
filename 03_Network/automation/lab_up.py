@@ -1,12 +1,14 @@
 """Start the lab in stages and measure resources after each stage (plan §2.3).
 
-  python automation/lab_up.py [--settle 150] [--from N] [--profile full|supervision|demo]
+  python automation/lab_up.py [--settle 150] [--from N] [--profile full|supervision|demo|nas]
 Each stage is started, left to settle, then measured: GNS3 VM memory, KSM shared pages, swap, load average,
 host free RAM. Results -> report/evidence/resources_stages.csv (+ printed table).
 Profile "supervision" (PLAN_02 P0.2) leaves hall A, the undeployed servers and SRV-BASTION off: it is what the
 15.7 GB host carries together with SRV-MON-01. Results -> report/evidence/resources_supervision.csv.
 Profile "demo" (PLAN_03 S1) is "supervision" minus EDGE-B, CCTV-SIM and SRV-INF-01: EDGE-A alone keeps BGP to
 ISP-A; with SRV-INF-01 running the cores still lost HSRP hellos (20 Oct 2026), so the demo runs without NTP/DNS.
+Profile "nas" (PLAN_04) keeps only the path from the administration zone to the TrueNAS SRV-BCK-01 (3-4 GB of RAM):
+SW-MGMT, FW-A, CORE-A, LEAF-B1, LEAF-B2, ADMIN-WS, SYSLOG and SRV-BCK-01.
 """
 import csv
 import re
@@ -31,6 +33,8 @@ OFF = {"full": set(),
        "supervision": {"LEAF-A1", "LEAF-A2", "SRV-BASTION", "SRV-CMP-01", "SRV-CMP-02", "SRV-CMP-03", "SRV-STO-01",
                        "SRV-BCK-01"}}
 OFF["demo"] = OFF["supervision"] | {"EDGE-B", "CCTV-SIM", "SRV-INF-01"}
+OFF["nas"] = {n for _, names in STAGES for n in names} - {"SW-MGMT", "FW-A", "CORE-A", "LEAF-B1", "LEAF-B2", "ADMIN-WS",
+                                                          "SYSLOG", "SRV-BCK-01"}
 
 
 def measure():

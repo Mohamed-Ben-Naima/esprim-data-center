@@ -617,7 +617,9 @@ def ssh_targets():
         elif d["platform"] == "pfsense":       # reached on its own address in the administration VLAN
             out.append((name.lower(), VL[90]["fw_a" if name.endswith("A") else "fw_b"], "admin", "pfsense", name))
     for name, s in INV["servers"].items():
-        if s["kind"] == "vm":
+        if s.get("platform") == "truenas":     # TrueNAS SCALE: its own administration account
+            out.append((name.lower(), s["ip"], INV["truenas"]["admin_user"], "truenas", name))
+        elif s["kind"] == "vm":
             out.append((name.lower(), s["ip"], C["server_admin_user"], "linux", name))
     return out
 
@@ -801,7 +803,9 @@ def main():
         write(CFG / name / "interfaces", gen_isp_if(name, i))
         count += 1
     for name, s in INV["servers"].items():
-        if s["kind"] == "vm":
+        if s.get("platform") == "truenas":      # network set on the appliance itself (NAS.3), no netplan
+            pass
+        elif s["kind"] == "vm":
             write(CFG / "servers" / f"{name}.netplan.yaml", gen_netplan(name, s))
         elif s["image"] not in ("gns3/webterm:latest",) or True:
             write(CFG / "docker" / f"{name}.interfaces", gen_docker_if(name, s))

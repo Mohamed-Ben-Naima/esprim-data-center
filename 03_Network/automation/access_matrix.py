@@ -33,7 +33,7 @@ ctl() { nc -z -w 4 127.0.0.1 "$1" >/dev/null 2>&1 && echo "R control ok" || echo
 w() { if command -v curl >/dev/null 2>&1; then c=$(curl -sk -m 6 -o /dev/null -w '%{http_code}' "$2");
       else wget -q -T 6 --no-check-certificate -O /dev/null "$2" 2>/dev/null && c=200 || c=000; fi; echo "R $1 $c"; }
 """
-LOGIN_CMD = {"cisco": "show version | include uptime", "pfsense": "hostname", "linux": "hostname"}
+LOGIN_CMD = {"cisco": "show version | include uptime", "pfsense": "hostname", "linux": "hostname", "truenas": "hostname"}
 
 
 def targets():
@@ -72,7 +72,8 @@ def run_source(api, p, source, kind, script):
 
 def logins(T, running):
     cred = g.C
-    pw = {"cisco": cred["admin_password"], "pfsense": cred["admin_password"], "linux": cred["server_admin_password"]}
+    pw = {"cisco": cred["admin_password"], "pfsense": cred["admin_password"], "linux": cred["server_admin_password"],
+          "truenas": cred["truenas_admin_password"]}
     assert all("'" not in v for v in pw.values())
     mfa = {n for n, srv in g.INV["servers"].items() if "mfa" in srv.get("roles", [])}
     s = ["c=$(docker ps -q --filter name=ADMIN-WS)",

@@ -17,7 +17,7 @@ NET = Path(__file__).resolve().parents[1]
 PROBES = [
     ("SRV-CMP-01", "Serveurs -> stockage NFS 2049", "timeout 3 bash -c '</dev/tcp/10.30.0.11/2049'", True, "T18-3"),
     ("SRV-CMP-01", "Serveurs -> stockage iSCSI 3260", "timeout 3 bash -c '</dev/tcp/10.30.0.11/3260'", True, "T18-3"),
-    ("SRV-CMP-01", "Serveurs -> agent de sauvegarde 873", "timeout 3 bash -c '</dev/tcp/10.40.0.11/873'", True, "T18-4"),
+    ("SRV-CMP-01", "Serveurs -> NAS 873 (push fermé, sauvegarde tirée)", "timeout 3 bash -c '</dev/tcp/10.40.0.11/873'", False, "T18-4/NAS"),
     ("SRV-CMP-01", "Serveurs -> SSH du stockage (non autorisé)", "timeout 3 bash -c '</dev/tcp/10.30.0.11/22'", False, "T18 défaut"),
     ("SRV-CMP-01", "Serveurs -> DNS interne", "getent hosts www.example.com >/dev/null || dig +time=2 +short @10.100.0.11 example.com | grep -q .", True, "commun"),
     ("SRV-CMP-01", "Serveurs -> Internet HTTPS (SNAT)", "curl -s -m 6 -o /dev/null https://deb.debian.org", True, "T18-5"),
