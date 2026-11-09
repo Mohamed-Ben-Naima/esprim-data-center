@@ -291,7 +291,7 @@ truenas:
   iso: TrueNAS-SCALE-25.10.7.iso                 # E:\ on the PC, /opt/gns3/images/QEMU/ in the GNS3 VM
   iso_sha256: 54ce9441ce66966a392e28f63604ca3c2c083d0bec4db7bb5af2f74f7a007c8e
   admin_user: truenas_admin
-  disks: {boot_gb: 16, data_gb: 8, data_count: 2}
+  disks: {boot_gb: 20, data_gb: 10, data_count: 2}   # GNS3 empty images (thin qcow2)
   install_ram: 4096                              # RAM during the installation, then servers.SRV-BCK-01.ram
   lagg: {proto: FAILOVER, members: [nic0, nic1]} # nic0 -> LEAF-B1 Gi0/2 (primary), nic1 -> LEAF-B2 Gi0/2
   pool: {name: tank, layout: MIRROR}

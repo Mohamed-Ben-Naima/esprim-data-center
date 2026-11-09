@@ -883,70 +883,6 @@
             },
             {
                 "filters": {},
-                "link_id": "b5ef31e4-f591-43dd-93c3-c59871e7fec2",
-                "link_style": {},
-                "nodes": [
-                    {
-                        "adapter_number": 0,
-                        "label": {
-                            "rotation": 0,
-                            "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
-                            "text": "0/0",
-                            "x": 72,
-                            "y": 0
-                        },
-                        "node_id": "65e7a307-e4d3-438a-ac36-ee1d87e036c1",
-                        "port_number": 0
-                    },
-                    {
-                        "adapter_number": 2,
-                        "label": {
-                            "rotation": 0,
-                            "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
-                            "text": "2/0",
-                            "x": -7,
-                            "y": 48
-                        },
-                        "node_id": "a8f17b55-86b2-4812-abce-45e437265175",
-                        "port_number": 0
-                    }
-                ],
-                "suspend": false
-            },
-            {
-                "filters": {},
-                "link_id": "703f6e73-baf1-45f6-8c21-e3ab5aea4ace",
-                "link_style": {},
-                "nodes": [
-                    {
-                        "adapter_number": 1,
-                        "label": {
-                            "rotation": 0,
-                            "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
-                            "text": "1/0",
-                            "x": 71,
-                            "y": 19
-                        },
-                        "node_id": "65e7a307-e4d3-438a-ac36-ee1d87e036c1",
-                        "port_number": 0
-                    },
-                    {
-                        "adapter_number": 2,
-                        "label": {
-                            "rotation": 0,
-                            "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
-                            "text": "2/0",
-                            "x": -14,
-                            "y": 33
-                        },
-                        "node_id": "9b503135-e7c4-43fb-ae7b-a1ad6d14af12",
-                        "port_number": 0
-                    }
-                ],
-                "suspend": false
-            },
-            {
-                "filters": {},
                 "link_id": "0e222f93-4b59-4242-9b0a-80334afa50c1",
                 "link_style": {},
                 "nodes": [
@@ -1938,6 +1874,58 @@
                     }
                 ],
                 "suspend": false
+            },
+            {
+                "filters": {},
+                "link_id": "23f1e547-db5d-4851-aa9f-3c32157970f0",
+                "link_style": {},
+                "nodes": [
+                    {
+                        "adapter_number": 0,
+                        "label": {
+                            "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
+                            "text": "0/0"
+                        },
+                        "node_id": "8ae77eb1-47d6-408a-be6f-553b5b03cf6d",
+                        "port_number": 0
+                    },
+                    {
+                        "adapter_number": 2,
+                        "label": {
+                            "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
+                            "text": "2/0"
+                        },
+                        "node_id": "a8f17b55-86b2-4812-abce-45e437265175",
+                        "port_number": 0
+                    }
+                ],
+                "suspend": false
+            },
+            {
+                "filters": {},
+                "link_id": "cda3721a-4bd1-4520-9531-8c3e7914f1b7",
+                "link_style": {},
+                "nodes": [
+                    {
+                        "adapter_number": 1,
+                        "label": {
+                            "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
+                            "text": "1/0"
+                        },
+                        "node_id": "8ae77eb1-47d6-408a-be6f-553b5b03cf6d",
+                        "port_number": 0
+                    },
+                    {
+                        "adapter_number": 2,
+                        "label": {
+                            "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
+                            "text": "2/0"
+                        },
+                        "node_id": "9b503135-e7c4-43fb-ae7b-a1ad6d14af12",
+                        "port_number": 0
+                    }
+                ],
+                "suspend": false
             }
         ],
         "nodes": [
@@ -2923,76 +2911,6 @@
             },
             {
                 "compute_id": "vm",
-                "console": 5030,
-                "console_auto_start": false,
-                "console_type": "telnet",
-                "custom_adapters": [],
-                "first_port_name": "",
-                "height": 59,
-                "label": {
-                    "rotation": 0,
-                    "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
-                    "text": "SRV-BCK-01",
-                    "x": -5,
-                    "y": -25
-                },
-                "locked": false,
-                "name": "SRV-BCK-01",
-                "node_id": "65e7a307-e4d3-438a-ac36-ee1d87e036c1",
-                "node_type": "qemu",
-                "port_name_format": "eth{0}",
-                "port_segment_size": 0,
-                "properties": {
-                    "adapter_type": "virtio-net-pci",
-                    "adapters": 2,
-                    "bios_image": "",
-                    "bios_image_md5sum": null,
-                    "boot_priority": "c",
-                    "cdrom_image": "ubuntu-cloud-init-data.iso",
-                    "cdrom_image_md5sum": "9a90ee8f88736204c756015b3cd86500",
-                    "cpu_throttling": 0,
-                    "cpus": 1,
-                    "create_config_disk": false,
-                    "hda_disk_image": "ubuntu-20.04-server-cloudimg-amd64.img",
-                    "hda_disk_image_md5sum": "1dff90e16acb0167c27ff82e4ac1813a",
-                    "hda_disk_interface": "virtio",
-                    "hdb_disk_image": "",
-                    "hdb_disk_image_md5sum": null,
-                    "hdb_disk_interface": "none",
-                    "hdc_disk_image": "",
-                    "hdc_disk_image_md5sum": null,
-                    "hdc_disk_interface": "none",
-                    "hdd_disk_image": "",
-                    "hdd_disk_image_md5sum": null,
-                    "hdd_disk_interface": "none",
-                    "initrd": "",
-                    "initrd_md5sum": null,
-                    "kernel_command_line": "",
-                    "kernel_image": "",
-                    "kernel_image_md5sum": null,
-                    "legacy_networking": false,
-                    "linked_clone": true,
-                    "mac_address": "0c:e7:a3:07:00:00",
-                    "on_close": "power_off",
-                    "options": "",
-                    "platform": "x86_64",
-                    "process_priority": "normal",
-                    "qemu_path": "/usr/bin/qemu-system-x86_64",
-                    "ram": 512,
-                    "replicate_network_connection_state": true,
-                    "tpm": false,
-                    "uefi": false,
-                    "usage": ""
-                },
-                "symbol": ":/symbols/classic/qemu_guest.svg",
-                "template_id": null,
-                "width": 65,
-                "x": -1082,
-                "y": 720,
-                "z": 1
-            },
-            {
-                "compute_id": "vm",
                 "console": 5032,
                 "console_auto_start": false,
                 "console_type": "telnet",
@@ -3570,7 +3488,7 @@
                     "console_http_path": "/",
                     "console_http_port": 80,
                     "console_resolution": "1024x768",
-                    "container_id": "66d55f0ce097ec46a708535e0a0c9a89933e28b891b72be4363a804a7cde9e5b",
+                    "container_id": "dde0f5de5f645fc815c46257b663f39d34c3a14eac26e2df883e5fa05102de54",
                     "environment": "TZ=Africa/Casablanca\nISP_NAME=ISP-A",
                     "extra_hosts": "",
                     "extra_volumes": [],
@@ -3613,7 +3531,7 @@
                     "console_http_path": "/",
                     "console_http_port": 80,
                     "console_resolution": "1024x768",
-                    "container_id": "f7b9558f6a6980b76742bd85d6ca900c9ae9a302bf6385c3af91fa40fd6b4a2b",
+                    "container_id": "e5bec6a0d7c7be2f400f23c4761403d2c493bd9cd04d59cda1f5a1080eb9dfcd",
                     "environment": "TZ=Africa/Casablanca\nISP_NAME=ISP-B",
                     "extra_hosts": "",
                     "extra_volumes": [],
@@ -3656,7 +3574,7 @@
                     "console_http_path": "/",
                     "console_http_port": 80,
                     "console_resolution": "1024x768",
-                    "container_id": "bda9267833b5285e4727c82465698199c09eb8872af3d722571fd2cf5dfda1cd",
+                    "container_id": "e7ba836671983391fbecd1706782664113619c65671663e2ecaea5752733335f",
                     "environment": "TZ=Africa/Casablanca",
                     "extra_hosts": "",
                     "extra_volumes": [
@@ -3701,7 +3619,7 @@
                     "console_http_path": "/",
                     "console_http_port": 80,
                     "console_resolution": "1024x768",
-                    "container_id": "0673f36d165f23586bbf130a95ab98e2d1a2d557f868bde0d0250015e889b54b",
+                    "container_id": "8c457b853c3430891fc7ce134e4b8a7cd9a2ce759e4d57d79a4574c3978c218c",
                     "environment": "TZ=Africa/Casablanca\nSYSLOG_HOST=10.60.0.12",
                     "extra_hosts": "",
                     "extra_volumes": [],
@@ -3744,7 +3662,7 @@
                     "console_http_path": "/",
                     "console_http_port": 80,
                     "console_resolution": "1024x768",
-                    "container_id": "5eac0e0bec440e97f6dd447fe74730b14672ff2da81c0bd832ac874a28c056c7",
+                    "container_id": "07e46f0ba1e2b9d1aa99e470d892ddfdeff4693aa5247717b9c2c8836753e15b",
                     "environment": "TZ=Africa/Casablanca\nSYSLOG_HOST=10.60.0.12",
                     "extra_hosts": "",
                     "extra_volumes": [],
@@ -3787,7 +3705,7 @@
                     "console_http_path": "/",
                     "console_http_port": 80,
                     "console_resolution": "1024x768",
-                    "container_id": "eebb2e12fb571903eb083e98328a73a50adf73788c8cd1498aa808b2c1db4785",
+                    "container_id": "84807b3107add1c99c8e0ae70f0229928ff110bd478a136691bfa6e36d2a53f7",
                     "environment": "TZ=Africa/Casablanca\nSYSLOG_HOST=10.60.0.12\nBMS_URL=http://10.70.0.12:8080/api/state",
                     "extra_hosts": "",
                     "extra_volumes": [],
@@ -3830,7 +3748,7 @@
                     "console_http_path": "/",
                     "console_http_port": 80,
                     "console_resolution": "1024x768",
-                    "container_id": "91a008db42239f99ec2851eb19a0e6d346be8fc5d422a426a13213dc497cbd74",
+                    "container_id": "005ca7acce7ac82c96f657b0c6155f530775f095aff2332b7a3928731b21ae62",
                     "environment": "TZ=Africa/Casablanca",
                     "extra_hosts": "",
                     "extra_volumes": [],
@@ -3873,7 +3791,7 @@
                     "console_http_path": "/",
                     "console_http_port": 80,
                     "console_resolution": "1280x800",
-                    "container_id": "391dab1819f0e930f454aa360d14ba192ba3af03432b8d06eadc14a39f27018e",
+                    "container_id": "bce40393fdcdb7bc852e6867e88a41bef580e337ff76de9aa8107176c7259965",
                     "environment": "TZ=Africa/Casablanca\nSYSLOG_HOST=10.60.0.12",
                     "extra_hosts": "",
                     "extra_volumes": [
@@ -3889,6 +3807,76 @@
                 "width": 65,
                 "x": 642,
                 "y": -254,
+                "z": 1
+            },
+            {
+                "compute_id": "vm",
+                "console": 5902,
+                "console_auto_start": false,
+                "console_type": "vnc",
+                "custom_adapters": [],
+                "first_port_name": null,
+                "height": 59,
+                "label": {
+                    "rotation": 0,
+                    "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
+                    "text": "SRV-BCK-01",
+                    "x": -11,
+                    "y": -25
+                },
+                "locked": false,
+                "name": "SRV-BCK-01",
+                "node_id": "8ae77eb1-47d6-408a-be6f-553b5b03cf6d",
+                "node_type": "qemu",
+                "port_name_format": "eth{0}",
+                "port_segment_size": 0,
+                "properties": {
+                    "adapter_type": "virtio-net-pci",
+                    "adapters": 2,
+                    "bios_image": "",
+                    "bios_image_md5sum": null,
+                    "boot_priority": "cd",
+                    "cdrom_image": "TrueNAS-SCALE-25.10.7.iso",
+                    "cdrom_image_md5sum": "83a925a78376c99471cbeffa8ba378a7",
+                    "cpu_throttling": 0,
+                    "cpus": 2,
+                    "create_config_disk": false,
+                    "hda_disk_image": "empty20G.qcow2",
+                    "hda_disk_image_md5sum": "df9e4a1169c597117fd8999f0bc3de91",
+                    "hda_disk_interface": "sata",
+                    "hdb_disk_image": "empty10G.qcow2",
+                    "hdb_disk_image_md5sum": "1d4589798b8a63a6afa7150492ca3193",
+                    "hdb_disk_interface": "sata",
+                    "hdc_disk_image": "",
+                    "hdc_disk_image_md5sum": null,
+                    "hdc_disk_interface": "none",
+                    "hdd_disk_image": "empty10G.qcow2",
+                    "hdd_disk_image_md5sum": "1d4589798b8a63a6afa7150492ca3193",
+                    "hdd_disk_interface": "sata",
+                    "initrd": "",
+                    "initrd_md5sum": null,
+                    "kernel_command_line": "",
+                    "kernel_image": "",
+                    "kernel_image_md5sum": null,
+                    "legacy_networking": false,
+                    "linked_clone": true,
+                    "mac_address": "0c:e7:7e:b1:00:00",
+                    "on_close": "shutdown_signal",
+                    "options": "-cpu host",
+                    "platform": "x86_64",
+                    "process_priority": "low",
+                    "qemu_path": "/usr/bin/qemu-system-x86_64",
+                    "ram": 4096,
+                    "replicate_network_connection_state": true,
+                    "tpm": false,
+                    "uefi": false,
+                    "usage": ""
+                },
+                "symbol": ":/symbols/classic/qemu_guest.svg",
+                "template_id": null,
+                "width": 65,
+                "x": -1082,
+                "y": 720,
                 "z": 1
             }
         ]

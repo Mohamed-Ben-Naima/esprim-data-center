@@ -14,7 +14,7 @@ open, in the order that raises the security score most for the time spent.
 | D4 | **ZFS mirror** of two data disks (pool `tank`) + periodic snapshots (hourly kept 24 h, daily kept 14 days). | Disk redundancy + point-in-time copies a server cannot reach. |
 | D5 | Device configurations (Cisco running-config, pfSense `config.xml`) copied to the NAS from the admin zone over SSH by a new `automation/backup_configs.py`. | MGMT stays unreachable from VLAN 40; the admin zone already has SSH to every internal host (T18-6), no new firewall rule. |
 | D6 | Web UI HTTPS from the admin zone only (T18-6 already allows 443), SNMPv3 (same `zbxmon` user as Cisco), remote syslog, NTP/DNS from SRV-INF-01. | Same hardening level as the rest; no new protocol in clear. |
-| D7 | 2 vCPU, **3 GB RAM** (4 GB during install), boot disk 16 GB, data disks 2 × 8 GB, all thin qcow2 on the GNS3 VM. Profile `nas` (below) leaves the rest off. | The GNS3 VM has 8 GB. TrueNAS wants 8 GB officially; a pool of 16 GB without apps runs in 3 GB (to be measured, fallback 4 GB with fewer nodes). |
+| D7 | 2 vCPU, **3 GB RAM** (4 GB during install), boot disk 20 GB, data disks 2 × 10 GB, all thin qcow2 (GNS3 empty images) on the GNS3 VM. Profile `nas` (below) leaves the rest off. | The GNS3 VM has 8 GB. TrueNAS wants 8 GB officially; a pool of 10 GB without apps runs in 3 GB (to be measured, fallback 4 GB with fewer nodes). |
 
 Profile `nas` (lab_up.py): SW-MGMT, FW-A, CORE-A, LEAF-B1, LEAF-B2, ADMIN-WS, SYSLOG, SRV-BCK-01 (≈ 6.4 GB nominal).
 For NAS.5 (backup sources) LEAF-B2 is swapped for SRV-MON-01 (TrueNAS fails over to LEAF-B1).
@@ -47,10 +47,12 @@ For NAS.5 (backup sources) LEAF-B2 is swapped for SRV-MON-01 (TrueNAS fails over
 | Inventory | `python automation/validate_inventory.py` | host | `OK` |
 | ACL generated | `grep -A3 "ACL-VLAN40-IN" configs/CORE-A.cfg; grep -c "eq 873" configs/CORE-A.cfg` | host | tcp 22 lines toward 10.20/30/60/100; `0` |
 
-### NAS.2 — Image and GNS3 node
-- [ ] ISO copied to `/opt/gns3/images/QEMU/` in the GNS3 VM (sha256 recorded); empty qcow2 disks created.
-- [ ] Node SRV-BCK-01 re-created as QEMU TrueNAS: hda boot 16 GB, hdb/hdc data 8 GB, cdrom ISO, 2 × virtio NICs,
-      console VNC, same links (LEAF-B1 Gi0/2, LEAF-B2 Gi0/2) — `apply_topology.py` idempotent.
+### NAS.2 — Image and GNS3 node — done 10 Nov 2026
+- [x] ISO copied to `/opt/gns3/images/QEMU/` in the GNS3 VM (sha256 recorded); empty qcow2 disks created.
+      → upload through the GNS3 API (2 min 21 s; vmrun copy ran at ~1 MB/s); disks = GNS3 `empty20G`/`empty10G`.
+- [x] Node SRV-BCK-01 re-created as QEMU TrueNAS: hda boot 20 GB, hdb/hdd data 10 GB (SATA, serial numbers for ZFS), cdrom ISO, 2 × virtio NICs,
+      console VNC, same links (LEAF-B1 Gi0/2, LEAF-B2 Gi0/2) — new `automation/nas_node.py` (idempotent; keeps the
+      node position; `--installed` later removes the ISO and sets RAM 3 GB). Evidence `report/evidence/nas2_node.txt`.
 | Test | Command | From | Expected |
 |---|---|---|---|
 | Image | `sha256sum /opt/gns3/images/QEMU/TrueNAS-SCALE-25.10.7.iso` | GNS3 VM | same hash as on `E:` |

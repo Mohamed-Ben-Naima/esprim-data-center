@@ -1,0 +1,8 @@
+PLAN_04 NAS.2 - 10 Nov 2026
+ISO on the PC   : 54ce9441ce66966a392e28f63604ca3c2c083d0bec4db7bb5af2f74f7a007c8e  E:\TrueNAS-SCALE-25.10.7.iso
+ISO in GNS3 VM  : 54ce9441ce66966a392e28f63604ca3c2c083d0bec4db7bb5af2f74f7a007c8e  /opt/gns3/images/QEMU/TrueNAS-SCALE-25.10.7.iso
+                  (uploaded through the GNS3 API in 2 min 21 s; vmrun CopyFileFromHostToGuest ran at ~1 MB/s and was stopped)
+python automation/nas_node.py
+SRV-BCK-01: re-created as TrueNAS (2 links restored)
+SRV-BCK-01: stopped, console vnc:5902, ram 4096 MB, 2 vCPU, disks empty20G.qcow2 + empty10G.qcow2 + empty10G.qcow2, cdrom 'TrueNAS-SCALE-25.10.7.iso', 2 links
+Links: SRV-BCK-01:eth0 <-> LEAF-B1:Gi0/2 | SRV-BCK-01:eth1 <-> LEAF-B2:Gi0/2
