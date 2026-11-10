@@ -86,7 +86,8 @@ Public: 192.0.2.0/24 (AS65100) → routed by Edges to FW VIP 10.254.1.1; SNAT 19
 - **Firewalls use static routing + VIPs** (pfSense has no OSPF without the FRR package / Internet): default → Edge HSRP 10.254.1.6, 10.0.0.0/8 → Core HSRP 10.254.2.6. Documented as deviation from "OSPF zone 0 incl. firewalls".
 - Core: HSRPv2 (prio 110/90, preempt) split per PDF; RPVST+ root aligned with HSRP active; Po1 LACP (Gi0/2-3); OSPF area 0 on Vlan998/902 + loopbacks; default → FW VIP 10.254.2.1.
 - FW HA: CARP (FW-A advskew 0, FW-B 100), pfsync on em2, XMLRPC config sync FW-A→FW-B; lagg0 failover em3(CORE-A)/em4(CORE-B).
-- Servers: Linux bond active-backup (miimon 100) to two Leafs; CMP-01/02 keepalived VIP for T5.
+- Servers: Linux bond active-backup to two Leafs, **ARP monitoring** (1 s, targets = gateway VIP + both cores + the other servers of the VLAN, validate all; MII never failed over: a stopped GNS3 leaf keeps the carrier up), single bond MAC; CMP-01/02 keepalived VIP 10.20.0.10 for T5.
+  - **T5 done 2026-11-10** (fw_lan_failover.py --core SRV-CMP-01): master stop 3.1 s, CMP-02 serves; failback after preempt_delay 30 with 0 loss; master boot 4.5 s (was 10.6 s); backup reboot 0 loss. Fixes on the way: app TLS handshake out of accept() (one stalled client froze it), keepalived waits to hear the master (split brain at boot), bond MAC no longer follows the NIC (core sent to the old MAC), ARP interval 200 ms -> 1 s (flapped under IOSvL2).
 
 ### 1.5 Firewall policy (PDF Table 18, default deny + log)
 | Interface | Allowed (everything else blocked & logged) |

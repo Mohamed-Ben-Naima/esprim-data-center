@@ -39,6 +39,8 @@ OFF = {"full": set(),
        "supervision": {"LEAF-A1", "LEAF-A2", "SRV-BASTION", "SRV-CMP-01", "SRV-CMP-02", "SRV-CMP-03", "SRV-STO-01",
                        "SRV-BCK-01"}}
 OFF["demo"] = OFF["supervision"] | {"EDGE-B", "CCTV-SIM", "SRV-INF-01"}
+# compute: the demo set with hall A (both leafs, CMP-01/02 = keepalived VIP, PLAN_01 T4/T5) instead of the edge tier
+OFF["compute"] = (OFF["demo"] - {"LEAF-A1", "LEAF-A2", "SRV-CMP-01", "SRV-CMP-02"}) | {"EDGE-A"}
 OFF["nas"] = {n for _, names in STAGES for n in names} - {"SW-MGMT", "FW-A", "CORE-A", "LEAF-B1", "LEAF-B2", "ADMIN-WS",
                                                           "SYSLOG", "SRV-BCK-01"}
 

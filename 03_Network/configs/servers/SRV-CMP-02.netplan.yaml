@@ -18,5 +18,13 @@ network:
       parameters:
         mode: active-backup
         primary: {nic0}
-        mii-monitor-interval: 100
-        fail-over-mac-policy: active
+        # ARP monitoring of the gateway, not MII: a stopped GNS3 leaf keeps the carrier up (like a hung switch in
+        # production), MII would never fail over. Each NIC must see the gateway's replies (validate all) every second:
+        # 200 ms flapped (192 link failures in 20 min: the IOSvL2 cores answer ARP in software, too slowly), and
+        # one target was not enough under load: the VIP and both gateways are polled, one answer is enough.
+        arp-interval: 1000
+        arp-ip-targets: [10.20.0.1, 10.20.0.2, 10.20.0.3, 10.20.0.11, 10.20.0.13]
+        arp-validate: all
+        # fail-over-mac-policy left at its default (none): one MAC for the bond, a NIC switch only moves it to the
+        # other leaf port. With 'active' the MAC changed with the NIC and the core kept sending to the old one until
+        # its ARP entry aged out (10.6 s outage on the VIP, T5)

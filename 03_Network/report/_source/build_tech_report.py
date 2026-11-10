@@ -691,7 +691,7 @@ WORKSTREAMS = [  # (work, weight, % done, what proves it / what is left)
     ("Log collection (LOG.1-LOG.6)", 8, 75, "Every running source proven (syslog_audit.py), rotation 30 days, files protected, read-only HTTPS viewer, 3 demo events found. Left: sender filter + disk queue (LOG.3), NTP in every profile, LOG.6 write-up."),
     ("Zabbix (ZBX.1-ZBX.7)", 8, 85, "17 hosts, service triggers, power alarm in 6-10 s. Left: BGP/OSPF triggers and alert timing (ZBX.7)."),
     ("Grafana (GRF.1-GRF.5)", 6, 90, "Base, offline plugin, data source; NOC dashboard (28 panels, storage row) provisioned and validated on live data, power cut red in 9.6 s. Left: GRF.5 documentation."),
-    ("Resilience tests (phase 8)", 8, 35, "Measured: power T6, core failure T3 (4.5 s, FW.3), firewall failover T2 (3.0 s). Not run: T1 edge/ISP, T4 leaf, T5 server NIC, M1; compute HA (keepalived) not deployed."),
+    ("Resilience tests (phase 8)", 8, 50, "Measured: power T6, core failure T3 (4.5 s, FW.3), firewall failover T2 (3.0 s), compute failover T5 (3.1 s, keepalived VIP on SRV-CMP-01/02 deployed). Not run: T1 edge/ISP, T4 leaf (bonds now ARP-monitored, ready), M1; storage SRV-STO-01 single node by design."),
     ("Compliance matrix (ISO)", 4, 40, "Mapping written in this report; the automated matrix is not built."),
     ("Documentation (phase 9)", 8, 75, f"Lab guide, Test the Lab ({TESTS_PASSED} dated tests), this report, French demo runbook (cold start rehearsed). French report last rebuilt 12 Oct; screenshots partial."),
 ]
@@ -704,7 +704,7 @@ SEC_DOMAINS = [  # (domain, weight %, score now /5, target /5 after the roadmap,
     ("Hardening and configuration management", 10, 4.0, 4.5, "Generated configs, audit 0 difference, CIS-style IOS hardening, unused ports shut", "No storm-control / DHCP snooping / DAI, no config archive, container images on latest tags"),
     ("Logging and detection (SIEM)", 15, 2.0, 4.0, "Central collector for every device, firewall blocks and admin sessions logged, Zabbix alarms", "No SIEM, no correlation, no integrity seal, clocks not synchronised in the demo"),
     ("Endpoint protection (EDR)", 5, 1.0, 3.5, "auditd on the bastion, Zabbix agents", "No EDR/antivirus, no file integrity monitoring, no host firewall"),
-    ("Resilience and availability", 10, 3.5, 4.5, "2N at every layer, CARP + pfsync, HSRP, bonds, power paths A/B", "Failover not measured; DNS/NTP and monitoring are single servers"),
+    ("Resilience and availability", 10, 3.5, 4.5, "2N at every layer, CARP + pfsync, HSRP, bonds, power paths A/B", "T4 leaf and T1 edge not measured yet; storage, DNS/NTP and monitoring are single servers"),
     ("Vulnerability and patch management", 5, 0.5, 3.0, "Fixed, known versions", "No scanner, automatic updates disabled on purpose, no patch cycle"),
     ("Secrets management", 5, 1.5, 4.0, "Private repository, redacted pfSense copies, secrets never in reports for outsiders", "Plain-text secrets in the inventory, no vault, no rotation"),
 ]

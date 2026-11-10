@@ -137,9 +137,11 @@ class H(http.server.BaseHTTPRequestHandler):
         b = json.dumps({"service": "app", "host": socket.gethostname(), "time": time.strftime("%H:%M:%S")}).encode()
         self.send_response(200); self.send_header("Content-Type", "application/json"); self.send_header("Content-Length", str(len(b))); self.end_headers(); self.wfile.write(b)
     def log_message(self, *a): pass
+    timeout = 5   # a client that stalls (TLS handshake or request) frees its thread after 5 s
 s = http.server.ThreadingHTTPServer(("0.0.0.0", 8443), H)
 ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER); ctx.load_cert_chain("/opt/app/cert.pem", "/opt/app/key.pem")
-s.socket = ctx.wrap_socket(s.socket, server_side=True); s.serve_forever()
+# handshake in the worker thread, not in accept(): one stalled client froze the whole server (T5, keepalived FAULT)
+s.socket = ctx.wrap_socket(s.socket, server_side=True, do_handshake_on_connect=False); s.serve_forever()
 EOF
 cat > /etc/systemd/system/dc-app.service <<'EOF'
 [Unit]
@@ -160,7 +162,7 @@ Restart=always
 [Install]
 WantedBy=multi-user.target
 EOF
-systemctl daemon-reload && systemctl enable --now dc-app iperf3-server""",
+systemctl daemon-reload && systemctl enable --now dc-app iperf3-server && systemctl restart dc-app""",
     "iperf3": "true",
     "keepalived-master": "KA_PRIO=150",
     "keepalived-backup": "KA_PRIO=100",
@@ -212,18 +214,42 @@ def keepalived(prio):
     vip = INV["servers"]["SRV-CMP-01"]["vip"]
     return f"""DEBIAN_FRONTEND=noninteractive apt-get install -y -q keepalived >/dev/null
 cat > /etc/keepalived/keepalived.conf <<'EOF'
-vrrp_script chk_app {{ script "/usr/bin/curl -sk -m 2 https://127.0.0.1:8443/" interval 2 fall 2 rise 2 }}
+vrrp_script chk_app {{ script "/usr/bin/curl -sk -m 1 https://127.0.0.1:8443/" interval 2 timeout 2 fall 2 rise 2 init_fail }}
+# preempt_delay 30 (like HSRP preempt delay on the cores, PLAN_01 T5): a master that boots takes the VIP back only
+# once its bond has validated both NICs; without it, failback cost 10.6 s (VIP taken while the bond was settling)
 vrrp_instance APP {{
     state BACKUP
     interface bond0
     virtual_router_id 20
     priority {prio}
+    preempt_delay 30
     advert_int 1
-    authentication {{ auth_type PASS auth_pass {INV['credentials']['hsrp_key'][:8]} }}
+    # no 'authentication': keepalived 2.0.19 ignored it ("no password given"), and VRRPv2 PASS is cleartext, removed
+    # from RFC 3768; the segment is protected by VLAN 20 itself (servers only) and ACL-VLAN20-IN on the cores
     virtual_ipaddress {{ {vip}/24 }}
     track_script {{ chk_app }}
 }}
 EOF
+# keepalived waits for the network: at boot the bond ARP monitor takes 10-15 s to validate the NICs; started earlier,
+# the node heard no advert, declared itself MASTER while the other held the VIP (split brain, 10-15 s outage, T5).
+# Both NICs 'up' is not enough (they start up and fail ARP validation ~7 s later): the proof is hearing the master.
+cat > /usr/local/sbin/wait-bond.sh <<'EOF'
+#!/bin/sh
+# 1) bond0 and both NICs up 5 s in a row (at most 90 s)
+ok=0
+for i in $(seq 1 90); do
+  if [ "$(grep -c 'MII Status: up' /proc/net/bonding/bond0 2>/dev/null)" -ge 3 ]; then ok=$((ok+1)); else ok=0; fi
+  [ $ok -ge 5 ] && break
+  sleep 1
+done
+# 2) 3 VRRP adverts heard on bond0 = a master exists and reaches us; none within 60 s (both nodes starting) = elect
+timeout 60 tcpdump -c 3 -ni bond0 'ip proto 112' >/dev/null 2>&1
+exit 0
+EOF
+chmod 755 /usr/local/sbin/wait-bond.sh
+mkdir -p /etc/systemd/system/keepalived.service.d
+printf '[Service]\\nExecStartPre=/usr/local/sbin/wait-bond.sh\\nTimeoutStartSec=120\\n' > /etc/systemd/system/keepalived.service.d/wait-bond.conf
+systemctl daemon-reload
 systemctl enable --now keepalived && systemctl restart keepalived"""
 
 
@@ -408,6 +434,7 @@ def deploy(api, p, name, base_only=False, accounts_only=False, roles=None):
 
 
 if __name__ == "__main__":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")   # console output can hold UTF-8 (apt arrows)
     args = sys.argv[1:]
     base_only = "--base-only" in args
     accounts_only = "--accounts-only" in args

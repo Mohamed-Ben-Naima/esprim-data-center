@@ -562,6 +562,13 @@ def gen_netplan(name, s):
     v = VL[s["vlan"]]
     plen = net(v["subnet"]).prefixlen
     gw = v["vip"]
+    # ARP targets: the gateway VIP and both real gateways (any answer validates a NIC, arp_all_targets any)
+    targets = [gw] + ([str(core_svi_ip(c, s["vlan"])) for c in ("CORE-A", "CORE-B")] if v["gw_type"] == "core"
+                      else [v["fw_a"], v["fw_b"]])
+    # + the other bonded servers of the VLAN: their kernel answers at once, while the IOSvL2 cores stopped answering ARP
+    # for ~5 s when a bonded server booted (both bonds of the VLAN fell, T5). A dead leaf still fails the NIC: no
+    # target at all is reachable through it.
+    targets += [o["ip"] for n, o in INV["servers"].items() if n != name and o.get("vlan") == s["vlan"] and o.get("bond")]
     hdr = f"# {name} – VLAN {s['vlan']} {v['name']} – generated from inventory/dc_casa.yaml\n"
     if s["bond"]:
         return hdr + f"""network:
@@ -583,8 +590,16 @@ def gen_netplan(name, s):
       parameters:
         mode: active-backup
         primary: {{nic0}}
-        mii-monitor-interval: 100
-        fail-over-mac-policy: active
+        # ARP monitoring of the gateway, not MII: a stopped GNS3 leaf keeps the carrier up (like a hung switch in
+        # production), MII would never fail over. Each NIC must see the gateway's replies (validate all) every second:
+        # 200 ms flapped (192 link failures in 20 min: the IOSvL2 cores answer ARP in software, too slowly), and
+        # one target was not enough under load: the VIP and both gateways are polled, one answer is enough.
+        arp-interval: 1000
+        arp-ip-targets: [{", ".join(targets)}]
+        arp-validate: all
+        # fail-over-mac-policy left at its default (none): one MAC for the bond, a NIC switch only moves it to the
+        # other leaf port. With 'active' the MAC changed with the NIC and the core kept sending to the old one until
+        # its ARP entry aged out (10.6 s outage on the VIP, T5)
 """
     return hdr + f"""network:
   version: 2

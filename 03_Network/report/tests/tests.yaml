@@ -262,6 +262,35 @@ sections:
         expected: Gi0/0 forwards 20,40,60,100; Gi0/1 forwards 30,70,80
         verified: 2026-10-12
 
+  - id: CMP
+    title: Compute cluster (application VIP 10.20.0.10, keepalived)
+    needs: "SRV-CMP-01/02 and LEAF-A1/A2, cores, firewalls, SRV-WEB-01 (DMZ client); EDGE-A can stay off"
+    tests:
+      - id: CMP-01
+        proves: The application answers on the shared address, served by the master SRV-CMP-01
+        from: SRV-WEB-01 (DMZ) - GNS3 VM, docker exec into SRV-WEB-01
+        command: curl -sk https://10.20.0.10:8443/
+        expected: '{"service": "app", "host": "srv-cmp-01", ...}'
+        verified: 2026-11-10
+      - id: CMP-02
+        proves: Both NICs of each server are validated by ARP monitoring (a hung leaf is detected, not only a cut cable)
+        from: ADMIN-WS terminal (ssh srv-cmp-01, ssh srv-cmp-02)
+        command: grep -E 'ARP|Currently|MII Status' /proc/net/bonding/bond0
+        expected: ARP Polling Interval 1000, targets gateways + other server, active ens3, three "MII Status up"
+        verified: 2026-11-10
+      - id: CMP-03
+        proves: When the master server dies, the backup takes the address (PLAN_01 T5)
+        from: Windows host, folder 03_Network (evidence report/evidence/fw_lan_failover.txt)
+        command: python automation/fw_lan_failover.py --core SRV-CMP-01 --down 60 --up 150
+        expected: 'outage about 3 s, then "VIP served by srv-cmp-02"; master back after 30 s preempt delay, no loss when the VIP moves back'
+        verified: 2026-11-10
+      - id: CMP-04
+        proves: Rebooting the backup server does not disturb the service
+        from: Windows host - stop then start SRV-CMP-02 while probing from SRV-WEB-01
+        command: python automation/labctl.py stop SRV-CMP-02 ; python automation/labctl.py start SRV-CMP-02
+        expected: 0 failed probe, every answer from srv-cmp-01 (keepalived waits to hear the master before it starts)
+        verified: 2026-11-10
+
   - id: INF
     title: DNS and NTP server (SRV-INF-01)
     needs: "SRV-INF-01 and its path: LEAF-B1/B2, cores; firewalls and edge tier for INF-03 to INF-05"

@@ -69,3 +69,81 @@
 13:36:33    samples: +95.6 +96.1 +96.7 +97.2 +97.8 +98.4X +99.9 +100.5 +101.1 +101.6
 13:36:44 after: CARP FW-A: 5 MASTER / FW-B: 5 BACKUP
 13:36:50 after: FW-A laggproto failover lagghash l2,l3,l4 | 	laggport: em3 flags=5<MASTER,ACTIVE> | 	laggport: em4 flags=0<> | 	status: active
+
+# PLAN_02 FW.3 / PLAN_01 T2-T5 - fw_lan_failover.py --core SRV-CMP-01 --down 60 --up 120 - 2026-11-10 15:21
+15:17:50 stop SRV-CMP-01 for 60 s, probe SRV-WEB-01 -> https://10.20.0.10:8443/ every 0.5 s
+15:17:58 before: SRV-CMP-01 bond: ens3 up ens3 up ens4 up 10.20.0.11/24 10.20.0.10/24
+15:17:58 before: SRV-CMP-02 bond: ens3 up ens4 up ens3 up 10.20.0.12/24
+15:18:03 before: SRV-CMP-02: ens3 up ens4 up ens3 up 10.20.0.12/24
+15:18:18 SRV-CMP-01 stopped (GNS3 API)
+15:18:54 +30 s: SRV-CMP-02: ens3 up ens4 up ens3 up 10.20.0.12/24 10.20.0.10/24
+15:19:25 SRV-CMP-01 started again
+15:21:30 329 probes, 9 failed
+15:21:30 fault: 1 outage(s), answered by srv-cmp-01, srv-cmp-02
+15:21:30 fault: outage from +1.0 s to +4.0 s = 3.0 s
+15:21:30    samples: -2.001 -1.401 -0.801 -0.201 +0.401 +1.0X +2.5X +4.002 +4.602 +5.102 +5.702
+15:21:30 fault: VIP served by srv-cmp-02 from +4.0 s (was srv-cmp-01)
+15:21:30 restart: 1 outage(s), answered by srv-cmp-01, srv-cmp-02
+15:21:30 restart: outage from +24.3 s to +34.9 s = 10.6 s
+15:21:30    samples: +21.702 +22.302 +23.002 +23.502 +24.3X +25.9X +27.4X +28.9X +30.4X +31.9X +33.4X +34.901 +35.501 +36.101 +36.701
+15:21:30 restart: VIP served by srv-cmp-01 from +34.9 s (was srv-cmp-02)
+15:21:35 after: SRV-CMP-01: ens3 up ens4 up ens3 up 10.20.0.11/24 10.20.0.10/24
+
+# PLAN_02 FW.3 / PLAN_01 T2-T5 - fw_lan_failover.py --core SRV-CMP-01 --down 60 --up 120 - 2026-11-10 15:28
+15:24:23 stop SRV-CMP-01 for 60 s, probe SRV-WEB-01 -> https://10.20.0.10:8443/ every 0.5 s
+15:24:30 before: SRV-CMP-01 bond: ens3 up ens4 up ens3 up 10.20.0.11/24 10.20.0.10/24
+15:24:30 before: SRV-CMP-02 bond: ens3 up ens4 up ens3 up 10.20.0.12/24
+15:24:35 before: SRV-CMP-02: ens3 up ens4 up ens3 up 10.20.0.12/24
+15:24:50 SRV-CMP-01 stopped (GNS3 API)
+15:25:26 +30 s: SRV-CMP-02: ens3 up ens4 up ens3 up 10.20.0.12/24 10.20.0.10/24
+15:25:57 SRV-CMP-01 started again
+15:28:01 328 probes, 8 failed
+15:28:01 fault: 1 outage(s), answered by srv-cmp-01, srv-cmp-02
+15:28:01 fault: outage from +3.8 s to +6.8 s = 3.0 s
+15:28:01    samples: +1.001 +1.501 +2.101 +2.701 +3.201 +3.8X +5.3X +6.802 +7.402 +8.002 +8.602
+15:28:01 fault: VIP served by srv-cmp-02 from +6.8 s (was srv-cmp-01)
+15:28:01 restart: 1 outage(s), answered by srv-cmp-01, srv-cmp-02
+15:28:01 restart: outage from +24.7 s to +33.7 s = 9.0 s
+15:28:01    samples: +21.902 +22.502 +23.002 +23.602 +24.7X +26.2X +27.7X +29.2X +30.7X +32.2X +33.701 +34.301 +34.801 +35.401
+15:28:01 restart: VIP served by srv-cmp-01 from +33.7 s (was srv-cmp-02)
+15:28:07 after: SRV-CMP-01: ens3 up ens4 up ens3 up 10.20.0.11/24 10.20.0.10/24
+
+# PLAN_02 FW.3 / PLAN_01 T2-T5 - fw_lan_failover.py --core SRV-CMP-01 --down 60 --up 150 - 2026-11-10 16:18
+16:14:18 stop SRV-CMP-01 for 60 s, probe SRV-WEB-01 -> https://10.20.0.10:8443/ every 0.5 s
+16:14:26 before: SRV-CMP-01 bond: ens3 up ens4 up ens3 up 10.20.0.11/24 10.20.0.10/24
+16:14:26 before: SRV-CMP-02 bond: ens3 up ens4 up ens3 up 10.20.0.12/24
+16:14:32 before: SRV-CMP-02: ens3 up ens4 up ens3 up 10.20.0.12/24
+16:14:47 SRV-CMP-01 stopped (GNS3 API)
+16:15:23 +30 s: SRV-CMP-02: ens3 up ens4 up ens3 up 10.20.0.12/24 10.20.0.10/24
+16:15:54 SRV-CMP-01 started again
+16:18:29 367 probes, 10 failed
+16:18:29 fault: 1 outage(s), answered by srv-cmp-01, srv-cmp-02
+16:18:29 fault: outage from +9.0 s to +13.6 s = 4.5 s
+16:18:29    samples: +6.101 +6.701 +7.301 +7.901 +8.401 +9.0X +10.5X +12.1X +13.602 +14.102 +14.702 +15.302
+16:18:29 fault: VIP served by srv-cmp-02 from +13.6 s (was srv-cmp-01)
+16:18:29 restart: 2 outage(s), answered by srv-cmp-01, srv-cmp-02
+16:18:29 restart: outage from +33.7 s to +36.7 s = 3.0 s
+16:18:29    samples: +31.102 +31.702 +32.402 +33.7X +35.2X +36.702 +37.402 +38.1X
+16:18:29 restart: outage from +38.1 s to +45.7 s = 7.5 s
+16:18:29    samples: +35.2X +36.702 +37.402 +38.1X +39.6X +41.1X +42.6X +44.1X +45.702 +46.302 +46.902 +47.602
+16:18:29 restart: VIP served by srv-cmp-01 from +84.5 s (was srv-cmp-02)
+16:18:35 after: SRV-CMP-01: ens3 up ens4 up ens3 up 10.20.0.11/24 10.20.0.10/24
+
+# PLAN_02 FW.3 / PLAN_01 T2-T5 - fw_lan_failover.py --core SRV-CMP-01 --down 60 --up 150 - 2026-11-10 16:26
+16:21:48 stop SRV-CMP-01 for 60 s, probe SRV-WEB-01 -> https://10.20.0.10:8443/ every 0.5 s
+16:21:54 before: SRV-CMP-01 bond: ens3 up ens3 up ens4 up 10.20.0.11/24 10.20.0.10/24
+16:21:54 before: SRV-CMP-02 bond: ens3 up ens3 up ens4 up 10.20.0.12/24
+16:21:58 before: SRV-CMP-02: ens3 up ens3 up ens4 up 10.20.0.12/24
+16:22:14 SRV-CMP-01 stopped (GNS3 API)
+16:22:50 +30 s: SRV-CMP-02: ens3 up ens3 up ens4 up 10.20.0.12/24 10.20.0.10/24
+16:23:20 SRV-CMP-01 started again
+16:25:55 377 probes, 5 failed
+16:25:55 fault: 1 outage(s), answered by srv-cmp-01, srv-cmp-02
+16:25:55 fault: outage from +8.7 s to +11.8 s = 3.1 s
+16:25:55    samples: +6.201 +6.701 +7.301 +7.901 +8.7X +10.2X +11.802 +12.302 +12.902 +13.502
+16:25:55 fault: VIP served by srv-cmp-02 from +11.8 s (was srv-cmp-01)
+16:25:55 restart: 1 outage(s), answered by srv-cmp-01, srv-cmp-02
+16:25:55 restart: outage from +35.0 s to +39.6 s = 4.5 s
+16:25:55    samples: +32.202 +32.802 +33.402 +34.002 +35.0X +36.5X +38.0X +39.602 +40.402 +41.102
+16:25:55 restart: VIP served by srv-cmp-01 from +74.5 s (was srv-cmp-02)
+16:26:01 after: SRV-CMP-01: ens3 up ens4 up ens3 up 10.20.0.11/24 10.20.0.10/24
