@@ -97,10 +97,25 @@ trims them for the demo.
       extend the role to copy `grafana/dashboards/*.json`. Re-run: `deploy_servers.py --role=grafana SRV-MON-01`
       (plugin already installed: the /tmp zip is not needed again).
 
-### S4 — NOC dashboard (GRF.4) (≈ 1.5 h)
-- [ ] `03_Network/grafana/dashboards/noc.json` + provisioning, home dashboard. Rows Énergie / Réseau / Sécurité /
+### S4 — NOC dashboard (GRF.4) (≈ 1.5 h) — done 10 Nov 2026 (after the demo, profile nas + SRV-MON-01 + containers)
+- [x] `03_Network/grafana/dashboards/noc.json` + provisioning, home dashboard. Rows Énergie / Réseau / Sécurité /
       Infrastructure; no "No data" panel (drop a panel rather than leave it empty).
-- [ ] Power test turns the Énergie row red within 30 s, back after reset.
+      → new **`automation/check_dashboard.py`**: every panel's queries sent to Grafana `/api/ds/query` (text
+      queries run in the browser: read from Zabbix instead), problem panel from Zabbix; DATA / HORS PROFIL / EMPTY.
+      First run on the draft: **23 of 28 panels empty**: item names without the Zabbix 6.0 template prefix
+      (`Linux: CPU utilization`, `Cisco IOS: ICMP ping`, `TrueNAS CORE: ICMP ping`), no ICMP item in "PFSense by SNMP"
+      (panel now = `PFSense: SNMP agent availability`), web item name ends with a dot, BMS/DCIM in maintenance.
+      Fixed in `gen_dashboards.py`; series renamed to the host; **row "Stockage et sauvegardes"** added (pool state,
+      snapshot age, failed pulls, NAS ICMP — PLAN_04); every panel has `noValue` "hors profil" (stopped host in
+      maintenance) instead of an empty "No data". Deployed with `deploy_servers.py --role=grafana SRV-MON-01`
+      (dashboard version 2 = noc.json): **28/28 panels with data**. Evidence `demo_s4_dashboard_check.txt`.
+- [x] Power test turns the Énergie row red within 30 s, back after reset.
+      → panel values + their own thresholds read from the deployed dashboard: cut → Chemin A DOWN, Chemin B 94.2 %,
+      GTB CRITICAL, alarms 4 in red after **9.6 s**; reset → all green after **5.5 s** (`demo_s4_power_dashboard.txt`).
+      **Finding:** first attempts lost 30-90 % of packets and one reset: GNS3 VM swap at 916 MB → CORE-A stalled →
+      leafs missed BPDUs → **loop guard blocked the CORE-A uplinks** (no CORE-B in this profile = leaf isolated) and
+      every unblock flushed the MAC tables. `sudo swapoff -a && sudo swapon -a` (as lab_up.py) + SRV-INF-01 stopped
+      → no loop-guard event since, 0 % loss. Rule: GNS3 VM swap ≈ 0 and ≥ 0.5 GB available before a test.
 
 ### S5 — Log server for the demo (LOG.1, LOG.2, LOG.4, LOG.5 trimmed) (≈ 2 h)
 - [ ] Quick audit: which running equipment has a file in `/var/log/remote` younger than 10 min; fix silent ones if cheap.

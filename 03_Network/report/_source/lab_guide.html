@@ -87,8 +87,8 @@ figcaption { font-size: 7.6pt; color: var(--mute); margin-top: 1mm; }
     <b>Status in one sentence</b><br>
     The whole network is configured and verified and administered from one hardened entry point. Supervision is now live:
     Zabbix watches 17 hosts (network by SNMPv3, firewalls, servers, power, racks, web site, log collector) and raises a power-cut
-    alarm in under 10 s; Grafana reads it through the Zabbix plugin. Still to do: the NOC dashboard validation, the log viewer,
-    the resilience tests and TrueNAS.
+    alarm in under 10 s; Grafana reads it through the Zabbix plugin. The NOC dashboard is validated on live data and the TrueNAS backup NAS is in service. Still to do: the log viewer,
+    the resilience tests.
   </div>
   <div class="meta">
     Document date: 21 October 2026 (demo day)<br>
@@ -966,7 +966,7 @@ Only T6 has been rehearsed (12 Oct 2026). The other scenarios are defined in the
 
 <div class="cols">
 <div class="box good" style="flex:1"><b class="t">Done and verified</b>Network, firewall cluster, service containers, administration (webterm, bastion + TOTP, access matrix 0 failure). Demo profile that holds without HSRP flapping. Zabbix: 17 hosts, devices by SNMPv3, power / racks / web / log collector checks, power-cut alarm in 6 to 10 s. Grafana: no anonymous access, Zabbix plugin installed offline, data source OK. TrueNAS backup NAS (plan 04): configured as code, nightly pulled backups, restore from a snapshot tested, supervised.</div>
-<div class="box warn" style="flex:1"><b class="t">In progress</b>Demo sprint (plan 03), phase S4: the Grafana NOC dashboard exists as a draft (loaded for the demo, not yet checked panel by panel). Then S5 log viewer and S6 cold-start rehearsal and runbook.</div>
+<div class="box warn" style="flex:1"><b class="t">In progress</b>Demo sprint (plan 03): S4 done (NOC dashboard provisioned, 28 panels checked on live data by <code>check_dashboard.py</code>). Next S5 log viewer and S6 cold-start rehearsal and runbook.</div>
 <div class="box" style="flex:1;border-color:#56606d;background:#e9edf1"><b class="t">To do</b>Firewall tasks FW.3-FW.5, BGP/OSPF triggers (ZBX.7), log retention and viewer, compliance matrix, four servers not deployed, resilience tests, final report.</div>
 </div>
 
@@ -997,7 +997,7 @@ Only T6 has been rehearsed (12 Oct 2026). The other scenarios are defined in the
 <tr><td>ZBX.1-5</td><td>Zabbix base, groups, Cisco devices by SNMPv3, firewalls by SNMP v2c, agents</td><td><span class="pill ok">Done</span></td><td><code>0c260a8</code>..<code>848bc8d</code>; <code>zabbix_setup.py</code>; stopped nodes in maintenance <code>demo-off</code></td></tr>
 <tr><td>ZBX.6</td><td>Services: power (BMS-SIM), racks (DCIM), web site, log collector</td><td><span class="pill ok">Done</span></td><td><code>6766eaa</code>, <code>961c282</code>; power cut seen in 6.3 s / 9.5 s, cleared in 6.3 s</td></tr>
 <tr><td>GRF.1-3</td><td>Grafana base, Zabbix plugin offline, data source by provisioning</td><td><span class="pill ok">Done</span></td><td><code>90a3ebb</code>..<code>a3cfa74</code>; health "Zabbix API version 6.0.48"</td></tr>
-<tr><td>GRF.4</td><td>NOC dashboard: rows Énergie, Réseau, Sécurité, Infrastructure</td><td><span class="pill wip">In progress</span></td><td><code>42b642d</code>; draft of 28 panels, loaded through the API for the demo</td></tr>
+<tr><td>GRF.4</td><td>NOC dashboard: rows Énergie, Réseau, Sécurité, Stockage, Infrastructure</td><td><span class="pill ok">Done</span></td><td>28 panels with data on live values (<code>check_dashboard.py</code>), power cut red in 9.6 s, back 5.5 s after reset</td></tr>
 <tr><td>NAS.1-6</td><td>Plan 04: TrueNAS SCALE as SRV-BCK-01: install, bond failover, configuration as code, pulled backups, restore test, Zabbix</td><td><span class="pill ok">Done</span></td><td><code>586f117</code>..; failover 0-1 ping lost, restore same SHA-256, 3 triggers raised and cleared on real faults</td></tr>
 <tr><td>ZBX.7</td><td>BGP / OSPF triggers, alert timing</td><td><span class="pill todo">To do</span></td><td>After the demo (plan 02)</td></tr>
 <tr><td>8</td><td>Resilience tests T1 to T6 and M1, measured</td><td><span class="pill todo">To do</span></td><td><code>resilience_tests.py</code> not written</td></tr>
@@ -1017,7 +1017,7 @@ Only T6 has been rehearsed (12 Oct 2026). The other scenarios are defined in the
 <tr><td>SYSLOG, BMS-SIM, CCTV-SIM, SRV-DCIM-01, SRV-WEB-01, ADMIN-WS</td><td><span class="pill ok">Yes</span></td><td><span class="pill ok">Yes</span></td><td>Checked on 12 Oct 2026: 15 log sources on SYSLOG, web site answering from ISP-A through 192.0.2.80, BMS and DCIM dashboards reachable from the admin zone.</td></tr>
 <tr><td>SRV-INF-01</td><td><span class="pill ok">Yes</span></td><td><span class="pill ok">Yes</span></td><td>Re-checked on 12 Oct 2026: bond with both links up, dnsmasq and chrony active, DNS answers, 5 time sources, Internet reachable, management network refused as designed.</td></tr>
 <tr><td>SRV-BASTION</td><td><span class="pill ok">Yes</span></td><td><span class="pill ok">Yes</span></td><td>Jump host verified end to end. SSH requires the account <code>sysadmin</code>, its password and a TOTP code; the default account is refused.</td></tr>
-<tr><td>SRV-MON-01</td><td><span class="pill ok">Yes</span></td><td><span class="pill ok">Yes</span></td><td>Zabbix 6.0.48: 17 hosts, 0 running host unavailable on 21 Oct. Grafana 13.2.3 with the Zabbix plugin 6.8.0, read-only Zabbix account <code>grafana</code>. Account policy applied (ADM.4). NOC dashboard still a draft.</td></tr>
+<tr><td>SRV-MON-01</td><td><span class="pill ok">Yes</span></td><td><span class="pill ok">Yes</span></td><td>Zabbix 6.0.48: 17 hosts, 0 running host unavailable on 21 Oct. Grafana 13.2.3 with the Zabbix plugin 6.8.0, read-only Zabbix account <code>grafana</code>. Account policy applied (ADM.4). NOC dashboard provisioned and validated (S4).</td></tr>
 <tr><td>SRV-CMP-01, 02, 03</td><td><span class="pill todo">No</span></td><td><span class="pill todo">No</span></td><td>Network files generated, role script ready, not deployed</td></tr>
 <tr><td>SRV-STO-01, SRV-BCK-01</td><td><span class="pill todo">No</span></td><td><span class="pill todo">No</span></td><td>Same</td></tr>
 </tbody>
@@ -1046,7 +1046,7 @@ Only T6 has been rehearsed (12 Oct 2026). The other scenarios are defined in the
 <tr><td>S1</td><td>Demo profile of 20 nodes. Core HSRP timers raised from 250/750 ms to 1 s / 3 s (they flapped under CPU load); the GNS3 VM swap is flushed after start-up.</td></tr>
 <tr><td>S2</td><td><code>zabbix_setup.py check | apply | status</code> configures Zabbix from the inventory over its API: password and timezone, groups <code>DC/*</code>, Cisco devices by SNMPv3 (authPriv SHA/AES), firewalls by SNMP v2c, server agents, maintenance for stopped nodes. LEAF-B2 had lost its SNMPv3 user (restored).</td></tr>
 <tr><td>S3</td><td>Service checks: BMS-SIM and DCIM read through their JSON API every 10 s, web scenario on the DMZ site, ping of the log collector, triggers from the design thresholds (45 %, 50 %, path not powered). Grafana: no sign-up, no anonymous access, Zabbix plugin 6.8.0 installed offline (checksum verified), data source provisioned with a read-only Zabbix account.</td></tr>
-<tr><td>S4 (draft)</td><td>NOC dashboard generated by <code>automation/gen_dashboards.py</code>; loaded for the demo, to be validated panel by panel and provisioned.</td></tr>
+<tr><td>S4</td><td>NOC dashboard generated by <code>automation/gen_dashboards.py</code>, provisioned by the Grafana role, checked panel by panel by <code>automation/check_dashboard.py</code>.</td></tr>
 </tbody>
 </table>
 
@@ -1089,8 +1089,7 @@ Only T6 has been rehearsed (12 Oct 2026). The other scenarios are defined in the
 </table>
 
 <h2>Next steps</h2>
-<p>First the end of the demo sprint (<code>plans/PLAN_03_Demo_Sprint.md</code>): <b>S4</b> NOC dashboard validated and provisioned,
-<b>S5</b> log viewer and demo security events, <b>S6</b> cold-start rehearsal and French runbook. Then back to
+<p>First the end of the demo sprint (<code>plans/PLAN_03_Demo_Sprint.md</code>): <b>S5</b> log viewer and demo security events, <b>S6</b> cold-start rehearsal and French runbook. Then back to
 <code>plans/PLAN_02_Admin_Firewall_Logs_Supervision.md</code>, one sub-task per commit:</p>
 <ol>
 <li><b>FW</b>: behaviour when a core stops, flow matrix, evidence (FW.3-FW.5).</li>

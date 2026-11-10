@@ -1,0 +1,35 @@
+deployed dashboard 'NOC – DC Casablanca' version 2: same panels as noc.json
+== Énergie
+   DATA        Chemin A – charge: BMS-SIM=47.1
+   DATA        Chemin B – charge: BMS-SIM=47.1
+   DATA        Chemin A: BMS-SIM=POWERED
+   DATA        Chemin B: BMS-SIM=POWERED
+   DATA        GTB: BMS-SIM=WARNING
+   DATA        Baies OK: SRV-DCIM-01=96
+   DATA        Baies DEGRADED: SRV-DCIM-01=0
+   DATA        Baies DOWN: SRV-DCIM-01=0
+   DATA        Charge des chemins A / B: BMS-SIM=47.1, BMS-SIM=47.1
+   DATA        Charge IT: BMS-SIM=942
+   DATA        PUE: BMS-SIM=1.45
+   DATA        Température entrée max: SRV-DCIM-01=28.3
+   DATA        Alarmes GTB actives: BMS-SIM=2
+== Réseau
+   DATA        Disponibilité bordure / cœur / distribution (ICMP): EDGE-A=0, CORE-A=1, LEAF-B1=1, LEAF-B2=1  [stopped: CORE-B, EDGE-A]
+   DATA        Trafic EDGE-A – liens opérateurs (Gi0/0 ISP-A, Gi0/1 ISP-B): EDGE-A=424, EDGE-A=0, EDGE-A=24312, EDGE-A=104  [stopped: EDGE-A]
+   DATA        Temps de réponse ICMP: EDGE-A=0, CORE-A=0.03, LEAF-B1=0.03, LEAF-B2=0.02  [stopped: CORE-B, EDGE-A]
+== Sécurité
+   DATA        Pare-feux (agent SNMP): FW-A=1, FW-B=0  [stopped: FW-B]
+   DATA        Pare-feux – états (table pf): FW-A=189  [stopped: FW-B]
+   DATA        Problèmes actifs (hors maintenance): 9 problem(s) BMS-SIM: Charge chemin B > 45 %; CORE-A: Interface Gi0/2(MDA-CORE-A:Gi0/2 -> MDA-CORE-B:Gi0/2 | ISL Po1 LACP #1): Link down; CORE-A: Interface Gi0/3(MDA-CORE-A:Gi0/3 -> MDA-CORE-B:Gi0/3 | ISL Po1 LACP #2): Link down; CORE-A: Interface Po1(MDA-CORE-A:Po1 -> MDA-CORE-B:Po1 | ISL LACP 802.3ad): Link down ...
+== Stockage et sauvegardes
+   DATA        NAS – pool tank: SRV-BCK-01=ONLINE
+   DATA        Âge du dernier snapshot: SRV-BCK-01=2103
+   DATA        Sauvegardes en échec: SRV-BCK-01=0
+   DATA        NAS (ICMP): SRV-BCK-01=1
+== Infrastructure
+   DATA        SRV-MON-01 – CPU: SRV-MON-01=12.4
+   DATA        SRV-MON-01 – mémoire: SRV-MON-01=56.19
+   DATA        SRV-MON-01 – disque /: SRV-MON-01=47.41
+   DATA        Site web DMZ: SRV-WEB-01=0
+   DATA        Collecteur syslog: SYSLOG=1
+panels: 28 with data, 0 hors profil, 0 empty

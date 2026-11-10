@@ -1,0 +1,9 @@
+# PLAN_03 S4 - power cut seen on the deployed NOC dashboard (Énergie row, values + panel thresholds), 10 Nov 2026
+07:39:16 before: red panels []
+07:39:16    Chemin A – charge=47.1/orange; Chemin B – charge=47.1/orange; Chemin A=POWERED/green; Chemin B=POWERED/green; GTB=WARNING/orange; Baies OK=96/green; Baies DEGRADED=0/green; Baies DOWN=0/green; Charge des chemins A / B=47.1/orange,47.1/orange; Charge IT=942/blue; PUE=1.45/blue; Température entrée max=28.3/orange; Alarmes GTB actives=2/green
+07:39:21 cut sent: UTILITY-A, UPS-A, GENERATOR down
+07:39:30 after 9.6 s: red panels ['Alarmes GTB actives', 'Charge des chemins A / B', 'Chemin A', 'Chemin B – charge', 'GTB']
+07:39:30    Chemin A – charge=0/green; Chemin B – charge=94.2/red; Chemin A=DOWN/red; Chemin B=POWERED/green; GTB=CRITICAL/red; Baies OK=96/green; Baies DEGRADED=0/green; Baies DOWN=0/green; Charge des chemins A / B=0/green,94.2/red; Charge IT=942/blue; PUE=1.45/blue; Température entrée max=28.3/orange; Alarmes GTB actives=4/red
+07:39:36 reset sent
+07:39:41 after 5.5 s: red panels []
+07:39:41    Chemin A – charge=47.1/orange; Chemin B – charge=47.1/orange; Chemin A=POWERED/green; Chemin B=POWERED/green; GTB=WARNING/orange; Baies OK=96/green; Baies DEGRADED=0/green; Baies DOWN=0/green; Charge des chemins A / B=47.1/orange,47.1/orange; Charge IT=942/blue; PUE=1.45/blue; Température entrée max=28.2/orange; Alarmes GTB actives=2/green

@@ -13,7 +13,9 @@ from pathlib import Path
 NET = Path(__file__).resolve().parents[1]
 DS = {"type": "alexanderzobnin-zabbix-datasource", "uid": "zabbix"}
 GREEN, ORANGE, RED, BLUE = "green", "orange", "red", "blue"
-TEXT_STATE = {"POWERED": GREEN, "OK": GREEN, "WARNING": ORANGE, "DOWN": RED, "CRITICAL": RED}
+TEXT_STATE = {"POWERED": GREEN, "OK": GREEN, "ONLINE": GREEN, "WARNING": ORANGE, "DEGRADED": ORANGE, "DOWN": RED,
+              "CRITICAL": RED, "FAULTED": RED, "UNAVAIL": RED, "OFFLINE": RED}
+NO_VALUE = "hors profil"     # host stopped in the running lab profile (maintenance): said, never an empty "No data"
 
 _id = 0
 
@@ -42,7 +44,7 @@ def steps(*pairs):
 def panel(kind, title, targets, x, y, w, h, unit="", thresholds=None, mappings=None, options=None, overrides=None,
           decimals=None, minmax=None, desc=""):
     defaults = {"unit": unit, "thresholds": thresholds or steps((None, GREEN)), "mappings": mappings or [],
-                "color": {"mode": "thresholds"}}
+                "color": {"mode": "thresholds"}, "noValue": NO_VALUE}
     if decimals is not None:
         defaults["decimals"] = decimals
     if minmax:
@@ -138,9 +140,10 @@ def build():
     y = 15
     p.append(row("Réseau", y))
     p.append(panel("stat", "Disponibilité bordure / cœur / distribution (ICMP)",
-                   [metric("/DC\\/(Edge|Core|Leaf)/", "/^(EDGE-A|CORE-A|CORE-B|LEAF-B1|LEAF-B2)$/", "ICMP ping")],
+                   [metric("/DC\\/(Edge|Core|Leaf)/", "/^(EDGE-A|CORE-A|CORE-B|LEAF-B1|LEAF-B2)$/",
+                           "Cisco IOS: ICMP ping")],
                    0, y + 1, 12, 4, mappings=up_down_map(), thresholds=steps((None, RED), (1, GREEN)),
-                   options=stat_opts(name=True), overrides=[rename("(.*): ICMP ping", "$1")],
+                   options=stat_opts(name=True), overrides=[rename("([^:]*): .*", "$1")],
                    desc="Équipements de l'arrêt « demo » (EDGE-B, LEAF-A1/A2) en maintenance, non affichés"))
     p.append(panel("timeseries", "Trafic EDGE-A – liens opérateurs (Gi0/0 ISP-A, Gi0/1 ISP-B)",
                    [metric("DC/Edge", "EDGE-A", "/Interface Gi0\\/[01].*: Bits (received|sent)/")],
@@ -149,32 +152,48 @@ def build():
                             "tooltip": {"mode": "multi"}}))
     p.append(panel("timeseries", "Temps de réponse ICMP", [metric("/DC\\/(Edge|Core|Leaf)/",
                                                                   "/^(EDGE-A|CORE-A|CORE-B|LEAF-B1|LEAF-B2)$/",
-                                                                  "ICMP response time")],
-                   0, y + 5, 12, 4, unit="s",
+                                                                  "Cisco IOS: ICMP response time")],
+                   0, y + 5, 12, 4, unit="s", overrides=[rename("([^:]*): .*", "$1")],
                    options={"legend": {"displayMode": "list", "placement": "right", "showLegend": True},
                             "tooltip": {"mode": "multi"}}))
     # ------------------------------------------------------------------ Sécurité
     y = 25
     p.append(row("Sécurité", y))
-    p.append(panel("stat", "Pare-feux (ICMP)", [metric("DC/Firewalls", "/FW-[AB]/", "ICMP ping")], 0, y + 1, 6, 4,
+    p.append(panel("stat", "Pare-feux (agent SNMP)",
+                   [metric("DC/Firewalls", "/FW-[AB]/", "PFSense: SNMP agent availability")], 0, y + 1, 6, 4,
                    mappings=up_down_map(), thresholds=steps((None, RED), (1, GREEN)), options=stat_opts(name=True),
-                   overrides=[rename("(.*): ICMP ping", "$1")]))
-    p.append(panel("timeseries", "Pare-feux – états (table pf)", [metric("DC/Firewalls", "/FW-[AB]/", "PF_STATES")],
-                   0, y + 5, 6, 6,
+                   overrides=[rename("([^:]*): .*", "$1")],
+                   desc="Le modèle PFSense by SNMP n'a pas d'élément ICMP : disponibilité de l'agent SNMP"))
+    p.append(panel("timeseries", "Pare-feux – états (table pf)",
+                   [metric("DC/Firewalls", "/FW-[AB]/", "PFSense: States table current")], 0, y + 5, 6, 6,
+                   overrides=[rename("([^:]*): .*", "$1")],
                    options={"legend": {"displayMode": "list", "placement": "bottom", "showLegend": True},
                             "tooltip": {"mode": "multi"}}))
     p.append(problems("Problèmes actifs (hors maintenance)", 6, y + 1, 18, 10))
+    # ------------------------------------------------------------------ Stockage (PLAN_04: TrueNAS SRV-BCK-01)
+    y, sto, nas = 37, "DC/Storage", "SRV-BCK-01"
+    p.append(row("Stockage et sauvegardes", y))
+    p.append(panel("stat", "NAS – pool tank", [metric(sto, nas, "Pool tank - état ZFS", text=True)], 0, y + 1, 6, 5,
+                   mappings=text_map(), options=stat_opts(), desc="Miroir ZFS (2 disques) ; DEGRADED = un disque perdu"))
+    p.append(panel("stat", "Âge du dernier snapshot", [metric(sto, nas, "Âge du dernier snapshot")], 6, y + 1, 6, 5,
+                   unit="s", decimals=0, thresholds=steps((None, GREEN), (3900, ORANGE), (7200, RED)),
+                   options=stat_opts(), desc="Snapshots horaires de tank/backups ; alarme au-delà de 2 h"))
+    p.append(panel("stat", "Sauvegardes en échec", [metric(sto, nas, "Tâches de sauvegarde en échec")], 12, y + 1, 6, 5,
+                   decimals=0, thresholds=steps((None, GREEN), (1, RED)), options=stat_opts(),
+                   desc="Tâches rsync tirées par le NAS (SRV-MON-01, SRV-INF-01) dont la dernière exécution a échoué"))
+    p.append(panel("stat", "NAS (ICMP)", [metric(sto, nas, "TrueNAS CORE: ICMP ping")], 18, y + 1, 6, 5, mappings=up_down_map(),
+                   thresholds=steps((None, RED), (1, GREEN)), options=stat_opts()))
     # ------------------------------------------------------------------ Infrastructure
-    y = 37
+    y = 44
     p.append(row("Infrastructure", y))
-    for i, (title, item, unit) in enumerate([("SRV-MON-01 – CPU", "CPU utilization", "percent"),
-                                             ("SRV-MON-01 – mémoire", "Memory utilization", "percent"),
+    for i, (title, item, unit) in enumerate([("SRV-MON-01 – CPU", "Linux: CPU utilization", "percent"),
+                                             ("SRV-MON-01 – mémoire", "Linux: Memory utilization", "percent"),
                                              ("SRV-MON-01 – disque /", "/: Space utilization", "percent")]):
         p.append(panel("gauge", title, [metric("DC/Servers", "SRV-MON-01", item)], i * 4, y + 1, 4, 5, unit=unit,
                        decimals=1, minmax=(0, 100), thresholds=steps((None, GREEN), (80, ORANGE), (90, RED)),
                        options={"reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": False},
                                 "showThresholdMarkers": True, "showThresholdLabels": False}))
-    checks = [("Site web DMZ", "SRV-WEB-01", "Failed step of scenario \"Site web DMZ\"", "fail"),
+    checks = [("Site web DMZ", "SRV-WEB-01", "Failed step of scenario \"Site web DMZ\".", "fail"),
               ("Collecteur syslog", "SYSLOG", "ICMP ping", "ping")]
     for i, (title, host, item, kind) in enumerate(checks):
         mp = up_down_map() if kind == "ping" else \

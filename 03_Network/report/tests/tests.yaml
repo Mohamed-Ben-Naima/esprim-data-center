@@ -547,6 +547,18 @@ sections:
           curl -s -m 5 -o /dev/null -w '%{http_code}\n' http://127.0.0.1:3000/login
         expected: "200, 200"
         verified: 2026-10-12
+      - id: MON-04
+        proves: Every panel of the NOC dashboard shows live data (or says "hors profil" for a stopped host)
+        from: Windows host, folder 03_Network; lab proxy started
+        command: python automation/check_dashboard.py
+        expected: '"same panels as noc.json", then "0 empty"'
+        verified: 2026-11-10
+      - id: MON-05
+        proves: A power cut turns the Énergie row of the NOC dashboard red, and the reset turns it back
+        from: Windows host (evidence report/evidence/demo_s4_power_dashboard.txt)
+        command: python automation/power_test.py   (watch Grafana http://10.60.0.11:3000/ through the proxy)
+        expected: Chemin A DOWN, Chemin B > 50 %, GTB CRITICAL in red within 30 s; all green after api/reset
+        verified: 2026-11-10
 
   - id: WEB
     title: Web interfaces from the physical PC
