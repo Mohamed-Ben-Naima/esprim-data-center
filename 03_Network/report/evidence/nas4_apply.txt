@@ -1,0 +1,36 @@
+SRV-BCK-01: 21 change(s)
+   pool tank created (MIRROR ['sdb', 'sdc'])
+   dataset tank/backups
+   dataset tank/backups/servers
+   dataset tank/backups/configs
+   snapshot task hourly-%Y-%m-%d_%H-%M
+   snapshot task daily-%Y-%m-%d_%H-%M
+   ntp 0.debian.pool.ntp.org removed
+   ntp 1.debian.pool.ntp.org removed
+   ntp 2.debian.pool.ntp.org removed
+   ntp 10.100.0.11 added
+   system.advanced: ['fqdn_syslog', 'login_banner', 'syslogservers', 'uploadcrash']
+   network.configuration: ['service_announcement']
+   ssh: ['options', 'weak_ciphers']
+   snmp: ['community', 'contact', 'location', 'v3', 'v3_password', 'v3_privpassphrase', 'v3_privproto', 'v3_username']
+   user truenas_admin: SSH password login allowed
+   service snmp enable=True
+   service snmp started
+   service ssh enable=True
+   service ssh started
+   UI session timeout 15 min
+   system.general: ['timezone', 'ui_allowlist', 'ui_httpsredirect', 'usage_collection']
+SRV-BCK-01:
+   pool tank: ONLINE, healthy=True, MIRROR(2 disks)
+   datasets tank, tank/backups, tank/backups/configs, tank/backups/servers
+   snapshot task tank/backups hourly-%Y-%m-%d_%H-%M '0 * * * *' keep 24 HOUR recursive=True enabled=True
+   snapshot task tank/backups daily-%Y-%m-%d_%H-%M '0 1 * * *' keep 14 DAY recursive=True enabled=True
+   snapshots on tank: 0
+   services cifs=off/STOPPED, ftp=off/STOPPED, iscsitarget=off/STOPPED, nfs=off/STOPPED, snmp=on/RUNNING, ssh=on/RUNNING, ups=off/STOPPED, nvmet=off/STOPPED
+   UI https_redirect=True allowlist=['10.90.0.0/24'] tls=['TLSv1.2', 'TLSv1.3'] timezone=Africa/Casablanca usage_collection=False
+   syslog ['10.60.0.12/UDP'] level=F_INFO
+   ntp 10.100.0.11
+   ssh passwordauth=True tcpfwd=False options='AllowUsers truenas_admin@10.90.0.0/24'
+   snmp v3=True user=zbxmon auth=SHA priv=AES v2c_community=none
+   UI session timeout 900 s
+   init script 1 POSTINIT enabled=True: B=/sys/class/net/bond0/bonding; echo failure > $B/primary_reselect; echo 5 > $B/num_grat_arp; echo 2

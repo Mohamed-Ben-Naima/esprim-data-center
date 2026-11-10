@@ -84,15 +84,31 @@ For NAS.5 (backup sources) LEAF-B2 is swapped for SRV-MON-01 (TrueNAS fails over
 | Failover | shut LEAF-B1 Gi0/2, ping 10.40.0.11 | ADMIN-WS | ≤ 2 lost pings |
 | Matrix | `python automation/access_matrix.py` | host | NAS reachable from ADMIN-WS, refused from SRV-INF-01 |
 
-### NAS.4 — Configuration as code (`automation/truenas_setup.py check|apply|status`)
-- [ ] API (JSON-RPC over websocket, API key in inventory) through the lab proxy; idempotent.
-- [ ] Pool `tank` mirror, datasets `tank/backups/servers`, `tank/backups/configs`; snapshot tasks (D4).
-- [ ] Services: SSH (password + network restriction like the other servers; keys-only comes with the quick wins), SNMPv3, remote syslog 10.60.0.12, NTP 10.100.0.11; UI HTTPS only,
+### NAS.4 — Configuration as code (`automation/truenas_setup.py check|apply|status`) — done 10 Nov 2026
+- [x] API (JSON-RPC over websocket) through the lab proxy; idempotent.
+      → stdlib websocket client (RFC 6455) over SOCKS5 → wss://10.40.0.11/api/current, login `truenas_admin` with the
+      inventory password (no API key: one secret less, and the session is seen from 10.90.0.12 like any admin).
+      First `apply` 21 changes, second `apply` **0 changes**. Evidence `report/evidence/nas4_apply.txt`.
+- [x] Pool `tank` mirror, datasets `tank/backups/servers`, `tank/backups/configs`; snapshot tasks (D4).
+      → `tank` = MIRROR sdb+sdc (data disks picked by size, never the boot disk), ONLINE; tasks `hourly-*` (keep 24 h)
+      and `daily-*` 01:00 (keep 14 d), recursive on `tank/backups`; first hourly run made 3 snapshots.
+- [x] Services: SSH (password + network restriction like the other servers; keys-only comes with the quick wins), SNMPv3, remote syslog 10.60.0.12, NTP 10.100.0.11; UI HTTPS only,
       session timeout 15 min; everything else off.
-| Test | Command | From | Expected |
-|---|---|---|---|
-| Status | `python automation/truenas_setup.py status` | host | pool ONLINE (mirror), 2 snapshot tasks, services as listed |
-| Logs | `grep 10.40.0.11 /var/log/remote/all.log \| tail -2` | SYSLOG aux console | recent lines |
+      → SSH `AllowUsers truenas_admin@10.90.0.0/24`, no TCP forwarding, weak ciphers off; SNMPv3 zbxmon SHA/AES,
+      **v2c community removed**; syslog UDP 10.60.0.12 (FQDN); NTP = 10.100.0.11 only (pool servers removed);
+      UI: HTTP→HTTPS redirect, TLS 1.2/1.3, **allowlist 10.90.0.0/24** (UI + API), session timeout 900 s; timezone
+      Africa/Casablanca; usage collection, crash upload, mDNS/NetBIOS/WSD off; cifs/nfs/iscsi/ftp/ups/nvmet off.
+      ADMIN-WS image rebuilt: its baked ssh_config still said `User sysadmin` for srv-bck-01; `adminws.py` askpass
+      knows the TrueNAS password.
+- [x] Reboot test: `system.reboot` → API back in 169 s; pool, services, settings and the bond POSTINIT tuning
+      (`primary_reselect=failure`, 5 grat ARP, 200 ms) all kept. Evidence `nas4_status_after_reboot.txt`.
+| Test | Command | From | Expected | Result 10 Nov |
+|---|---|---|---|---|
+| Status | `python automation/truenas_setup.py status` | host | pool ONLINE (mirror), 2 snapshot tasks, services as listed | OK, also after reboot |
+| Logs | `grep 10.40.0.11 /var/log/remote/all.log \| tail -2` | SYSLOG | recent lines | OK, `logger` probe received (`nas4_syslog.txt`) |
+| SNMPv3 | `snmpget -v3 … zbxmon` sysName | ADMIN-WS | `srv-bck-01`; v2c and a wrong key refused | OK (`nas4_snmp.txt`) |
+| Matrix | `python automation/access_matrix.py` | host | SSH + web to SRV-BCK-01 reachable | 8 tested, **0 failures** |
+| NTP | `chronyc sources` | NAS | 10.100.0.11 | configured; `^?` because SRV-INF-01 is off in profile `nas` |
 
 ### NAS.5 — Backups and restore test
 - [ ] `deploy_servers.py --role=backup-source`: account `backup` (rrsync read-only) on SRV-MON-01 and SRV-INF-01,

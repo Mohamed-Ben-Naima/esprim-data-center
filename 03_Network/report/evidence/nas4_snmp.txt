@@ -1,0 +1,9 @@
+# NAS.4 - SNMP tests from ADMIN-WS (10.90.0.12) to SRV-BCK-01 (10.40.0.11), 10 Nov 2026
+$ snmpget -v3 -l authPriv -u zbxmon -a SHA -A *** -x AES -X *** 10.40.0.11 sysName sysLocation sysUpTime
+iso.3.6.1.2.1.1.5.0 = STRING: "srv-bck-01"
+iso.3.6.1.2.1.1.6.0 = STRING: "DC Casablanca EDA-B"
+iso.3.6.1.2.1.1.3.0 = Timeticks: (22628) 0:03:46.28
+$ snmpget -v2c -c public 10.40.0.11 sysName
+Timeout: No Response from 10.40.0.11.
+$ snmpget -v3 ... -A WrongPass123 -X WrongPass123 10.40.0.11 sysName
+snmpget: Authentication failure (incorrect password, community or key)

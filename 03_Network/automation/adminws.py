@@ -25,12 +25,13 @@ def ssh_batch(items, timeout=60):
     """items: [(alias, command)] -> [(exit code, stdout)] in the same order (one VM round trip for the whole batch)."""
     inv = yaml.safe_load((NET / "inventory" / "dc_casa.yaml").read_text(encoding="utf-8"))
     c = inv["credentials"]
-    assert all("'" not in c[k] for k in ("admin_password", "server_admin_password"))
+    assert all("'" not in c[k] for k in ("admin_password", "server_admin_password", "truenas_admin_password"))
     mfa = {n.lower() for n, s in inv["servers"].items() if "mfa" in s.get("roles", [])} | {"bastion"}
     s = ["c=$(docker ps -q --filter name=ADMIN-WS)", "[ -n \"$c\" ] || { echo '@@NO-ADMIN-WS'; exit 0; }",
          "cat > /tmp/totp_now.py <<'EOP'\n" + TOTP_SOURCE + f"print(totp('{c['bastion_totp_secret']}'))\nEOP",
          "cat > /tmp/ap_adm.sh <<'EOP'\n#!/bin/sh\ncase \"$1\" in\n  *erification*) cat /tmp/totp ;;\n"
-         f"  *sysadmin@*) echo '{c['server_admin_password']}' ;;\n  *) echo '{c['admin_password']}' ;;\nesac\nEOP",
+         f"  *sysadmin@*) echo '{c['server_admin_password']}' ;;\n"
+         f"  *truenas_admin@*) echo '{c['truenas_admin_password']}' ;;\n  *) echo '{c['admin_password']}' ;;\nesac\nEOP",
          "chmod 700 /tmp/ap_adm.sh; docker cp /tmp/ap_adm.sh $c:/tmp/ap_adm.sh; rm -f /tmp/ap_adm.sh"]
     for i, (alias, command) in enumerate(items):
         if alias in mfa:

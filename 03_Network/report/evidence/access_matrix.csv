@@ -13,7 +13,7 @@ SRV-CMP-01,SSH,sysadmin@10.20.0.11,–,–,–,–,not running
 SRV-CMP-02,SSH,sysadmin@10.20.0.12,–,–,–,–,not running
 SRV-CMP-03,SSH,sysadmin@10.20.0.13,–,–,–,–,not running
 SRV-STO-01,SSH,sysadmin@10.30.0.11,–,–,–,–,not running
-SRV-BCK-01,SSH,truenas_admin@10.40.0.11,refused (UNEXPECTED),source off,source off,not tested,FAIL
+SRV-BCK-01,SSH,truenas_admin@10.40.0.11,reachable,source off,source off,not tested,OK
 SRV-INF-01,SSH,sysadmin@10.100.0.11,–,–,–,–,not running
 SRV-MON-01,SSH,sysadmin@10.60.0.11,–,–,–,–,not running
 SRV-BASTION,SSH,sysadmin@10.90.0.11,–,–,–,–,not running

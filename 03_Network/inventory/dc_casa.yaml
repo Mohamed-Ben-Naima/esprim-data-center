@@ -306,6 +306,9 @@ truenas:
     SRV-MON-01: [/var/backups/dc, /etc]          # /var/backups/dc = nightly Zabbix DB dump + Grafana data
     SRV-INF-01: [/etc]
   ui_session_timeout_min: 15
+  admin_from: [10.90.0.0/24]                     # web UI/API allowlist + sshd AllowUsers (defence in depth behind the ACL)
+  services_on: [ssh, snmp]                       # every other TrueNAS service stays disabled (cifs, nfs, iscsi, ftp, ups...)
+  login_banner: "SRV-BCK-01 - acces reserve aux administrateurs, sessions journalisees (ISO/IEC 27001 A.8.15)"
 
 # Uplink to the real Internet (lab convenience, GNS3 NAT nodes – libvirt virbr0 in the GNS3 VM)
 internet_uplinks:

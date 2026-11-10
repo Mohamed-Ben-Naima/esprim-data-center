@@ -15,7 +15,7 @@ Table: Matrice d'accès d'administration (générée par `automation/access_matr
 | SRV-CMP-02 | SSH | `sysadmin@10.20.0.12` | – | – | – | – | arrêté |
 | SRV-CMP-03 | SSH | `sysadmin@10.20.0.13` | – | – | – | – | arrêté |
 | SRV-STO-01 | SSH | `sysadmin@10.30.0.11` | – | – | – | – | arrêté |
-| SRV-BCK-01 | SSH | `truenas_admin@10.40.0.11` | refusé (inattendu) | source arrêtée | source arrêtée | non testée | **Non conforme** |
+| SRV-BCK-01 | SSH | `truenas_admin@10.40.0.11` | joignable | source arrêtée | source arrêtée | non testée | Conforme |
 | SRV-INF-01 | SSH | `sysadmin@10.100.0.11` | – | – | – | – | arrêté |
 | SRV-MON-01 | SSH | `sysadmin@10.60.0.11` | – | – | – | – | arrêté |
 | SRV-BASTION | SSH | `sysadmin@10.90.0.11` | – | – | – | – | arrêté |
