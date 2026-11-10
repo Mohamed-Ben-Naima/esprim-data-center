@@ -11,13 +11,17 @@ Répété à froid le 10 novembre 2026 : arrêt propre en **1 min**, démarrage 
 |---|---|---|
 | 1 | Démarrer la VM **GNS3 VM** (VMware), puis ouvrir le projet `DC_Casablanca_TIA942_R3` dans GNS3 | 2 min |
 | 2 | `python automation/lab_up.py --profile demo` : 4 étapes de démarrage (2 min 30 chacune), vidage du swap, réparation Cisco (`cisco_heal.py`), proxy, maintenance Zabbix | ≈ 12 min |
-| 3 | `python automation/demo_check.py` : **11 lignes OK** attendues (sinon suivre la ligne `->` affichée) | 1 min |
+| 3 | `python automation/demo_check.py` : **12 lignes OK** attendues (sinon suivre la ligne `->` affichée) | 1 min |
 | 4 | `python automation/lab_proxy.py open` : fenêtre Edge qui navigue « comme ADMIN-WS » (onglets ci-dessous) | 10 s |
 
 Profil `demo` = 20 nœuds : NAT-A/B, ISP-A/B, SW-OUT, SW-DMZ, SW-MGMT, EDGE-A, FW-A, FW-B, CORE-A, CORE-B, LEAF-B1, LEAF-B2,
 ADMIN-WS, SYSLOG, BMS-SIM, SRV-DCIM-01, SRV-WEB-01, SRV-MON-01. Hors profil (mémoire du PC) : hall A, EDGE-B, SRV-INF-01
 (DNS/NTP), CCTV-SIM, bastion, NAS SRV-BCK-01 – ils sont en maintenance Zabbix `demo-off` et le tableau de bord affiche
 « hors profil » pour eux.
+
+La veille : `python automation/verify_lab.py --save` (≈ 10 min, tous les tests de « Test the Lab » possibles dans ce
+profil : PASS attendu partout, 1 limite connue (heure ADMIN-WS), N/A pour les nœuds hors profil). **Jamais `--disruptive`
+juste avant la démonstration** (LEAF-B2 refuse SSH pendant ≈ 4 min).
 
 Avant de commencer : RAM libre du PC ≥ 0,5 Go (fermer navigateurs et applications inutiles), swap de la VM GNS3 ≈ 0
 (ligne `resources` de `demo_check.py`).
@@ -67,9 +71,21 @@ Certificats auto-signés : accepter l'avertissement du navigateur.
 3. pfSense > Status > System Logs > Firewall : la même ligne avec le libellé de la règle.
 
 ### D. Questions fréquentes (si le temps le permet)
-- Sauvegardes : NAS TrueNAS SRV-BCK-01 (profil `nas`, pas dans ce profil faute de RAM) – sauvegardes tirées par le NAS,
-  restauration prouvée (`report/evidence/nas5_restore.txt`).
-- Résilience : CARP FW-A/FW-B, HSRP CORE-A/CORE-B, LACP vers les leafs – voir le rapport technique.
+- Résilience (chiffres mesurés, preuves `report/evidence/fw_lan_failover.txt`) :
+  - pare-feu : FW-A arrêté → FW-B maître des 5 adresses CARP, coupure **3,0 s** ;
+  - cœur : CORE-A ou CORE-B arrêté → l'autre reprend toutes les passerelles HSRP, coupure **4,5 s** vue à travers les pare-feu ;
+  - calcul : SRV-CMP-01 arrêté → SRV-CMP-02 reprend l'adresse applicative 10.20.0.10 (keepalived), coupure **3,1 s** ;
+    au retour de SRV-CMP-01 : 4,5 s pendant son démarrage, puis aucune perte quand l'adresse revient (profil `compute`,
+    pas dans ce profil faute de RAM) ;
+  - chaque serveur a deux cartes vers deux leafs (bond actif/secours surveillé par ARP) ; LACP (Po1) relie les deux cœurs.
+  - Non redondants (assumé, lab sur un PC) : le nœud de stockage SRV-STO-01 (non déployé), Zabbix/Grafana, le collecteur
+    syslog, DNS/NTP. Non mesurés : perte d'un leaf (T4) et d'un fournisseur Internet (T1).
+- TrueNAS = **NAS de sauvegarde SRV-BCK-01** (salle B, autre salle que les données), pas le stockage de production :
+  il **tire** chaque nuit à 02:00 (rsync en lecture seule, les serveurs n'ont aucun accès aux sauvegardes) la base Zabbix,
+  Grafana et /etc de SRV-MON-01, /etc de SRV-INF-01 ; instantanés ZFS horaires (24 h) et quotidiens (14 j) sur un miroir
+  de 2 disques ; restauration prouvée (`report/evidence/nas5_restore.txt`). Profil `nas`, pas dans ce profil faute de RAM.
+  S'il tombe : la production continue, seules les sauvegardes s'arrêtent, Zabbix alerte (ICMP). Rien ne le remplace
+  (une 2e copie hors site serait l'étape suivante).
 
 ## 4. Si quelque chose échoue
 
@@ -84,6 +100,8 @@ Certificats auto-signés : accepter l'avertissement du navigateur.
 | Grafana « hors profil » sur un panneau | l'équipement n'est pas démarré dans ce profil | normal ; le dire (contrainte de RAM du PC) |
 | Coupure BMS sans effet / bloquée | simulateur dans un état modifié | `http://10.70.0.12:8080/api/reset` |
 | Heure des équipements Cisco décalée | pas de NTP dans ce profil (SRV-INF-01 arrêté), horloge émulée qui dérive | lire la 1re colonne (heure du collecteur) ; `python automation/syslog_audit.py --set-clock` |
+| 1 h d'écart entre ADMIN-WS (+00) et le collecteur / Zabbix / pfSense (+01) | le Maroc est revenu à UTC+0 le 20 sept. 2026 (tzdata 2026c, Windows) ; seules les images récentes le savent (ADMIN-WS, BMS, DCIM, web) | le dire ; chaque ligne de journal porte son décalage (+01:00), l'ordre des événements est juste |
+| `demo_check` : ligne `redundancy` FAIL | un nœud « started » dans GNS3 mais figé (CORE-B le 10 nov.) | `python automation/labctl.py stop X`, puis `start X`, puis `python automation/cisco_heal.py X` |
 | Ouverture du projet refusée (409) | conteneurs restés après un arrêt brutal de la VM | voir le guide du lab, section consoles Docker |
 | VM GNS3 figée | mémoire du PC saturée | **ne pas** la redémarrer en pleine démo : utiliser les preuves `report/evidence/demo_s*` et les PDF |
 

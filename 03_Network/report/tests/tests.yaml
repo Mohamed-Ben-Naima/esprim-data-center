@@ -22,7 +22,7 @@ sections:
         proves: The controller reaches the VM and knows the state of every node
         from: Windows host, folder 03_Network
         command: python automation/labctl.py status
-        expected: 31 lines; the nodes you started show "started"
+        expected: 32 lines; the nodes you started show "started"
         verified: 2026-10-12
       - id: PLT-03
         proves: No node disk is damaged (run after any host disk incident)
@@ -62,7 +62,7 @@ sections:
         proves: EDGE-A has its three BGP sessions (ISP-A, ISP-B, EDGE-B)
         from: EDGE-A console (telnet 192.168.75.128 5004)
         command: show ip bgp summary
-        expected: 3 neighbours with a number in the last column (2, 1, 1). EDGE-B shows Idle until it has finished booting.
+        expected: 3 neighbours with a number in the last column (2, 1, 1). EDGE-B shows Idle until it has finished booting (always Idle in the demo profile, where EDGE-B is off).
         verified: 2026-10-12
       - id: EDGE-02
         proves: EDGE-B has its three BGP sessions
@@ -470,7 +470,7 @@ sections:
         command: date
         expected: same hour on both
         verified: null
-        limit: 'Known lab limit (accepted 12 Oct 2026): both use the zone Africa/Casablanca, but ADMIN-WS shows +00 and SYSLOG +01 because the two images carry different time-zone databases. Log lines are stamped by the collector, so the order of events is not affected.'
+        limit: 'Known lab limit: both use the zone Africa/Casablanca; Morocco went back to UTC+0 on 20 Sep 2026 (tzdata 2026c, Windows). ADMIN-WS (tzdata 2026c) shows the right +00; SYSLOG, SRV-MON-01 and pfSense carry older time-zone data and show +01. Log lines are stamped by the collector, so the order of events is not affected.'
 
   - id: ACC
     title: Access matrix (who can administer what, and from where)
@@ -754,7 +754,7 @@ sections:
         proves: The lab is ready for the demo
         from: Windows host, folder 03_Network (evidence report/evidence/demo_s6_check.txt)
         command: python automation/demo_check.py
-        expected: 11/11 checks OK (nodes, resources, proxy, SRV-MON-01, zabbix, grafana, power, syslog, viewer, loop guard, web)
+        expected: 12/12 checks OK (nodes, resources, proxy, SRV-MON-01, zabbix, grafana, power, syslog, viewer, loop guard, redundancy, web)
         verified: 2026-11-10
       - id: DEMO-04
         proves: A Cisco device that lost its RSA key / SNMPv3 user at boot is repaired
