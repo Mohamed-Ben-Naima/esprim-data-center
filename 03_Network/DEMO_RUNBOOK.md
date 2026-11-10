@@ -2,15 +2,16 @@
 
 Tout se lance depuis le PC Windows, dans un terminal ouvert sur le dossier `03_Network`.
 Les identifiants sont ceux du lab (inventaire `inventory/dc_casa.yaml`, rubrique `credentials`) ; ils ne servent nulle part ailleurs.
-Répété à froid le @@DATE@@ : **@@TOTAL@@** entre « tout arrêté » et « 11/11 contrôles OK », sans aucune correction manuelle.
+Répété à froid le 10 novembre 2026 : arrêt propre en **1 min**, démarrage en **≈ 12 min**, puis **11/11 contrôles OK**
+(en 46 s), sans aucune correction manuelle. Lancer le démarrage **25 min avant** la démonstration.
 
 ## 1. Démarrage (T – 25 min)
 
 | Étape | Commande / action | Durée |
 |---|---|---|
 | 1 | Démarrer la VM **GNS3 VM** (VMware), puis ouvrir le projet `DC_Casablanca_TIA942_R3` dans GNS3 | 2 min |
-| 2 | `python automation/lab_up.py --profile demo` : 4 étapes de démarrage, vidage du swap, proxy, maintenance Zabbix | @@LABUP@@ |
-| 3 | `python automation/demo_check.py` : **11 lignes OK** attendues (sinon suivre la ligne `->` affichée) | @@CHECK@@ |
+| 2 | `python automation/lab_up.py --profile demo` : 4 étapes de démarrage (2 min 30 chacune), vidage du swap, réparation Cisco (`cisco_heal.py`), proxy, maintenance Zabbix | ≈ 12 min |
+| 3 | `python automation/demo_check.py` : **11 lignes OK** attendues (sinon suivre la ligne `->` affichée) | 1 min |
 | 4 | `python automation/lab_proxy.py open` : fenêtre Edge qui navigue « comme ADMIN-WS » (onglets ci-dessous) | 10 s |
 
 Profil `demo` = 20 nœuds : NAT-A/B, ISP-A/B, SW-OUT, SW-DMZ, SW-MGMT, EDGE-A, FW-A, FW-B, CORE-A, CORE-B, LEAF-B1, LEAF-B2,
@@ -45,7 +46,8 @@ Certificats auto-signés : accepter l'avertissement du navigateur.
 3. Zabbix > Problèmes : « chemin A non alimenté » (désastre) en **6 à 10 s**.
    Grafana : rangée **Énergie** rouge en **moins de 10 s** (chemin A DOWN, chemin B à 94 %, GTB CRITICAL).
    Message : le chemin B porte toute la charge (Tier III, maintenance concurrente) mais dépasse le seuil de 50 %.
-4. Rétablir : `http://10.70.0.12:8080/api/reset` → tout redevient vert en **≈ 6 s**.
+4. Rétablir : `http://10.70.0.12:8080/api/reset` → Grafana redevient vert en **≈ 6 s**, les problèmes Zabbix se ferment
+   en **12 à 16 s**.
    Secours scripté : `python automation/power_test.py` (coupe, chronomètre, rétablit).
 
 ### B. Échec de connexion et modification de configuration → journaux (5 min)
@@ -74,6 +76,7 @@ Certificats auto-signés : accepter l'avertissement du navigateur.
 | Symptôme | Cause probable | Action |
 |---|---|---|
 | `demo_check.py` affiche FAIL | voir la ligne `->` sous le FAIL | appliquer la commande proposée, relancer `demo_check.py` |
+| `ssh core-a` refusé ou « REMOTE HOST IDENTIFICATION HAS CHANGED », Zabbix « Unknown user name » | l'IOSvL2 a démarré sans sa clé RSA ni son utilisateur SNMPv3 (private-config non chargée, CORE-A à chaque démarrage) | `python automation/cisco_heal.py` (déjà lancé par `lab_up.py`) |
 | Pings qui se perdent (30-90 %), pages lentes | swap de la VM GNS3 → CORE-A ralenti → loop guard des leafs | `python automation/gns3vm.py --sudo "swapoff -a && swapon -a"` ; ligne `loop guard` de `demo_check.py` |
 | Aucune page ne s'ouvre depuis Edge | proxy arrêté (ADMIN-WS redémarré) | `python automation/lab_proxy.py start` |
 | Zabbix ou Grafana ne répond pas juste après le démarrage | services de SRV-MON-01 encore en démarrage | attendre 2 min ; `demo_check.py` (ligne SRV-MON-01) |
@@ -87,5 +90,5 @@ Certificats auto-signés : accepter l'avertissement du navigateur.
 ## 5. Arrêt propre
 
 1. `python automation/lab_down.py` : arrêt depuis l'intérieur des VM (Ubuntu, pfSense, TrueNAS), puis de tous les nœuds,
-   puis du proxy (@@DOWN@@).
+   puis du proxy (≈ 1 min).
 2. Dans GNS3 : fermer le projet, **puis** arrêter la VM GNS3.

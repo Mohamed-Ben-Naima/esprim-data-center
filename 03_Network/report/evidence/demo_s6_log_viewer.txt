@@ -1,0 +1,22 @@
+# PLAN_03 S5 - demo events found in the log viewer https://10.60.0.12/ (10 Nov 2026)
+# FW-A = 10.10.0.11, CORE-A = 10.10.0.21; lines: collector time, source ip, hostname, message
+11:56:57 viewer https://10.60.0.12/ login netadmin from ADMIN-WS: OK, 21 sources listed
+11:56:57 1. failed SSH login on CORE-A (wrong password, from ADMIN-WS)
+11:57:03    action: ['netadmin@10.10.0.21: Permission denied (publickey,keyboard-interactive,password).', '@@rc 0']
+11:57:03    found in the viewer after 0.2 s (source CORE-A, search 'LOGIN_FAILED'):
+11:57:03      2026-11-10T11:57:02.427346+01:00 10.10.0.21 10.10.0.21 120: *Nov 10 11:55:35.246 MAR: %SEC_LOGIN-4-LOGIN_FAILED: Login failed [user: ] [Source: 10.90.0.12] [localport: 22] [Reason: Login Authentication Failed] at 11:55:35 MAR Tue 
+11:57:03      2026-11-10T11:57:01.276982+01:00 10.10.0.21 10.10.0.21 119: *Nov 10 11:55:34.225 MAR: %SEC_LOGIN-4-LOGIN_FAILED: Login failed [user: ] [Source: 10.90.0.12] [localport: 22] [Reason: Login Authentication Failed] at 11:55:34 MAR Tue 
+11:57:04 2. configure terminal / end on CORE-A (from ADMIN-WS)
+11:57:17    action: ['CORE-A(config)#end', 'CORE-A#', 'CORE-A#exit']
+11:57:17    found in the viewer after 0.2 s (source CORE-A, search 'CONFIG_I'):
+11:57:17      2026-11-10T11:57:12.913601+01:00 10.10.0.21 10.10.0.21 122: *Nov 10 11:55:43.962 MAR: %SYS-5-CONFIG_I: Configured from console by netadmin on vty0 (10.90.0.12)
+11:57:18 3. DMZ SRV-WEB-01 -> CORE-A 10.10.0.21:22 (management network)
+11:57:25    action: ('10.10.0.21', '@@rc 1')
+11:57:25    found in the viewer after 0.2 s (source FW-A, search '10.50.0.11,10.10.0.21'):
+11:57:25      2026-11-10T11:57:21.125477+01:00 10.10.0.11 10.10.0.11 filterlog[28816]: 119,,,1700000021,em5,match,block,in,4,0x0,,64,42138,0,DF,6,tcp,60,10.50.0.11,10.10.0.21,46595,22,0,S,1315877611,,64240,,mss;sackOK;TS;nop;wscale
+11:57:25      2026-11-10T11:57:20.125660+01:00 10.10.0.11 10.10.0.11 filterlog[28816]: 119,,,1700000021,em5,match,block,in,4,0x0,,64,42137,0,DF,6,tcp,60,10.50.0.11,10.10.0.21,46595,22,0,S,1315877611,,64240,,mss;sackOK;TS;nop;wscale
+11:57:25 viewer's own audit trail (127.0.0.1 syslog logviewer):
+11:57:25      2026-11-10T11:57:25.851278+01:00 127.0.0.1 syslog logviewer: search user=netadmin from=10.90.0.12 src=10.10.0.11_10.10.0.11.log q='10.50.0.11,10.10.0.21' lines=2
+11:57:25      2026-11-10T11:57:25.669621+01:00 127.0.0.1 syslog logviewer: search user=netadmin from=10.90.0.12 src=all.log q='' lines=200
+11:57:25      2026-11-10T11:57:18.197285+01:00 127.0.0.1 syslog logviewer: search user=netadmin from=10.90.0.12 src=10.10.0.11_10.10.0.11.log q='10.50.0.11,10.10.0.21' lines=0
+11:57:25      2026-11-10T11:57:18.076019+01:00 127.0.0.1 syslog logviewer: search user=netadmin from=10.90.0.12 src=all.log q='' lines=200

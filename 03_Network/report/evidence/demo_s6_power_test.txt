@@ -1,0 +1,37 @@
+before: 11:56:14
+    average  SRV-BCK-01: TrueNAS CORE: Pool [boot-pool]: Status is not online
+    average  SRV-BCK-01: TrueNAS CORE: Pool [tank]: Status is not online
+    high     SRV-BCK-01: TrueNAS CORE: Unavailable by ICMP ping
+    warning  BMS-SIM: Charge chemin A > 45 %
+    warning  BMS-SIM: Charge chemin B > 45 %
+
+11:56:18 SRV-MON-01: curl 'http://10.70.0.12:8080/api/set?UTILITY-A=DOWN&UPS-A=DOWN&GENERATOR=DOWN' -> rc=0
+ "elements": {
+  "UTILITY-A": "DOWN",
+  "UTILITY-B": "UP",
+  "UPS-A": "DOWN",
+  "UPS-B": "UP",
+  "GENERATOR": "DOWN"
+ },
+problems 'Chemin A hors tension' + 'Baies en mode dégradé' after: 9.4 s
+    average  SRV-BCK-01: TrueNAS CORE: Pool [boot-pool]: Status is not online
+    average  SRV-BCK-01: TrueNAS CORE: Pool [tank]: Status is not online
+    disaster BMS-SIM: Chemin A hors tension
+    high     BMS-SIM: Charge chemin B > 50 %
+    high     SRV-BCK-01: TrueNAS CORE: Unavailable by ICMP ping
+    high     SRV-DCIM-01: Baies en mode dégradé (un seul chemin)
+
+11:56:32 SRV-MON-01: curl http://10.70.0.12:8080/api/reset -> rc=0
+ "elements": {
+  "UTILITY-A": "UP",
+  "UTILITY-B": "UP",
+  "UPS-A": "UP",
+  "UPS-B": "UP",
+  "GENERATOR": "UP"
+ },
+power problems resolved after: 15.5 s
+    average  SRV-BCK-01: TrueNAS CORE: Pool [boot-pool]: Status is not online
+    average  SRV-BCK-01: TrueNAS CORE: Pool [tank]: Status is not online
+    high     SRV-BCK-01: TrueNAS CORE: Unavailable by ICMP ping
+    warning  BMS-SIM: Charge chemin A > 45 %
+    warning  BMS-SIM: Charge chemin B > 45 %

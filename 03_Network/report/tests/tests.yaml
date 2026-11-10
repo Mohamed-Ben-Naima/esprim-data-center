@@ -686,3 +686,32 @@ sections:
         command: offline one mirror disk; stop sshd on SRV-INF-01 and run its pull; send an old snapshot age
         expected: 'problems "Pool tank pas ONLINE" (disaster), "Tâche de sauvegarde en échec", "Dernier snapshot plus vieux que 2 h" (high) raised, then resolved'
         verified: 2026-11-10
+
+  - id: DEMO
+    title: Cold start and demo readiness (plan 03 S6)
+    needs: "demo profile (20 nodes); host free RAM >= 1 GB"
+    tests:
+      - id: DEMO-01
+        proves: The whole lab stops cleanly, VMs shut down from inside
+        from: Windows host, folder 03_Network
+        command: python automation/lab_down.py
+        expected: '"guest shutdown done for 3/3 VM(s)", "every node stopped", about 1 min'
+        verified: 2026-11-10
+      - id: DEMO-02
+        proves: One command starts the demo profile with no manual step
+        from: Windows host, folder 03_Network
+        command: python automation/lab_up.py --profile demo
+        expected: 4 stages, swap flushed to 0, cisco_heal OK for the 5 Cisco devices (CORE-A repaired), proxy started, Zabbix maintenance updated; about 12 min
+        verified: 2026-11-10
+      - id: DEMO-03
+        proves: The lab is ready for the demo
+        from: Windows host, folder 03_Network (evidence report/evidence/demo_s6_check.txt)
+        command: python automation/demo_check.py
+        expected: 11/11 checks OK (nodes, resources, proxy, SRV-MON-01, zabbix, grafana, power, syslog, viewer, loop guard, web)
+        verified: 2026-11-10
+      - id: DEMO-04
+        proves: A Cisco device that lost its RSA key / SNMPv3 user at boot is repaired
+        from: Windows host, folder 03_Network
+        command: python automation/cisco_heal.py
+        expected: '"ssh ok, snmpv3 user ok" for every running Cisco device, or "repaired ... saved" then ok'
+        verified: 2026-11-10

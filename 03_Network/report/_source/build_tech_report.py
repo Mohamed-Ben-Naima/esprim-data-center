@@ -693,7 +693,7 @@ WORKSTREAMS = [  # (work, weight, % done, what proves it / what is left)
     ("Grafana (GRF.1-GRF.5)", 6, 90, "Base, offline plugin, data source; NOC dashboard (28 panels, storage row) provisioned and validated on live data, power cut red in 9.6 s. Left: GRF.5 documentation."),
     ("Resilience tests (phase 8)", 8, 10, "Only the power scenario T6 is measured; T1-T5 and M1 are not run."),
     ("Compliance matrix (ISO)", 4, 40, "Mapping written in this report; the automated matrix is not built."),
-    ("Documentation (phase 9)", 8, 70, f"Lab guide, Test the Lab ({TESTS_PASSED} dated tests), this report. French report last rebuilt 12 Oct; screenshots partial."),
+    ("Documentation (phase 9)", 8, 75, f"Lab guide, Test the Lab ({TESTS_PASSED} dated tests), this report, French demo runbook (cold start rehearsed). French report last rebuilt 12 Oct; screenshots partial."),
 ]
 
 SEC_DOMAINS = [  # (domain, weight %, score now /5, target /5 after the roadmap, strengths, weaknesses)
@@ -1123,7 +1123,7 @@ def s_state():
         ("Configured, not deployed", "todo", "SRV-CMP-01..03 (application + keepalived VIP), SRV-STO-01 (NFS/iSCSI): netplan and role scripts exist; the VMs were never installed (host RAM)."),
         ("Done (plan 04, profile nas)", "ok", "TrueNAS SRV-BCK-01: configured as code; nightly pulled backups and config backups; restore tested; supervised by Zabbix (pool, snapshot age, failed pulls)."),
         ("Done (plan 03 S5)", "ok", "Log server: every running source proven, 30-day rotation, protected files, read-only HTTPS viewer with login lock and audit trail, demo events found."),
-        ("In progress", "wip", "Cold-start rehearsal and French demo runbook (plan 03 S6)."),
+        ("Done (plan 03 S6)", "ok", "Cold start rehearsed: clean stop 1 min, one-command start about 12 min with self-repair of the Cisco devices, readiness check 11/11, French demo runbook."),
         ("Not configured (planned)", "bad", "Network triggers BGP/OSPF (ZBX.7), firewall LAN test when a core stops (FW.3), flow matrix (FW.4), measured failover T1-T6 and M1, NTP in every profile, HTTPS on Zabbix/Grafana."),
         ("Not in any plan yet", "bad", "SIEM, IDS/IPS, EDR, vulnerability scanning, secrets vault, central AAA, application load balancer, IPv6."),
     ]
@@ -1196,7 +1196,7 @@ auditor asks about first.</p>
 
 
 ROADMAP = [  # (horizon, action, why / control, effort)
-    ("1. Finish the plans", "Cold-start rehearsal + runbook (S6)", "Demo-ready", "0.5 day"),
+    ("1. Finish the plans", "Firewall FW.3-FW.5, ZBX.7, LOG.3/LOG.6 (plan 02)", "Network evidence, A.8.15", "1.5 days"),
     ("1. Finish the plans", "FW.3 firewall LAN side when a core stops, FW.4 flow matrix, FW.5 evidence", "Policy proven end to end, A.8.22", "1 day"),
     ("1. Finish the plans", "ZBX.7 BGP/OSPF triggers and alert timing", "Network faults alarmed, A.8.16", "0.5 day"),
     ("1. Finish the plans", "Resilience campaign T1-T6 and M1, measured (resilience_tests.py)", "Rated-3 claim proven, A.8.14", "1 day"),

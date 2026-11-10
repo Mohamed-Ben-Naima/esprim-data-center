@@ -152,11 +152,33 @@ trims them for the demo.
       own audit lines follow. `log_viewer.py lock`: 401 ×5 then 429. Evidence `demo_s5_log_viewer.txt`.
 
 ### S6 — Cold-start rehearsal and demo runbook (≈ 1 h) — mandatory
-- [ ] Clean stop of all nodes, then `lab_up.py --profile demo` + `lab_proxy.py start`; no manual fix allowed. Time it.
-- [ ] Check: 4 services active on SRV-MON-01, `zabbix_setup.py status`, Grafana NOC live, log viewer answers.
-- [ ] `03_Network/DEMO_RUNBOOK.md` (French): start commands + wait time, URLs and logins, the demo script (power cut →
+- [x] Clean stop of all nodes, then `lab_up.py --profile demo` + `lab_proxy.py start`; no manual fix allowed. Time it.
+      → new `automation/lab_down.py`: guest shutdown (Ubuntu console `systemctl poweroff`, pfSense `shutdown -p now`,
+      TrueNAS API) then GNS3 stop: **60 s**, 3/3 VMs clean (run 1: SRV-MON-01 ignored the poweroff, fixed by waiting
+      after the send). `lab_up.py` now ends with **post steps**: swap flush, `cisco_heal.py`, lab proxy, Zabbix
+      `apply` (maintenance follows the nodes) → the proxy is no longer a separate step. Start ≈ **12 min**
+      (run 1: stages 10 min 50 s; run 2: stages 1-2 at 150 s, then Claude Code killed the background job for host
+      memory, resumed with `--from 3` = 5 min 50 s incl. post steps, no manual fix). Evidence `resources_demo.csv`,
+      `demo_s6_lab_down_run1.txt`.
+      **Findings fixed on the way:** (1) CORE-A boots without its private-config at every start (RSA key + SNMPv3
+      user: SSH disabled, Zabbix "Unknown user name", running-config looks complete) → `automation/cisco_heal.py`
+      pushes the two lines from configs/CORE-A.cfg over the console, saves, drops the stale ADMIN-WS host key;
+      (2) `adminws.ssh_batch` always returned rc 0 (`$?` read after an `echo`) → real exit codes;
+      (3) pfSense alias BACKUP_AGENT → BACKUP_PULL deployed (both firewalls up, FW-B first), `fw_audit.py` = 0.
+- [x] Check: 4 services active on SRV-MON-01, `zabbix_setup.py status`, Grafana NOC live, log viewer answers.
+      → new `automation/demo_check.py`, 11 checks each with its fix: run 1 7/11 (CORE-A, plus 2 wrong checks: BMS
+      load warnings are the design margin, loop-guard search matched the viewer's own audit line); after the fixes
+      **11/11 in 46 s** (`demo_s6_check.txt`): 20/20 nodes, 5 services active, 18 hosts 0 unavailable, 25 panels with
+      data + 3 hors profil (NAS), 8/8 syslog markers, viewer, web. Demo scenarios replayed on the cold-started lab:
+      power cut disaster **9.4 s**, resolved 15.5 s after reset (`demo_s6_power_test.txt`); failed login,
+      `conf t`, DMZ block found in the viewer in **0.2 s** each (`demo_s6_log_viewer.txt`).
+- [x] `03_Network/DEMO_RUNBOOK.md` (French): start commands + wait time, URLs and logins, the demo script (power cut →
       Zabbix problem → Grafana red → reset; failed login → log viewer; firewall block → log), what to do if X fails.
-- [ ] Leave the lab stopped cleanly or running, as the user prefers for the morning.
+      → start 25 min before, 5 sections, 11 failure rows (incl. Cisco key loss, swap/loop guard, proxy, 409 on open).
+- [x] Leave the lab stopped cleanly or running, as the user prefers for the morning.
+      → left **running** (demo profile, 11/11): the user keeps working; `lab_down.py` stops it in 1 min.
+      Known, not fixed: the template triggers "TrueNAS CORE: Pool ... not online" fire although our own
+      `nas.pool.health[tank]` = ONLINE (SCALE MIB value) → disable them on SRV-BCK-01 in the next NAS session.
 
 ## After the demo (back to PLAN_02)
 FW.3–FW.5, LOG.3, LOG.6, ZBX.7, GRF.5 documentation, ISO.1–2, all report chapters, Test the Lab entries, lab guide.
