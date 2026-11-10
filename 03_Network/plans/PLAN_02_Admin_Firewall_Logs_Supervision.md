@@ -260,12 +260,33 @@ Files: `inventory/dc_casa.yaml` (rule `EXT-8`: ADMIN_NET → MON_SERVER tcp ZABB
 When CORE-A hung, CORE-B took every gateway but traffic through the firewalls stopped: `lagg0` kept using `em3`
 because a GNS3 link stays up when the peer node stops.
 Files: `report/evidence/fw_lan_failover.txt`; then, depending on the gate, inventory + topology.
-- [ ] Reproduce on purpose: continuous probe, `python automation/labctl.py stop CORE-A`, measure, restart CORE-A.
-- [ ] **Gate (your decision, with the measurement in hand):**
+- [x] Reproduce on purpose: continuous probe, `python automation/labctl.py stop CORE-A`, measure, restart CORE-A.
+      → `automation/fw_lan_failover.py` (probe ADMIN-WS → FW-A → BMS-SIM every 0.5 s, stop/start through the GNS3
+      API, lagg + HSRP state during the fault, cisco_heal after). 10 Nov 2026 12:13: FW-A lagg0 stays on
+      `em3 <MASTER,ACTIVE>` while CORE-A is off, CORE-B is HSRP active for everything: **outage ≥ 89 s (whole fault)
+      + 62 s at the restart** (CORE-A booting behind a link that never went down).
+- [x] **Gate (your decision, with the measurement in hand):**
       (a) add a built-in switch **SW-IN** on VLAN 902 (FW-A, FW-B, CORE-A, CORE-B), as SW-OUT does for VLAN 901, and put
       the firewall LAN on one interface; or (b) keep `lagg0` and document the limit as a lab artefact.
-- [ ] If (a): inventory `lab_switches.SW-IN` + device ports, `validate_inventory.py`, `apply_topology.py`,
+      → **(a), decided alone (user rule "decide smartly").** Why: the 12 Oct failure was a *hung* core with its link up,
+      a real-world gray failure, not only a GNS3 artefact; (b) would leave a 2.5 min outage in the Tier III story.
+      Variant chosen: both lagg members of each firewall go into SW-IN (pfSense interfaces unchanged, only the lagg
+      description), one port per core (Gi0/1 parked). Two traps found before deploying: VLAN 902 also crossed the
+      core ISL Po1 → L2 loop through SW-IN → **902 removed from Po1** (gen_configs drops from the ISL any VLAN that
+      both cores reach through a lab switch); and with STP across SW-IN, CORE-B's Gi0/0 would be its root port and
+      `loopguard default` would block it when CORE-A dies (the S4 failure) → **`spanning-tree bpdufilter enable`** on
+      the core transit ports. In production: MLAG/vPC core pair or two transit switches.
+- [x] If (a): inventory `lab_switches.SW-IN` + device ports, `validate_inventory.py`, `apply_topology.py`,
       `gen_configs.py`, `gen_pfsense.py`, deploy, `verify_topology.py`.
+      → validate OK (SW-IN re-cabling documented like SW-OUT; the design CSV keeps the original cables); cores: delta
+      pushed on the console (0 rejected) then saved; `apply_topology.py` now changes links hot and no longer stops
+      the edges/firewalls when SW-OUT is already done: SW-IN created, 6 links; pfSense deployed FW-B first,
+      `fw_audit.py` 0 difference; `verify_topology.py` 62 links = inventory; Po1(SU); HSRP 902 hellos over SW-IN
+      (CORE-A active, CORE-B standby); `demo_check.py` 11/11 (loop-guard check now reads the live
+      inconsistent-port count, the logged blocks of a planned core stop are normal).
+      **Result:** stop CORE-A → **4.5 s** (3 probes lost; the GNS3 stop call itself takes ~8 s), restart 0-1.5 s
+      (preempt); stop CORE-B (gateway of VLAN 70) → **4.5 s**, restart none. Evidence `fw_lan_failover.txt`.
+      Diagram `arch_topology.mmd` + PNG rendered locally (`report/_source/render_mmd.py`, no online renderer).
 
 | Test | Command | From | Expected |
 |---|---|---|---|

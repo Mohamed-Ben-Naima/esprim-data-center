@@ -6,7 +6,7 @@ flowchart TD
     EA & EB --- SWOUT[(SW-OUT 901)]
     SWOUT --- FWA[FW-A MASTER] & FWB[FW-B BACKUP]
     FWA <--> FWB
-    FWA & FWB --- CA[CORE-A] & CB[CORE-B]
+    FWA & FWB --- SWIN[(SW-IN 902)] --- CA[CORE-A] & CB[CORE-B]
     CA <--> CB
     CA & CB --- LA[LEAF-A1/A2<br/>Hall A] & LB[LEAF-B1/B2<br/>Hall B]
     LA --- CMP[CMP-01/02/03 + STO-01]

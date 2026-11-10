@@ -2,7 +2,7 @@
 
 - every link is declared identically from both ends (devices, lab switches, servers, NAT uplinks)
 - every IP lies inside its declared subnet and no IP is used twice
-- cabling matches DC_Casablanca_TIA942_R3_wiring.csv, except the documented SW-OUT re-cabling
+- cabling matches DC_Casablanca_TIA942_R3_wiring.csv, except the documented SW-OUT and SW-IN (FW.3) re-cabling
 """
 import csv
 import ipaddress
@@ -95,11 +95,13 @@ for ip, n in seen.items():
 # ---------------------------------------------------------------- CSV comparison
 recabled = {("EDGE-A", "Gi0/3"), ("EDGE-A", "Gi0/4"), ("EDGE-B", "Gi0/3"), ("EDGE-B", "Gi0/4"),
             ("FW-A", "em0"), ("FW-A", "em1"), ("FW-B", "em0"), ("FW-B", "em1")}
+recabled_in = {("FW-A", "em3"), ("FW-A", "em4"), ("FW-B", "em3"), ("FW-B", "em4")}   # VLAN 902 on SW-IN (FW.3)
 with open(NET / "DC_Casablanca_TIA942_R3_wiring.csv", encoding="utf-8") as f:
     for row in csv.DictReader(f):
         a, b = (row["node_a"], row["if_a"]), (row["node_b"], row["if_b"])
-        if a in recabled or b in recabled:
-            notes.append(f"re-cabled (SW-OUT): {a[0]}:{a[1]} <-> {b[0]}:{b[1]}")
+        if a in recabled or b in recabled or a in recabled_in or b in recabled_in:
+            sw = "SW-IN" if a in recabled_in or b in recabled_in else "SW-OUT"
+            notes.append(f"re-cabled ({sw}): {a[0]}:{a[1]} <-> {b[0]}:{b[1]}")
             continue
         got = links.get(a) or (links.get(b) and (b, links.get(b)) and None)
         if links.get(a) != b and links.get(b) != a:

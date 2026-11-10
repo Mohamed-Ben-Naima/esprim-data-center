@@ -6,6 +6,8 @@ Changes (plan §2.1):
   * ISP-A / ISP-B get a 3rd interface (eth2) linked to GNS3 NAT nodes NAT-A / NAT-B (real Internet)
   * ADMIN-WS (gns3/webterm, VNC) on SW-MGMT Ethernet11, VLAN 90
   * port VLANs of SW-OUT, SW-DMZ and SW-MGMT from inventory.lab_switches (FW em6 = 802.1Q trunk)
+  * SW-IN built-in switch = VLAN 902 firewall <-> core transit (PLAN_02 FW.3): FW-A/FW-B em3+em4 and CORE-A/CORE-B Gi0/0;
+    links are changed hot (no node stopped). Prune 902 from the core ISL first (gen_configs), else L2 loop.
 Re-running is safe: existing nodes/links are detected and left untouched.
 """
 import re
@@ -90,11 +92,14 @@ def switch_mapping(sw_name, n_ports):
 
 
 # ------------------------------------------------------------------ 1. SW-OUT and the VLAN 901 segment
-for d in ("EDGE-A", "EDGE-B", "FW-A", "FW-B"):
-    stop(d)
 N = nodes()
-for n, p in (("EDGE-A", "Gi0/4"), ("EDGE-B", "Gi0/4"), ("FW-A", "em1"), ("FW-B", "em1")):
-    l = link_at(N[n], p)
+direct = [(n, p) for n, p in (("EDGE-A", "Gi0/4"), ("EDGE-B", "Gi0/4"), ("FW-A", "em1"), ("FW-B", "em1"))
+          if link_at(N[n], p)]
+if direct or "SW-OUT" not in N:            # stop the routers only when the SW-OUT re-cabling is still to do
+    for d in ("EDGE-A", "EDGE-B", "FW-A", "FW-B"):
+        stop(d)
+for n, p in direct:
+    l = link_at(nodes()[n], p)
     if l:
         api.req("DELETE", f"/projects/{PID}/links/{l['link_id']}")
         log.append(f"removed direct Edge-FW link on {n}:{p}")
@@ -103,6 +108,18 @@ ensure_node("SW-OUT", {"node_type": "ethernet_switch", "x": -40, "y": -395, "sym
 for port, p in INV["lab_switches"]["SW-OUT"]["ports"].items():
     dev, dport = p["to"].split(":")
     ensure_link("SW-OUT", port, dev, dport)
+
+# ------------------------------------------------------------------ 1b. SW-IN, the VLAN 902 transit (FW.3)
+ensure_node("SW-IN", {"node_type": "ethernet_switch", "x": 0, "y": -370, "symbol": ":/symbols/classic/ethernet_switch.svg",
+                      "properties": {"ports_mapping": switch_mapping("SW-IN", 8)}})
+for port, p in INV["lab_switches"]["SW-IN"]["ports"].items():
+    dev, dport = p["to"].split(":")
+    ensure_link("SW-IN", port, dev, dport)
+for dev in ("CORE-A", "CORE-B"):            # the second FW port of each core is now unused (parking in its config)
+    l = link_at(nodes()[dev], "Gi0/1")
+    if l:
+        api.req("DELETE", f"/projects/{PID}/links/{l['link_id']}")
+        log.append(f"removed link on {dev}:Gi0/1")
 
 # ------------------------------------------------------------------ 2. Internet uplinks
 for isp, i in INV["isps"].items():
@@ -124,7 +141,7 @@ ensure_node("ADMIN-WS", {"node_type": "docker", "x": 1000, "y": -230, "symbol": 
                                         "environment": "TZ=Africa/Casablanca"}})
 
 # ------------------------------------------------------------------ 4. switch port VLANs (+ SW-MGMT links)
-for sw, size in (("SW-OUT", 4), ("SW-DMZ", 8), ("SW-MGMT", 16)):
+for sw, size in (("SW-OUT", 4), ("SW-DMZ", 8), ("SW-MGMT", 16), ("SW-IN", 8)):
     n = nodes()[sw]
     want = switch_mapping(sw, size)
     if n["properties"].get("ports_mapping") != want:
@@ -140,7 +157,7 @@ LAYOUT = {
     "EDGE-A": (-300, -640), "EDGE-B": (300, -640), "SW-OUT": (0, -565),
     "SRV-WEB-01": (-1050, -425), "SW-DMZ": (-760, -425), "FW-A": (-300, -440), "FW-B": (300, -440),
     "SW-MGMT": (760, -440), "SRV-BASTION": (1050, -470), "ADMIN-WS": (1050, -370),
-    "CORE-A": (-300, -300), "CORE-B": (300, -300),
+    "SW-IN": (0, -370), "CORE-A": (-300, -300), "CORE-B": (300, -300),
     "LEAF-A1": (-950, -120), "LEAF-A2": (-550, -120), "LEAF-B1": (450, -120), "LEAF-B2": (950, -120),
     "SRV-CMP-01": (-1200, 60), "SRV-CMP-02": (-1000, 60), "SRV-CMP-03": (-800, 60), "SRV-STO-01": (-600, 60),
     "SRV-BCK-01": (200, 60), "SRV-INF-01": (380, 60), "SRV-MON-01": (560, 60), "SRV-DCIM-01": (740, 60),

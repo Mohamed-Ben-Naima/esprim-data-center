@@ -161,7 +161,7 @@ def build(baseline, fw):
         el(v, "if", "em6"); el(v, "tag", tag); el(v, "pcp"); el(v, "descr", f"VLAN {tag} {name}"); el(v, "vlanif", f"em6.{tag}")
     lg = reset(root, "laggs")
     l = el(lg, "lagg")
-    el(l, "members", "em3,em4"); el(l, "descr", "LAN failover CORE-A (em3) / CORE-B (em4)"); el(l, "laggif", "lagg0")
+    el(l, "members", "em3,em4"); el(l, "descr", "LAN failover em3 / em4 -> SW-IN VLAN 902 (both cores)"); el(l, "laggif", "lagg0")
     el(l, "proto", "failover"); el(l, "failovermaster", "em3"); el(l, "lacptimeout", "slow"); el(l, "lagghash", "l2,l3,l4")
 
     # DHCP server off everywhere, DNS resolver off (DNS = SRV-INF-01)

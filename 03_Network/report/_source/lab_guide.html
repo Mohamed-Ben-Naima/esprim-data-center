@@ -102,7 +102,7 @@ figcaption { font-size: 7.6pt; color: var(--mute); margin-top: 1mm; }
 <div class="toc">
   <div><b>1</b> The lab in one page<small>What it is, the design idea, the numbers</small></div>
   <div><b>2</b> Architecture<small>Topology, layers, how a packet travels</small></div>
-  <div><b>3</b> Equipment list<small>All 31 nodes: type, image, address, console</small></div>
+  <div><b>3</b> Equipment list<small>All 32 nodes: type, image, address, console</small></div>
   <div><b>4</b> Addressing plan<small>VLANs, gateways, transit networks, WAN, public IPs</small></div>
   <div><b>5</b> Device by device<small>Role, functions and configuration of each equipment</small></div>
   <div><b>6</b> High availability<small>What takes over when something fails</small></div>
@@ -163,7 +163,7 @@ To change the network you change the inventory and re-run the generators.</p>
 <table>
 <thead><tr><th>Item</th><th>Value</th></tr></thead>
 <tbody>
-<tr><td>Nodes / links</td><td>31 nodes, 60 links, all running on the GNS3 VM (compute <code>vm</code>)</td></tr>
+<tr><td>Nodes / links</td><td>32 nodes, 62 links, all running on the GNS3 VM (compute <code>vm</code>)</td></tr>
 <tr><td>Node types</td><td>18 QEMU virtual machines (2 IOSv, 6 IOSvL2, 2 pfSense, 8 Ubuntu), 8 Docker containers, 3 GNS3 switches, 2 NAT clouds</td></tr>
 <tr><td>Our autonomous system</td><td>AS 65100, public prefix <code>192.0.2.0/24</code> announced to both providers</td></tr>
 <tr><td>Providers</td><td>ISP-A AS 64500 (primary), ISP-B AS 64501 (backup)</td></tr>
@@ -244,6 +244,7 @@ The only way in is from the admin zone (VLAN 90: bastion and admin workstation) 
 <tr><td><b>LEAF-B1</b></td><td>QEMU</td><td>Cisco IOSvL2 15.2</td><td>768</td><td>HDA-B</td><td>mgmt 10.10.0.33</td><td>5018</td><td>Hall B access, server NIC 0</td></tr>
 <tr><td><b>LEAF-B2</b></td><td>QEMU</td><td>Cisco IOSvL2 15.2</td><td>768</td><td>HDA-B</td><td>mgmt 10.10.0.34</td><td>5020</td><td>Hall B access, server NIC 1</td></tr>
 <tr><td><b>SW-OUT</b></td><td>GNS3 switch</td><td>built-in (no RAM)</td><td>-</td><td>ER</td><td>-</td><td>-</td><td>VLAN 901 segment: 2 edges + 2 firewalls</td></tr>
+<tr><td><b>SW-IN</b></td><td>GNS3 switch</td><td>built-in (no RAM)</td><td>-</td><td>MDA</td><td>-</td><td>-</td><td>VLAN 902 segment: 2 firewalls (em3 + em4) + 2 cores</td></tr>
 <tr><td><b>SW-DMZ</b></td><td>GNS3 switch</td><td>built-in</td><td>-</td><td>MDA</td><td>-</td><td>-</td><td>VLAN 50 segment: 2 firewalls + web server</td></tr>
 <tr><td><b>SW-MGMT</b></td><td>GNS3 switch</td><td>built-in</td><td>-</td><td>MDA</td><td>-</td><td>-</td><td>VLAN 10 management + VLAN 90 admin, 802.1Q trunk to firewalls</td></tr>
 <tr><td><b>SRV-CMP-01</b></td><td>QEMU</td><td>Ubuntu 20.04</td><td>512</td><td>EDA-A</td><td>10.20.0.11</td><td>5022</td><td>Application server, keepalived master</td></tr>
@@ -410,7 +411,7 @@ interface Gi0/3
 <thead><tr><th>Interface</th><th>Port</th><th>FW-A</th><th>FW-B</th><th>Shared virtual IP (CARP id)</th><th>Purpose</th></tr></thead>
 <tbody>
 <tr><td>WAN</td><td>em0</td><td>10.254.1.4/28</td><td>10.254.1.5/28</td><td>10.254.1.1 (1)</td><td>External transit, VLAN 901</td></tr>
-<tr><td>LAN</td><td>lagg0 = em3 + em4</td><td>10.254.2.4/28</td><td>10.254.2.5/28</td><td>10.254.2.1 (2)</td><td>Internal transit; em3 goes to CORE-A, em4 to CORE-B (failover)</td></tr>
+<tr><td>LAN</td><td>lagg0 = em3 + em4</td><td>10.254.2.4/28</td><td>10.254.2.5/28</td><td>10.254.2.1 (2)</td><td>Internal transit; em3 and em4 both go to SW-IN (VLAN 902), which also holds CORE-A and CORE-B (failover lagg, em3 active)</td></tr>
 <tr><td>SYNC</td><td>em2</td><td>10.254.3.1/30</td><td>10.254.3.2/30</td><td>-</td><td>Direct cable for state and config sync</td></tr>
 <tr><td>DMZ</td><td>em5</td><td>10.50.0.2/24</td><td>10.50.0.3/24</td><td>10.50.0.1 (50)</td><td>VLAN 50, web server</td></tr>
 <tr><td>MGMT</td><td>em6.10</td><td>10.10.0.11/24</td><td>10.10.0.12/24</td><td>10.10.0.254 (10)</td><td>Gateway of the device management network</td></tr>
@@ -437,11 +438,11 @@ interface Gi0/3
 <table>
 <thead><tr><th style="width:20%">Function</th><th>How it is configured</th></tr></thead>
 <tbody>
-<tr><td>Gateways (HSRP v2)</td><td>One VLAN interface per VLAN (CORE-A = .2, CORE-B = .3) with virtual IP .1. Priority 110 on the active core, 90 on the other, hello 250 ms / hold 750 ms, MD5, preempt after 30 s.</td></tr>
+<tr><td>Gateways (HSRP v2)</td><td>One VLAN interface per VLAN (CORE-A = .2, CORE-B = .3) with virtual IP .1. Priority 110 on the active core, 90 on the other, hello 1 s / hold 3 s (raised from 250/750 ms on 20 Oct: they flapped under CPU load), MD5, preempt after 30 s.</td></tr>
 <tr><td>Load sharing</td><td><b>CORE-A active</b> for VLAN 20, 40, 60, 100 and 902. <b>CORE-B active</b> for VLAN 30, 70, 80.</td></tr>
 <tr><td>Spanning tree</td><td>Rapid PVST+. The root bridge of each VLAN is the same core that is its HSRP active (priority 4096, the other 8192), so the layer-2 path and the gateway agree. Loop guard on.</td></tr>
-<tr><td>Link between cores</td><td>Port-channel 1 = Gi0/2 + Gi0/3 in LACP (802.3ad), trunk for VLAN 20-100, 902, 998.</td></tr>
-<tr><td>To the firewalls</td><td>Gi0/0 to FW-A and Gi0/1 to FW-B, access VLAN 902. Virtual IP <b>10.254.2.6</b> is what the firewalls use to reach internal networks.</td></tr>
+<tr><td>Link between cores</td><td>Port-channel 1 = Gi0/2 + Gi0/3 in LACP (802.3ad), trunk for VLAN 20-100 and 998. VLAN 902 is <b>not</b> on it (it lives on SW-IN; carrying it too would close a layer-2 loop).</td></tr>
+<tr><td>To the firewalls</td><td>Gi0/0 to SW-IN, access VLAN 902, BPDU filter (no spanning tree across the transit, so loop guard cannot block the surviving core). Gi0/1 is unused. Virtual IP <b>10.254.2.6</b> is what the firewalls use to reach internal networks.</td></tr>
 <tr><td>Routing</td><td>OSPF area 0 between the cores on VLAN 998 and 902 (MD5). Default route <code>0.0.0.0/0 via 10.254.2.1</code>, the firewall virtual IP.</td></tr>
 <tr><td>Inter-VLAN filtering</td><td>One inbound access list per VLAN interface (<code>ACL-VLAN20-IN</code> ... <code>ACL-VLAN100-IN</code>). Detailed in section 7.</td></tr>
 <tr><td>Management</td><td>Gi2/0 as a routed port in <code>VRF MGMT</code>, 10.10.0.21 / .22. Network 10.10.0.0/24 is absent from the main routing table.</td></tr>
@@ -480,12 +481,13 @@ ip route 0.0.0.0 0.0.0.0 10.254.2.1</pre>
 </ul>
 <!--LEAFPORTS-->
 
-<h2>5.6 SW-OUT, SW-DMZ, SW-MGMT - GNS3 built-in switches</h2>
+<h2>5.6 SW-OUT, SW-IN, SW-DMZ, SW-MGMT - GNS3 built-in switches</h2>
 <p>Simple switches that cost no memory. They have no configuration file; their port VLANs are set in the GNS3 project.</p>
 <table>
 <thead><tr><th>Switch</th><th>Ports</th></tr></thead>
 <tbody>
 <tr><td><b>SW-OUT</b></td><td>4 access ports in VLAN 901: EDGE-A Gi0/3, EDGE-B Gi0/3, FW-A em0, FW-B em0. It replaced four direct edge-to-firewall cables so that HSRP and CARP share one segment.</td></tr>
+<tr><td><b>SW-IN</b></td><td>6 access ports in VLAN 902: FW-A em3 + em4, FW-B em3 + em4, CORE-A Gi0/0, CORE-B Gi0/0. Added on 10 Nov 2026 (plan 02 FW.3): with direct cables a stopped or hung core kept its GNS3 link up, the firewall lagg stayed on it and the internal side was cut for 2.5 min. Now a core failure costs 4.5 s (HSRP 902 moves to the other core). In production this would be an MLAG/vPC core pair.</td></tr>
 <tr><td><b>SW-DMZ</b></td><td>3 access ports in VLAN 50: FW-A em5, FW-B em5, SRV-WEB-01.</td></tr>
 <tr><td><b>SW-MGMT</b></td><td>Ports 0, 1, 4 to 9 in VLAN 10 (edges, cores, leafs). Ports 2 and 3 are 802.1Q trunks carrying VLAN 10 and 90 to the firewalls. Ports 10 and 11 in VLAN 90 (SRV-BASTION, ADMIN-WS).</td></tr>
 </tbody>
@@ -838,7 +840,7 @@ Neighbor ID     Pri   State           Dead Time   Address         Interface
 <tbody>
 <tr><td>FW-A &harr; FW-B (cluster)</td><td><code>ifconfig | grep 'carp:'</code></td><td>FW-A: MASTER on vhid 1, 2, 10, 50, 90. FW-B: BACKUP on the same five.</td></tr>
 <tr><td>FW-A &harr; FW-B (sync)</td><td><code>ifconfig pfsync0</code> &nbsp; <code>ping -c 1 10.254.3.2</code></td><td><code>syncdev: em2 syncpeer: 10.254.3.2</code>; the peer answers</td></tr>
-<tr><td>Firewall &harr; cores</td><td><code>ifconfig lagg0</code> &nbsp; <code>ping -c 2 10.254.2.6</code></td><td>lagg0 active on em3, em4 standby; the core virtual IP answers</td></tr>
+<tr><td>Firewall &harr; cores</td><td><code>ifconfig lagg0</code> &nbsp; <code>ping -c 2 10.254.2.6</code></td><td>lagg0 active on em3, em4 standby (both on SW-IN); the core virtual IP answers</td></tr>
 <tr><td>Firewall &harr; edges</td><td><code>ping -c 2 10.254.1.6</code> &nbsp; <code>netstat -rn | head</code></td><td>Edge virtual IP answers; default route points to 10.254.1.6</td></tr>
 <tr><td>Firewall &harr; Internet</td><td><code>ping -c 2 8.8.8.8</code></td><td>Works on the master (leaves as 192.0.2.10). On the backup it fails, which is normal for active/passive.</td></tr>
 <tr><td>Rules and NAT loaded</td><td><code>pfctl -sr | wc -l</code> &nbsp; <code>pfctl -sn</code></td><td>156 filter rules; the source-NAT and the two port-forward rules are listed</td></tr>
@@ -1054,6 +1056,7 @@ Only T6 has been rehearsed (12 Oct 2026). The other scenarios are defined in the
 <tr><td>S4</td><td>NOC dashboard generated by <code>automation/gen_dashboards.py</code>, provisioned by the Grafana role, checked panel by panel by <code>automation/check_dashboard.py</code>.</td></tr>
 <tr><td>S5</td><td>Image <code>dc/syslog:1.1</code>: rotation, files 0640, read-only viewer on <code>https://10.60.0.12/</code> (port 443 already open from the admin zone by rule T18-6, so no new firewall rule). <code>deploy_containers.py</code> now carries the volumes over when it re-creates a node (logs 21 files kept). Failed SSH login, <code>conf t</code> and a DMZ block found in the viewer within 3 s. The emulated Cisco clocks lose about 7 s per minute without NTP: read the collector time (first column).</td></tr>
 <tr><td>S6</td><td>Cold start rehearsed: <code>lab_down.py</code> 1 min, <code>lab_up.py --profile demo</code> about 12 min (it now repairs the Cisco devices, starts the proxy and updates the Zabbix maintenance), <code>demo_check.py</code> 11/11. Found on the way: CORE-A boots without its RSA key and SNMPv3 user (repaired by <code>cisco_heal.py</code>), <code>ssh_batch</code> always returned 0. Demo script and recovery table in <code>03_Network/DEMO_RUNBOOK.md</code> (French).</td></tr>
+<tr><td>FW.3</td><td>Core failure on the firewall LAN side: with direct cables, stopping CORE-A cut the internal side for 89 s + 62 s at its restart (lagg stayed on the dead core). New switch SW-IN for VLAN 902, VLAN 902 removed from the core port-channel, BPDU filter on the core transit ports: CORE-A or CORE-B stopped = <b>4.5 s</b> outage, 0-1.5 s at the restart (<code>fw_lan_failover.py</code>).</td></tr>
 </tbody>
 </table>
 

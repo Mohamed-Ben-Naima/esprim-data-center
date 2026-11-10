@@ -1,0 +1,55 @@
+
+# PLAN_02 FW.3 - fw_lan_failover.py --down 90 --up 240 - 2026-11-10 12:19
+12:12:43 FW.3 - stop CORE-A for 90 s, probe ADMIN-WS -> http://10.70.0.12:8080/api/state every 0.5 s
+12:12:50 before: FW-A laggproto failover lagghash l2,l3,l4 | 	laggport: em3 flags=5<MASTER,ACTIVE> | 	laggport: em4 flags=0<> | 	status: active
+12:13:06 CORE-A stopped (GNS3 API)
+12:13:41 +30 s: FW-A laggproto failover lagghash l2,l3,l4 | 	laggport: em3 flags=5<MASTER,ACTIVE> | 	laggport: em4 flags=0<> | 	status: active
+12:13:41 +30 s: CORE-B Vl70        70   110 P Active  local           unknown         10.70.0.1 | Vl902       902  90  P Active  local           unknown         10.254.2.6
+12:14:42 CORE-A started again
+12:18:46 445 probes, 101 failed
+12:18:46 fault: outage from +6.7 s to end of window (still down, >= 89.4 s)
+12:18:46 restart: outage from +1.1 s to +63.0 s = 61.9 s
+12:19:15 cisco_heal: OK   CORE-A   ssh ok, snmpv3 user ok
+12:19:22 after: FW-A laggproto failover lagghash l2,l3,l4 | 	laggport: em3 flags=5<MASTER,ACTIVE> | 	laggport: em4 flags=0<> | 	status: active
+
+# PLAN_02 FW.3 - fw_lan_failover.py --down 90 --up 240 - 2026-11-10 12:32
+12:26:18 FW.3 - stop CORE-A for 90 s, probe ADMIN-WS -> http://10.70.0.12:8080/api/state every 0.5 s
+12:26:25 before: FW-A laggproto failover lagghash l2,l3,l4 | 	laggport: em3 flags=5<MASTER,ACTIVE> | 	laggport: em4 flags=0<> | 	status: active
+12:26:40 CORE-A stopped (GNS3 API)
+12:27:15 +30 s: FW-A laggproto failover lagghash l2,l3,l4 | 	laggport: em3 flags=5<MASTER,ACTIVE> | 	laggport: em4 flags=0<> | 	status: active
+12:27:15 +30 s: CORE-B Vl70        70   110 P Active  local           unknown         10.70.0.1 | Vl902       902  90  P Active  local           unknown         10.254.2.6
+12:28:16 CORE-A started again
+12:32:21 623 probes, 3 failed
+12:32:21 fault: outage from +0.7 s to +13.3 s = 12.6 s
+12:32:21 restart: no outage
+12:32:52 cisco_heal: OK   CORE-A   ssh ok, snmpv3 user ok
+12:32:58 after: FW-A laggproto failover lagghash l2,l3,l4 | 	laggport: em3 flags=5<MASTER,ACTIVE> | 	laggport: em4 flags=0<> | 	status: active
+
+# PLAN_02 FW.3 - fw_lan_failover.py --down 40 --up 200 - 2026-11-10 12:38
+12:33:36 FW.3 - stop CORE-A for 40 s, probe ADMIN-WS -> http://10.70.0.12:8080/api/state every 0.5 s
+12:33:43 before: FW-A laggproto failover lagghash l2,l3,l4 | 	laggport: em3 flags=5<MASTER,ACTIVE> | 	laggport: em4 flags=0<> | 	status: active
+12:33:58 CORE-A stopped (GNS3 API)
+12:34:34 +30 s: FW-A laggproto failover lagghash l2,l3,l4 | 	laggport: em3 flags=5<MASTER,ACTIVE> | 	laggport: em4 flags=0<> | 	status: active
+12:34:34 +30 s: CORE-B Vl70        70   110 P Active  local           unknown         10.70.0.1 | Vl902       902  90  P Active  local           unknown         10.254.2.6
+12:34:45 CORE-A started again
+12:38:09 459 probes, 4 failed
+12:38:09 fault: outage from +8.8 s to +13.3 s = 4.5 s
+12:38:09    samples: +6.0 +6.6 +7.1 +7.7 +8.2 +8.8X +10.3X +11.8X +13.3 +13.8 +14.4 +15.0
+12:38:09 restart: outage from +111.3 s to +112.8 s = 1.5 s
+12:38:09    samples: +108.6 +109.2 +109.7 +110.2 +110.8 +111.3X +112.8 +113.4 +113.9 +114.5
+12:38:40 cisco_heal: OK   CORE-A   ssh ok, snmpv3 user ok
+12:38:47 after: FW-A laggproto failover lagghash l2,l3,l4 | 	laggport: em3 flags=5<MASTER,ACTIVE> | 	laggport: em4 flags=0<> | 	status: active
+
+# PLAN_02 FW.3 - fw_lan_failover.py --core CORE-B --down 40 --up 200 - 2026-11-10 12:44
+12:39:00 FW.3 - stop CORE-B for 40 s, probe ADMIN-WS -> http://10.70.0.12:8080/api/state every 0.5 s
+12:39:07 before: FW-A laggproto failover lagghash l2,l3,l4 | 	laggport: em3 flags=5<MASTER,ACTIVE> | 	laggport: em4 flags=0<> | 	status: active
+12:39:22 CORE-B stopped (GNS3 API)
+12:40:07 +30 s: FW-A laggproto failover lagghash l2,l3,l4 | 	laggport: em3 flags=5<MASTER,ACTIVE> | 	laggport: em4 flags=0<> | 	status: active
+12:40:07 +30 s: CORE-B 
+12:40:17 CORE-B started again
+12:43:42 488 probes, 3 failed
+12:43:42 fault: outage from +0.6 s to +5.1 s = 4.5 s
+12:43:42    samples: -2.2 -1.6 -1.1 -0.5 -0.0 +0.6X +2.1X +3.6X +5.1 +5.6 +6.2 +6.7
+12:43:42 restart: no outage
+12:44:11 cisco_heal: OK   CORE-B   ssh ok, snmpv3 user ok
+12:44:18 after: FW-A laggproto failover lagghash l2,l3,l4 | 	laggport: em3 flags=5<MASTER,ACTIVE> | 	laggport: em4 flags=0<> | 	status: active

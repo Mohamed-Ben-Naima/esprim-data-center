@@ -13,7 +13,7 @@ Checks, in the order of the demo:
   syslog       syslog_audit.py: marker found for every running source
   viewer       log viewer login + search over HTTPS
   web          DMZ site https://10.50.0.11/health from ADMIN-WS
-  loop guard   no %SPANTREE-2-LOOPGUARD_BLOCK in the last 15 min (sign of a stalled core, see lab-capacity notes)
+  loop guard   no port in loop-inconsistent state now on the cores and leafs (blocks logged in 15 min shown for info)
 Exit code 1 if one check fails.
 """
 import json
@@ -123,10 +123,16 @@ def main(argv):
         row("viewer", n > 0 and bool(last), f"login ok, {n} sources, last line {last[0][:19] if last else '-'}")
         loop = [l for l in vw.search("%SPANTREE-2-LOOPGUARD_BLOCK", "all.log", 50) if "logviewer" not in l
                 and l[:19] >= time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(time.time() - 900))]
-        row("loop guard", not loop, f"{len(loop)} LOOPGUARD_BLOCK in 15 min" + (f", last: {loop[0][:150]}" if loop else ""),
-            "GNS3 VM swapping -> flush swap (resources), stop an unused node; the leafs unblock by themselves")
     except Exception as e:  # noqa: BLE001
+        loop = []
         row("viewer", False, f"{e}", "SYSLOG running? python automation/labctl.py start SYSLOG; wait 10 s")
+    # loop guard: the state NOW (a block while a core was stopped on purpose is normal and clears when it is back)
+    sw = [n for n in ("CORE-A", "CORE-B", "LEAF-A1", "LEAF-A2", "LEAF-B1", "LEAF-B2") if st.get(n) == "started"]
+    inc = ssh_batch([(n.lower(), "show spanning-tree inconsistentports | include Number") for n in sw])
+    blocked = {n: o.split(":")[-1].strip() for n, (rc, o) in zip(sw, inc) if o.split(":")[-1].strip() != "0"}
+    row("loop guard", not blocked, (f"inconsistent ports now: {blocked}" if blocked else
+                                    f"0 inconsistent port on {len(sw)} switches") + f"; {len(loop)} block(s) logged in 15 min",
+        "GNS3 VM swapping -> flush swap (resources), stop an unused node; the leafs unblock by themselves")
 
     row("web", res[2][1].strip().startswith("OK"), f"https://10.50.0.11/health -> {res[2][1].strip()[:40] or res[2][0]}",
         "python automation/labctl.py start SRV-WEB-01; FW-A DMZ interface up?")

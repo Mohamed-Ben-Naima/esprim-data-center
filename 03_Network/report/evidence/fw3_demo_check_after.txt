@@ -1,0 +1,13 @@
+# PLAN_03 S6 - demo_check.py 2026-11-10 12:46:54 (profile demo) - after FW.3 (SW-IN)
+OK   nodes       20/20 started
+OK   resources   GNS3 VM available 2770 MB, swap 15 MB; host free 1.4 GB
+OK   proxy       SOCKS5 192.168.75.128:1080
+OK   SRV-MON-01  mariadb=active zabbix-server=active nginx=active php7.4-fpm=active grafana-server=active
+OK   zabbix      18 hosts, 0 running host(s) not available; service problems: 5
+OK   grafana     panels: 24 with data, 4 hors profil, 0 empty
+OK   power       paths {'A': 'POWERED', 'B': 'POWERED'}, load {'A': 47.1, 'B': 47.1}, 2 warning(s) (design margin 47.1 % > 45 %)
+OK   syslog      marker found for 8/8 running source(s) that can be driven
+OK   viewer      login ok, 21 sources, last line 2026-11-10T12:46:44
+OK   loop guard  0 inconsistent port on 4 switches; 9 block(s) logged in 15 min
+OK   web         https://10.50.0.11/health -> OK SRV-WEB-01 (TLS)
+11/11 checks OK

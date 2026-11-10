@@ -346,7 +346,7 @@ management port on SW-MGMT. The full plan (60 links) is in {ref('cabling_plan')}
 <table><thead><tr><th style="width:18%">From</th><th>Links</th></tr></thead><tbody>
 <tr><td>ISP-A, ISP-B</td><td>eth0 → EDGE-A, eth1 → EDGE-B (each edge reaches both providers), eth2 → NAT-A / NAT-B (real Internet).</td></tr>
 <tr><td>EDGE-A, EDGE-B</td><td>Gi0/0 → ISP-A, Gi0/1 → ISP-B, Gi0/2 ↔ the other edge (ISL iBGP + OSPF), Gi0/3 → SW-OUT (VLAN 901), Gi0/5 → SW-MGMT.</td></tr>
-<tr><td>FW-A, FW-B</td><td>em0 → SW-OUT (WAN), em2 ↔ the other firewall (SYNC), em3 → CORE-A and em4 → CORE-B (lagg0), em5 → SW-DMZ, em6 → SW-MGMT (trunk VLAN 10 + 90).</td></tr>
+<tr><td>FW-A, FW-B</td><td>em0 → SW-OUT (WAN), em2 ↔ the other firewall (SYNC), em3 + em4 → SW-IN, VLAN 902 shared with both cores (lagg0), em5 → SW-DMZ, em6 → SW-MGMT (trunk VLAN 10 + 90).</td></tr>
 <tr><td>CORE-A, CORE-B</td><td>Gi0/0-0/1 → FW-A/FW-B (VLAN 902), Gi0/2-0/3 ↔ the other core (Port-channel 1, LACP), Gi1/0-1/3 → the four leafs (trunks), Gi2/0 → SW-MGMT.</td></tr>
 <tr><td>Leafs</td><td>Gi0/0 → CORE-A, Gi0/1 → CORE-B, server ports, one management port to SW-MGMT.</td></tr>
 <tr><td>Servers</td><td>NIC0 on LEAF-x1, NIC1 on LEAF-x2 (bond active-backup). Single-NIC containers: SYSLOG (LEAF-B1), BMS-SIM and CCTV-SIM (LEAF-B2), SRV-WEB-01 (SW-DMZ), ADMIN-WS and SRV-BASTION (SW-MGMT VLAN 90).</td></tr>
@@ -425,7 +425,7 @@ def s7_aggregation():
 <table><thead><tr><th style="width:19%">Bundle / trunk</th><th style="width:20%">Between</th><th>Technology and behaviour</th><th style="width:22%">VLANs carried</th></tr></thead><tbody>
 <tr><td><b>Port-channel 1</b></td><td>CORE-A Gi0/2-0/3 ↔ CORE-B Gi0/2-0/3</td><td>LACP (802.3ad) mode active, 802.1Q trunk. Both links forward; traffic is spread per flow (hash). One link lost = half the bandwidth, no outage.</td><td>20,30,40,60,70,80,100,902,998</td></tr>
 <tr><td><b>Leaf uplinks</b></td><td>each leaf Gi0/0 → CORE-A, Gi0/1 → CORE-B</td><td>802.1Q trunks, DTP off (<code>nonegotiate</code>). Spanning tree keeps one path per VLAN forwarding; the other takes over in about a second (Rapid PVST+).</td><td>20,30,40,60,70,80,100</td></tr>
-<tr><td><b>lagg0</b></td><td>FW em3 → CORE-A, em4 → CORE-B</td><td>pfSense lagg in <b>failover</b> mode: em3 active, em4 standby. Survives the loss of a core or a cable.</td><td>access VLAN 902</td></tr>
+<tr><td><b>lagg0 + SW-IN</b></td><td>FW em3 + em4 → SW-IN ← CORE-A Gi0/0, CORE-B Gi0/0</td><td>pfSense lagg in <b>failover</b> mode on a shared VLAN 902 segment: when a core stops or hangs, the HSRP 902 gateway moves to the other core in 3 s and the firewall reaches it on the same port (measured 4.5 s). With direct cables the lagg stayed on the dead core: 2.5 min outage (FW.3, 10 Nov 2026). VLAN 902 is off the core ISL and BPDU-filtered on the transit ports, so no loop and no loop-guard block.</td><td>access VLAN 902</td></tr>
 <tr><td><b>em6 trunk</b></td><td>FW em6 → SW-MGMT</td><td>802.1Q sub-interfaces em6.10 and em6.90.</td><td>10, 90</td></tr>
 <tr><td><b>bond0</b></td><td>server NIC0 → leaf x1, NIC1 → leaf x2</td><td>Linux bonding active-backup, MII monitoring 100 ms, MAC follows the active NIC.</td><td>one access VLAN</td></tr>
 </tbody></table>
@@ -683,7 +683,7 @@ TESTS_PASSED = 78        # dated tests in report/tests/tests.yaml (2 more writte
 WORKSTREAMS = [  # (work, weight, % done, what proves it / what is left)
     ("Design, inventory, generators, lab driver (plan 01 phases 0-2)", 10, 100, "Inventory checked (98 links, 92 IPs); generators for Cisco, pfSense, servers and tables."),
     ("Providers and border routers (phase 3)", 8, 100, "BGP 3/3 sessions on both edges, OSPF FULL, HSRP, Internet reachable."),
-    ("Firewall cluster (phase 4, FW.1-FW.5)", 12, 70, "Cluster, 33 rules, NAT, CARP, pfsync, audit 0 difference. Left: LAN side when a core stops (FW.3), flow matrix (FW.4), evidence (FW.5)."),
+    ("Firewall cluster (phase 4, FW.1-FW.5)", 12, 80, "Cluster, 33 rules, NAT, CARP, pfsync, audit 0 difference; LAN side survives a core failure in 4.5 s (SW-IN, FW.3). Left: flow matrix (FW.4), evidence (FW.5)."),
     ("Core and leafs (phase 5)", 10, 100, "VLANs, HSRP, Rapid PVST+, LACP, OSPF, ACLs, VRF MGMT."),
     ("Servers and containers (phase 6)", 12, 71, "10 of 14 deployed. SRV-CMP-01..03, SRV-STO-01: configuration generated, not deployed."),
     ("TrueNAS backup NAS (plan 04, NAS.1-NAS.6)", 6, 100, "Installed, bond failover tested (0-1 ping lost), configuration as code (truenas_setup.py), mirror pool, snapshots, nightly pull of SRV-MON-01/SRV-INF-01 (read-only rrsync account), network configs saved by backup_configs.py, restore from a snapshot with the same SHA-256, Zabbix SNMPv3 + trapper items, 3 triggers proven on real faults."),
@@ -691,7 +691,7 @@ WORKSTREAMS = [  # (work, weight, % done, what proves it / what is left)
     ("Log collection (LOG.1-LOG.6)", 8, 75, "Every running source proven (syslog_audit.py), rotation 30 days, files protected, read-only HTTPS viewer, 3 demo events found. Left: sender filter + disk queue (LOG.3), NTP in every profile, LOG.6 write-up."),
     ("Zabbix (ZBX.1-ZBX.7)", 8, 85, "17 hosts, service triggers, power alarm in 6-10 s. Left: BGP/OSPF triggers and alert timing (ZBX.7)."),
     ("Grafana (GRF.1-GRF.5)", 6, 90, "Base, offline plugin, data source; NOC dashboard (28 panels, storage row) provisioned and validated on live data, power cut red in 9.6 s. Left: GRF.5 documentation."),
-    ("Resilience tests (phase 8)", 8, 10, "Only the power scenario T6 is measured; T1-T5 and M1 are not run."),
+    ("Resilience tests (phase 8)", 8, 20, "Power scenario T6 and a core failure through the firewalls (T3 part, 4.5 s, FW.3) measured; T1, T2, T4, T5 and M1 not run."),
     ("Compliance matrix (ISO)", 4, 40, "Mapping written in this report; the automated matrix is not built."),
     ("Documentation (phase 9)", 8, 75, f"Lab guide, Test the Lab ({TESTS_PASSED} dated tests), this report, French demo runbook (cold start rehearsed). French report last rebuilt 12 Oct; screenshots partial."),
 ]
@@ -1124,7 +1124,7 @@ def s_state():
         ("Done (plan 04, profile nas)", "ok", "TrueNAS SRV-BCK-01: configured as code; nightly pulled backups and config backups; restore tested; supervised by Zabbix (pool, snapshot age, failed pulls)."),
         ("Done (plan 03 S5)", "ok", "Log server: every running source proven, 30-day rotation, protected files, read-only HTTPS viewer with login lock and audit trail, demo events found."),
         ("Done (plan 03 S6)", "ok", "Cold start rehearsed: clean stop 1 min, one-command start about 12 min with self-repair of the Cisco devices, readiness check 11/11, French demo runbook."),
-        ("Not configured (planned)", "bad", "Network triggers BGP/OSPF (ZBX.7), firewall LAN test when a core stops (FW.3), flow matrix (FW.4), measured failover T1-T6 and M1, NTP in every profile, HTTPS on Zabbix/Grafana."),
+        ("Not configured (planned)", "bad", "Network triggers BGP/OSPF (ZBX.7), flow matrix (FW.4), measured failover T1-T6 and M1, NTP in every profile, HTTPS on Zabbix/Grafana."),
         ("Not in any plan yet", "bad", "SIEM, IDS/IPS, EDR, vulnerability scanning, secrets vault, central AAA, application load balancer, IPv6."),
     ]
     dev = []
@@ -1154,7 +1154,7 @@ def s_state():
 SCENARIOS = [  # (real-life scenario, what the lab does, detected by, verdict)
     ("Provider ISP-A goes down at noon", "BGP hold timer (9 s) expires, routes via ISP-B; inbound traffic follows because our prefix is still announced to ISP-B", "Zabbix interface/ICMP; BGP trigger planned (ZBX.7)", "Handled (target ≤ 10 s, not measured)"),
     ("FW-A crashes during business hours", "FW-B becomes CARP master with the same connection states: open sessions continue", "Zabbix host unavailable, CARP event in syslog", "Handled (target ≤ 5 s, not measured)"),
-    ("A core switch is replaced (maintenance)", "CORE-B takes every gateway and STP root; LACP and leaf uplinks reroute", "Zabbix", "Handled; firewall LAN side to measure (FW.3)"),
+    ("A core switch is replaced (maintenance)", "CORE-B takes every gateway and STP root; LACP and leaf uplinks reroute", "Zabbix", "Handled and measured: 4.5 s through the firewalls (FW.3, SW-IN)"),
     ("Utility power A is lost, UPS A fails", "Path B carries the load; disaster alarm in 6-10 s; the Grafana Énergie row turns red in under 10 s, green 5.5 s after the reset (S4)", "Zabbix triggers on BMS-SIM", "Handled and measured"),
     ("The public web site is hacked", "Attacker is stuck in the DMZ: only port 8443 of the app VIP and DNS/NTP are open; every other try is blocked and logged", "Firewall logs (manual search)", "Contained; detection needs a SIEM"),
     ("Ransomware on a compute server", "Can reach storage by NFS/iSCSI only and has no path to write or delete backups (pulled by the NAS); cannot reach management or admin zones", "Nothing automatic", "Partly contained; backups must be immutable, EDR missing"),
@@ -1196,8 +1196,7 @@ auditor asks about first.</p>
 
 
 ROADMAP = [  # (horizon, action, why / control, effort)
-    ("1. Finish the plans", "Firewall FW.3-FW.5, ZBX.7, LOG.3/LOG.6 (plan 02)", "Network evidence, A.8.15", "1.5 days"),
-    ("1. Finish the plans", "FW.3 firewall LAN side when a core stops, FW.4 flow matrix, FW.5 evidence", "Policy proven end to end, A.8.22", "1 day"),
+    ("1. Finish the plans", "FW.4 flow matrix, FW.5 evidence, LOG.3/LOG.6", "Policy proven end to end, A.8.22", "1 day"),
     ("1. Finish the plans", "ZBX.7 BGP/OSPF triggers and alert timing", "Network faults alarmed, A.8.16", "0.5 day"),
     ("1. Finish the plans", "Resilience campaign T1-T6 and M1, measured (resilience_tests.py)", "Rated-3 claim proven, A.8.14", "1 day"),
     ("1. Finish the plans", "Deploy SRV-CMP-01..03, SRV-STO-01 (needs RAM or a bigger host)", "Complete service chain, backups real", "1 day"),

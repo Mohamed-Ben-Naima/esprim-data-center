@@ -196,6 +196,18 @@ sections:
         command: timeout 3 bash -c '</dev/tcp/10.60.0.11/10051' && echo open
         expected: open
         verified: null
+      - id: FW-14
+        proves: A core that stops does not cut the internal side of the firewalls for long (SW-IN, plan 02 FW.3)
+        from: Windows host, folder 03_Network (evidence report/evidence/fw_lan_failover.txt)
+        command: python automation/fw_lan_failover.py --core CORE-A --down 40 --up 200   (then --core CORE-B)
+        expected: 'outage about 4.5 s for either core (was >= 150 s with direct cables), 0-1.5 s at the restart'
+        verified: 2026-11-10
+      - id: FW-15
+        proves: VLAN 902 is one segment on SW-IN and no longer crosses the core port-channel
+        from: ADMIN-WS terminal (ssh core-a / core-b)
+        command: show standby brief | include Vl902 ; show running-config interface Port-channel1 | include allowed
+        expected: CORE-A Active and CORE-B Standby for group 902 (hellos over SW-IN); allowed list without 902
+        verified: 2026-11-10
 
   - id: CORE
     title: Core and leaf switches

@@ -125,8 +125,8 @@ devices:
     ports:
       em0: {to: "SW-OUT:Ethernet2", role: "WAN – transit externe VLAN 901"}
       em2: {to: "FW-B:em2", role: "SYNC – pfsync / XMLRPC"}
-      em3: {to: "CORE-A:Gi0/0", role: "LAN – lagg0 membre primaire (VLAN 902)"}
-      em4: {to: "CORE-B:Gi0/0", role: "LAN – lagg0 membre secours (VLAN 902)"}
+      em3: {to: "SW-IN:Ethernet0", role: "LAN – lagg0 membre primaire (VLAN 902, SW-IN)"}
+      em4: {to: "SW-IN:Ethernet1", role: "LAN – lagg0 membre secours (VLAN 902, SW-IN)"}
       em5: {to: "SW-DMZ:Ethernet0", role: "DMZ VLAN 50"}
       em6: {to: "SW-MGMT:Ethernet2", role: "Trunk 802.1Q VLAN 10 (MGMT) + 90 (ADMIN)"}
   FW-B:
@@ -139,8 +139,8 @@ devices:
     ports:
       em0: {to: "SW-OUT:Ethernet3", role: "WAN – transit externe VLAN 901"}
       em2: {to: "FW-A:em2", role: "SYNC – pfsync / XMLRPC"}
-      em3: {to: "CORE-A:Gi0/1", role: "LAN – lagg0 membre primaire (VLAN 902)"}
-      em4: {to: "CORE-B:Gi0/1", role: "LAN – lagg0 membre secours (VLAN 902)"}
+      em3: {to: "SW-IN:Ethernet2", role: "LAN – lagg0 membre primaire (VLAN 902, SW-IN)"}
+      em4: {to: "SW-IN:Ethernet3", role: "LAN – lagg0 membre secours (VLAN 902, SW-IN)"}
       em5: {to: "SW-DMZ:Ethernet1", role: "DMZ VLAN 50"}
       em6: {to: "SW-MGMT:Ethernet3", role: "Trunk 802.1Q VLAN 10 (MGMT) + 90 (ADMIN)"}
 
@@ -154,8 +154,7 @@ devices:
     hsrp_active_priority: 110
     hsrp_standby_priority: 90
     ports:
-      Gi0/0: {to: "FW-A:em3", mode: access, vlan: 902, role: "Vers FW-A lagg0"}
-      Gi0/1: {to: "FW-B:em3", mode: access, vlan: 902, role: "Vers FW-B lagg0"}
+      Gi0/0: {to: "SW-IN:Ethernet4", mode: access, vlan: 902, role: "Transit pare-feux (SW-IN)"}
       Gi0/2: {to: "CORE-B:Gi0/2", mode: portchannel, channel: 1, role: "ISL Po1 LACP #1"}
       Gi0/3: {to: "CORE-B:Gi0/3", mode: portchannel, channel: 1, role: "ISL Po1 LACP #2"}
       Gi1/0: {to: "LEAF-A1:Gi0/0", mode: trunk, role: "Uplink Hall A"}
@@ -173,8 +172,7 @@ devices:
     hsrp_active_priority: 110
     hsrp_standby_priority: 90
     ports:
-      Gi0/0: {to: "FW-A:em4", mode: access, vlan: 902, role: "Vers FW-A lagg0"}
-      Gi0/1: {to: "FW-B:em4", mode: access, vlan: 902, role: "Vers FW-B lagg0"}
+      Gi0/0: {to: "SW-IN:Ethernet5", mode: access, vlan: 902, role: "Transit pare-feux (SW-IN)"}
       Gi0/2: {to: "CORE-A:Gi0/2", mode: portchannel, channel: 1, role: "ISL Po1 LACP #1"}
       Gi0/3: {to: "CORE-A:Gi0/3", mode: portchannel, channel: 1, role: "ISL Po1 LACP #2"}
       Gi1/0: {to: "LEAF-A1:Gi0/1", mode: trunk, role: "Uplink Hall A"}
@@ -249,6 +247,12 @@ devices:
 
 # GNS3 built-in switches (zero RAM). type: access | dot1q (vlan = native/access VLAN, carried VLANs listed)
 lab_switches:
+  # SW-IN (PLAN_02 FW.3, 10 Nov 2026): VLAN 902 firewall <-> core transit as one L2 segment. With direct links a core
+  # that stops or hangs keeps its GNS3 link "up", the firewall lagg (failover) stays on it and the LAN side is cut
+  # (measured >= 150 s). Here both lagg members of each firewall and one port of each core share the segment, so the
+  # HSRP 902 gateway moves to the other core in 3 s. VLAN 902 is then removed from the core ISL Po1 (no L2 loop for
+  # loop guard to block). In production: an MLAG/vPC core pair or two transit switches.
+  SW-IN:   {tia: MDA, ports: {Ethernet0: {vlan: 902, to: "FW-A:em3"}, Ethernet1: {vlan: 902, to: "FW-A:em4"}, Ethernet2: {vlan: 902, to: "FW-B:em3"}, Ethernet3: {vlan: 902, to: "FW-B:em4"}, Ethernet4: {vlan: 902, to: "CORE-A:Gi0/0"}, Ethernet5: {vlan: 902, to: "CORE-B:Gi0/0"}}}
   SW-OUT:  {tia: ER,  ports: {Ethernet0: {vlan: 901, to: "EDGE-A:Gi0/3"}, Ethernet1: {vlan: 901, to: "EDGE-B:Gi0/3"}, Ethernet2: {vlan: 901, to: "FW-A:em0"}, Ethernet3: {vlan: 901, to: "FW-B:em0"}}}
   SW-DMZ:  {tia: MDA, ports: {Ethernet0: {vlan: 50, to: "FW-A:em5"}, Ethernet1: {vlan: 50, to: "FW-B:em5"}, Ethernet2: {vlan: 50, to: "SRV-WEB-01:eth0"}}}
   SW-MGMT:

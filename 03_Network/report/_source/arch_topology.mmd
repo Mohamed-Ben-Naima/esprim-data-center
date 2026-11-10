@@ -12,10 +12,10 @@ flowchart TD
     SWOUT --- FWA[FW-A<br/>pfSense MASTER]
     SWOUT --- FWB[FW-B<br/>pfSense BACKUP]
     FWA <--> FWB
-    FWA --- CA[CORE-A<br/>IOSvL2]
-    FWA --- CB[CORE-B<br/>IOSvL2]
-    FWB --- CA
-    FWB --- CB
+    FWA --- SWIN[(SW-IN<br/>VLAN 902)]
+    FWB --- SWIN
+    SWIN --- CA[CORE-A<br/>IOSvL2]
+    SWIN --- CB[CORE-B<br/>IOSvL2]
     CA <--> CB
     CA --- LA1[LEAF-A1] & LA2[LEAF-A2] & LB1[LEAF-B1] & LB2[LEAF-B2]
     CB --- LA1 & LA2 & LB1 & LB2

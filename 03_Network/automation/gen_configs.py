@@ -385,7 +385,10 @@ def gen_core(name, d):
     L, mgmt_src, vrf = cisco_base(name, d)
     other = "CORE-B" if name == "CORE-A" else "CORE-A"
     trunk_data = ",".join(str(v) for v in INV["data_vlans"])
-    trunk_isl = ",".join(str(v) for v in INV["core_vlans"])
+    # a VLAN that both cores also reach through a lab switch (902 on SW-IN) must not cross the ISL: L2 loop
+    on_sw = {p["vlan"] for sw in INV["lab_switches"].values() for p in sw["ports"].values()
+             if INV["devices"].get(p["to"].split(":")[0], {}).get("role") == "core"}
+    trunk_isl = ",".join(str(v) for v in INV["core_vlans"] if v not in on_sw)
     L += ["vtp mode transparent",
           "spanning-tree mode rapid-pvst",
           "spanning-tree extend system-id",
@@ -424,6 +427,10 @@ def gen_core(name, d):
         elif p["mode"] == "access":
             L += [" switchport mode access", f" switchport access vlan {p['vlan']}", " switchport nonegotiate",
                   " spanning-tree portfast"]
+            if p["to"].split(":")[0] in INV["lab_switches"]:
+                # transit segment shared with the other core (SW-IN): no STP across it, else the other core's port is
+                # its root port and loop guard blocks it the moment this core dies (FW.3); no loop: VLAN off the ISL
+                L += [" spanning-tree bpdufilter enable"]
         L += [" no shutdown", "!"]
     L += unused_ports(d, [f"Gi{s}/{i}" for s in range(4) for i in range(4)], l2=True)
     # SVIs
