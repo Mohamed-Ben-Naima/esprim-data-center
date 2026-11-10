@@ -39,7 +39,7 @@ def ssh_batch(items, timeout=60):
         b64 = base64.b64encode(command.encode()).decode()
         s.append(f"cmd=$(echo {b64} | base64 -d); echo '@@BEGIN {i}'\n"
                  f"docker exec -e SSH_ASKPASS=/tmp/ap_adm.sh -e SSH_ASKPASS_REQUIRE=force -e DISPLAY=:0 $c timeout {timeout} "
-                 f"setsid -w ssh -o NumberOfPasswordPrompts=1 -o LogLevel=ERROR {alias} \"$cmd\" 2>/dev/null\necho; echo \"@@END {i} $?\"")
+                 f"setsid -w ssh -o NumberOfPasswordPrompts=1 -o LogLevel=ERROR {alias} \"$cmd\" 2>/dev/null\nr=$?; echo; echo \"@@END {i} $r\"")
     s.append("docker exec $c sh -c 'rm -f /tmp/ap_adm.sh /tmp/totp'; rm -f /tmp/totp_now.py")
     out = gns3vm.run("\n".join(s), sudo=True)
     if "@@NO-ADMIN-WS" in out:

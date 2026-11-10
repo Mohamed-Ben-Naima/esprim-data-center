@@ -9,8 +9,14 @@ Profile "demo" (PLAN_03 S1) is "supervision" minus EDGE-B, CCTV-SIM and SRV-INF-
 ISP-A; with SRV-INF-01 running the cores still lost HSRP hellos (20 Oct 2026), so the demo runs without NTP/DNS.
 Profile "nas" (PLAN_04) keeps only the path from the administration zone to the TrueNAS SRV-BCK-01 (3-4 GB of RAM):
 SW-MGMT, FW-A, CORE-A, LEAF-B1, LEAF-B2, ADMIN-WS, SYSLOG and SRV-BCK-01.
+After the stages (PLAN_03 S6, so that a cold start needs no manual step): the GNS3 VM swap is flushed, cisco_heal.py
+puts back an RSA key / SNMPv3 user that a Cisco device lost at boot (private-config not loaded), the lab proxy is
+started when ADMIN-WS runs, and when SRV-MON-01 runs the script waits for the Zabbix API and runs
+`zabbix_setup.py apply` (the maintenance "demo-off" follows the nodes started). Then: `python automation/demo_check.py`.
+  python automation/lab_up.py --profile demo --from 9     only the steps after the stages (lab already started)
 """
 import csv
+import os
 import re
 import subprocess
 import sys
@@ -76,6 +82,7 @@ def main():
     out = gns3vm.run("sudo swapoff -a && sudo swapon -a && sudo sysctl -q -w vm.swappiness=10; free -m | awk '/Swap:/{print $3}'",
                      sudo=True)
     print("swap flushed back to RAM, swap used now (MB):", out.strip(), flush=True)
+    post(profile)
     path = NET / "report" / "evidence" / ("resources_stages.csv" if profile == "full" else f"resources_{profile}.csv")
     if rows:
         with open(path, "w", newline="", encoding="utf-8") as f:
@@ -83,6 +90,37 @@ def main():
             w.writeheader()
             w.writerows(rows)
         print("saved", path)
+
+
+def post(profile):
+    """Lab proxy, then Zabbix maintenance following the nodes started (needs the proxy)."""
+    here = Path(__file__).parent
+    env = dict(os.environ, PYTHONIOENCODING="utf-8")
+    on = {n for _, names in STAGES for n in names} - OFF[profile]
+    r = subprocess.run([sys.executable, str(here / "cisco_heal.py")], capture_output=True, text=True, env=env)
+    print("cisco_heal.py (RSA key + SNMPv3 user after boot):", flush=True)
+    for line in r.stdout.strip().splitlines():
+        print("   ", line, flush=True)
+    if "ADMIN-WS" in on:
+        r = subprocess.run([sys.executable, str(here / "lab_proxy.py"), "start"], capture_output=True, text=True, env=env)
+        print("lab proxy:", (r.stdout.strip().splitlines() or ["?"])[-1], flush=True)
+    if "SRV-MON-01" in on and "ADMIN-WS" in on:
+        import zabbix_setup as zs
+        end = time.time() + 600
+        while True:
+            try:
+                z = zs.Zabbix()
+                zs.login(z)
+                break
+            except Exception as e:  # noqa: BLE001  services still starting after the boot
+                if time.time() > end:
+                    print("Zabbix API not answering after 10 min:", e, flush=True)
+                    return
+                time.sleep(15)
+        r = subprocess.run([sys.executable, str(here / "zabbix_setup.py"), "apply"], capture_output=True, text=True,
+                           env=env)
+        print("zabbix_setup.py apply:", (r.stdout.strip().splitlines() or ["?"])[-1], flush=True)
+    print("next: python automation/demo_check.py --profile", profile, flush=True)
 
 
 if __name__ == "__main__":

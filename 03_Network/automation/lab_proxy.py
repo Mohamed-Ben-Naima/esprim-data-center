@@ -23,7 +23,7 @@ NODE = "ADMIN-WS"
 REMOTE = "/tmp/lab_proxy.py"
 EDGE = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
 PAGES = ["https://10.90.0.1/", "http://10.60.0.11/", "http://10.60.0.11:3000/", "http://10.70.0.12:8080/",
-         "http://10.70.0.11:8080/", "https://10.50.0.11/"]
+         "http://10.70.0.11:8080/", "https://10.50.0.11/", "https://10.60.0.12/"]
 
 
 # ------------------------------------------------------------------------------------------ inside the GNS3 VM

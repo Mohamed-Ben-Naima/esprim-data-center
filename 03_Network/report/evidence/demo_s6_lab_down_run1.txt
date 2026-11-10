@@ -1,0 +1,7 @@
+11:10:04 16 node(s) started
+11:10:06 SRV-BCK-01: TrueNAS system.shutdown sent
+11:10:09 FW-A: shutdown -p now sent (rc 0)
+11:10:12 SRV-MON-01: systemctl poweroff sent
+11:14:14 guest shutdown done for 2/3 VM(s): SRV-BCK-01, FW-A
+11:14:31 every node stopped
+11:14:44 lab stopped in 280 s; GNS3 VM available 7146 MB, swap 1 MB
