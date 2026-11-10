@@ -303,6 +303,36 @@ sections:
         command: tail -3 /var/log/remote/all.log
         expected: lines of the last seconds
         verified: 2026-10-12
+      - id: LOG-03
+        proves: Every running equipment reaches the collector (marker sent and found)
+        from: Windows host, folder 03_Network
+        command: python automation/syslog_audit.py
+        expected: 'marker "OK" for every running Cisco device, firewall, server and the NAS (6/6 in the nas profile); simulators "events"'
+        verified: 2026-11-10
+      - id: LOG-04
+        proves: The log viewer answers in HTTPS from the administration zone and asks for a login
+        from: ADMIN-WS browser (portal entry "Journaux (syslog)")
+        command: https://10.60.0.12/ , login netadmin
+        expected: 'login page, then the last lines of all sources and the source table (refused from the DMZ, access matrix); Zabbix web.test.fail[Lecteur de journaux] = 0' 
+        verified: 2026-11-10
+      - id: LOG-05
+        proves: A failed login, a configuration change and a firewall block are found in the viewer
+        from: Windows host, folder 03_Network (evidence report/evidence/demo_s5_log_viewer.txt)
+        command: python automation/log_viewer.py demo
+        expected: '%SEC_LOGIN-4-LOGIN_FAILED, %SYS-5-CONFIG_I "by netadmin on vty0 (10.90.0.12)", filterlog block 10.50.0.11,10.10.0.21 port 22 (rule T18-9), each within a few seconds'
+        verified: 2026-11-10
+      - id: LOG-06
+        proves: The viewer cannot change the logs and locks a password guesser
+        from: Windows host, folder 03_Network
+        command: python automation/build_images.py syslog ; python automation/log_viewer.py lock
+        expected: 'self-test "viewer not running as root", "cannot write", "cannot delete", "PUT refused" ok; 401 x5 then 429'
+        verified: 2026-11-10
+      - id: LOG-07
+        proves: Logs are rotated daily, compressed and still searchable
+        from: SYSLOG (docker exec) then Windows host
+        command: logrotate -f /etc/logrotate.d/remote ; python automation/log_viewer.py search LOGIN_FAILED --src CORE-A --arch
+        expected: 119 MB -> 10 MB (one .gz per source), new lines keep arriving, old lines found with --arch
+        verified: 2026-11-10
 
   - id: ADM
     title: Administration zone (VLAN 90)

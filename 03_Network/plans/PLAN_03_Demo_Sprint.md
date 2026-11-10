@@ -118,15 +118,38 @@ trims them for the demo.
       → no loop-guard event since, 0 % loss. Rule: GNS3 VM swap ≈ 0 and ≥ 0.5 GB available before a test.
 
 ### S5 — Log server for the demo (LOG.1, LOG.2, LOG.4, LOG.5 trimmed) (≈ 2 h)
-- [ ] Quick audit: which running equipment has a file in `/var/log/remote` younger than 10 min; fix silent ones if cheap.
+- [x] Quick audit: which running equipment has a file in `/var/log/remote` younger than 10 min; fix silent ones if cheap.
       Cisco NTP to SRV-INF-01 if not synced (`show ntp status`) — SRV-INF-01 is off in the demo profile: skip NTP
       (known limit) rather than add load.
-- [ ] Image `dc/syslog:1.1`: logrotate daily + compression, dir 0750 / files 0640, read-only viewer `viewer.py`
+      → new `automation/syslog_audit.py`: sends a marker from every running equipment (Cisco `send log`, pfSense / Linux /
+      TrueNAS `logger`) and finds it on the collector: **6/6 OK** (FW-A, CORE-A, LEAF-B1/B2, SRV-BCK-01, SRV-MON-01);
+      simulators and webterm log on events only. No silent source. SRV-WEB-01 has no file: by design (no syslog rule from
+      the DMZ). Cisco clocks were 17-42 min late → `--set-clock` (exec `clock set` to the collector time, nothing
+      saved). **Finding:** the emulated IOSvL2 clock then loses ~7 s/min (−1 min 54 s after 16 min): the collector
+      time (first column) is the reference; real fix = NTP (SRV-INF-01, profile full). Evidence `demo_s5_syslog_audit.txt`.
+- [x] Image `dc/syslog:1.1`: logrotate daily + compression, dir 0750 / files 0640, read-only viewer `viewer.py`
       (standard library, HTTPS 8443, login, search by source/text, last lines). Redeploy with
       `deploy_containers.py SYSLOG` — volume must survive (check file count before/after).
-- [ ] Firewall rule EXT-9 (ADMIN_NET → SYSLOG_SERVER tcp 8443) via generator + deploy + audit; portal entry on ADMIN-WS.
-- [ ] Demo events found in the viewer: failed SSH login on CORE-A, `conf t`/`end` on CORE-A, firewall block.
-      Fallback if the viewer slips: show `tail -f` on the SYSLOG aux console (5042) from ADMIN-WS.
+      → rsyslog `fileGroup=logread 0640`, dir 0750; crond 02:00 → logrotate daily, dateext, gzip, 30 days
+      (`services.log_retention_days`). Viewer on **443** (not 8443, see next box): TLS ≥ 1.2, login form
+      (`netadmin`, PBKDF2 hash in the node environment), 15 min idle, 5 failures → address locked 5 min, search by
+      source / text / archives, "suivre" refresh; binds as root then runs as `viewer` (can read, cannot write or delete);
+      every login and search logged back (tag `logviewer`). Self-test in `build_images.py`: **17/17 ok**.
+      `deploy_containers.py` now **carries the volumes over** when it re-creates a node: SYSLOG 21 → 21 files,
+      ADMIN-WS /root 2273 → 2273. Forced rotation on the live collector: 119 MB → 10 MB, every source writes again
+      after the HUP, old lines found with "archives". Zabbix web scenario "Lecteur de journaux" (200 in 31 ms).
+      Evidence `demo_s5_syslog_image.txt`.
+- [x] Firewall rule EXT-9 (ADMIN_NET → SYSLOG_SERVER tcp 8443) via generator + deploy + audit; portal entry on ADMIN-WS.
+      → **Decision: no new rule.** Port 443 is already allowed ADMIN_NET → internal by T18-6 (ADMIN_SVC 22/443),
+      so the viewer listens on 443: no change on the firewalls (FW-B is off in this profile, which the deploy rule
+      needs first). Portal entry "Journaux (syslog)" (`web_interfaces`), admin-ws image rebuilt, node re-created.
+      Access matrix: viewer reachable from ADMIN-WS, refused from the DMZ, **0 failures**.
+- [x] Demo events found in the viewer: failed SSH login on CORE-A, `conf t`/`end` on CORE-A, firewall block.
+      Fallback if the viewer slips: show `tail -f` on the SYSLOG aux console (5041) from ADMIN-WS.
+      → `automation/log_viewer.py demo` (viewer reached through the lab proxy as ADMIN-WS): `%SEC_LOGIN-4-LOGIN_FAILED`
+      [Source: 10.90.0.12] after **2.4 s**; `%SYS-5-CONFIG_I ... by netadmin on vty0 (10.90.0.12)` after **0.2 s**;
+      FW-A `filterlog` block 10.50.0.11 → 10.10.0.21:22 (tracker 1700000021 = rule T18-9) after **0.3 s**; the viewer's
+      own audit lines follow. `log_viewer.py lock`: 401 ×5 then 429. Evidence `demo_s5_log_viewer.txt`.
 
 ### S6 — Cold-start rehearsal and demo runbook (≈ 1 h) — mandatory
 - [ ] Clean stop of all nodes, then `lab_up.py --profile demo` + `lab_proxy.py start`; no manual fix allowed. Time it.

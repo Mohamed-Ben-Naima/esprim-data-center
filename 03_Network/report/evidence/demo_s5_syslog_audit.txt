@@ -1,0 +1,33 @@
+# PLAN_03 S5 - who reaches the central collector (syslog_audit.py), 10 Nov 2026
+## 1. before: Cisco clocks without NTP (SRV-INF-01 off in this profile)
+marker S5-AUDIT-103912 -> FW-A OK, CORE-A OK (-0h42m28s), LEAF-B1 OK (-0h36m35s), LEAF-B2 OK (-0h17m18s),
+SRV-BCK-01 OK, SRV-MON-01 OK; event-only sources (simulators, webterm) last line 178-180 min (S4 power test).
+SRV-WEB-01: no file - by design (DMZ has no syslog rule, T18-9).
+## 2. after --set-clock (exec 'clock set' to the collector time, nothing saved) and the forced rotation, marker
+marker S5-AUDIT-105740, collector 10.60.0.12
+source       ip           state     last line  marker  device clock vs collector
+EDGE-A       10.10.0.1    stopped     205 min          
+FW-A         10.10.0.11   running       0 min  OK      (device stamp not in message)
+FW-B         10.10.0.12   stopped   28744 min          
+EDGE-B       10.10.0.2    stopped   41019 min          
+CORE-A       10.10.0.21   running       0 min  OK      -0h00m15s
+CORE-B       10.10.0.22   stopped   28746 min          
+LEAF-A1      10.10.0.31   stopped   41669 min          
+LEAF-A2      10.10.0.32   stopped   48394 min          
+LEAF-B1      10.10.0.33   running       0 min  OK      -0h00m17s
+LEAF-B2      10.10.0.34   running       0 min  OK      -0h00m15s
+SRV-INF-01   10.100.0.11  stopped     214 min          
+SRV-CMP-01   10.20.0.11   stopped     no file          
+SRV-CMP-02   10.20.0.12   stopped     no file          
+SRV-CMP-03   10.20.0.13   stopped     no file          
+SRV-STO-01   10.30.0.11   stopped     no file          
+SRV-BCK-01   10.40.0.11   running       0 min  OK      (device stamp not in message)
+SRV-WEB-01   10.50.0.11   running     no file  events  
+SRV-MON-01   10.60.0.11   running       0 min  OK      (device stamp not in message)
+SRV-DCIM-01  10.70.0.11   running     198 min  events  
+BMS-SIM      10.70.0.12   running     198 min  events  
+CCTV-SIM     10.80.0.11   stopped   41018 min          
+SRV-BASTION  10.90.0.11   stopped   41020 min          
+ADMIN-WS     10.90.0.12   running       0 min  events  
+## 3. drift: IOSvL2 emulated clock loses about 7 s per minute (CORE-A -1m54s 16 min after clock set):
+   the viewer and the report use the collector time (first column); real fix = NTP on SRV-INF-01 (profile full).

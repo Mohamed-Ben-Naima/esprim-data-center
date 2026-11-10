@@ -255,7 +255,7 @@ The only way in is from the admin zone (VLAN 90: bastion and admin workstation) 
 <tr><td><b>SRV-MON-01</b></td><td>QEMU</td><td>Ubuntu 20.04</td><td>1536</td><td>EDA-B</td><td>10.60.0.11</td><td>5034</td><td>Monitoring: Zabbix + Grafana</td></tr>
 <tr><td><b>SRV-BASTION</b></td><td>QEMU</td><td>Ubuntu 20.04</td><td>512</td><td>MDA</td><td>10.90.0.11</td><td>5036</td><td>SSH jump host for administrators</td></tr>
 <tr><td><b>SRV-DCIM-01</b></td><td>Docker</td><td>dc/dcim:1.0</td><td>-</td><td>EDA-B</td><td>10.70.0.11</td><td>5047</td><td>DCIM dashboard of the 96 racks</td></tr>
-<tr><td><b>SYSLOG</b></td><td>Docker</td><td>dc/syslog:1.0 (rsyslog)</td><td>-</td><td>EDA-B</td><td>10.60.0.12</td><td>5041</td><td>Central log collector</td></tr>
+<tr><td><b>SYSLOG</b></td><td>Docker</td><td>dc/syslog:1.1 (rsyslog, logrotate, viewer)</td><td>-</td><td>EDA-B</td><td>10.60.0.12</td><td>5041</td><td>Central log collector</td></tr>
 <tr><td><b>BMS-SIM</b></td><td>Docker</td><td>dc/bms-sim:1.0</td><td>-</td><td>EDA-B</td><td>10.70.0.12</td><td>5043</td><td>Power infrastructure simulator</td></tr>
 <tr><td><b>CCTV-SIM</b></td><td>Docker</td><td>dc/cctv-sim:1.0</td><td>-</td><td>EDA-B</td><td>10.80.0.11</td><td>5045</td><td>Cameras and door-access simulator</td></tr>
 <tr><td><b>SRV-WEB-01</b></td><td>Docker</td><td>dc/web:1.0 (nginx)</td><td>-</td><td>DMZ</td><td>10.50.0.11</td><td>5052</td><td>Public web site</td></tr>
@@ -519,7 +519,7 @@ bonds:
 <thead><tr><th>Container</th><th>VLAN / IP</th><th>Attached to</th><th>What it does</th><th>Interface</th></tr></thead>
 <tbody>
 <tr><td><b>SRV-WEB-01</b></td><td>50<br>10.50.0.11</td><td>SW-DMZ</td><td>Public web site (nginx). HTTP redirects to HTTPS; self-signed certificate; TLS 1.2/1.3 only; security headers (HSTS, CSP, no framing).</td><td><code>/health</code> on 80 and 443</td></tr>
-<tr><td><b>SYSLOG</b></td><td>60<br>10.60.0.12</td><td>LEAF-B1</td><td>Central log collector (rsyslog, UDP and TCP 514). Writes one file per source, <code>/var/log/remote/&lt;ip&gt;_&lt;host&gt;.log</code>, plus <code>all.log</code>.</td><td>files</td></tr>
+<tr><td><b>SYSLOG</b></td><td>60<br>10.60.0.12</td><td>LEAF-B1</td><td>Central log collector (rsyslog, UDP and TCP 514). Writes one file per source, <code>/var/log/remote/&lt;ip&gt;_&lt;host&gt;.log</code>, plus <code>all.log</code>; files <code>0640 root:logread</code>. Rotated every night at 02:00, gzip, kept 30 days (<code>services.log_retention_days</code>). <b>Read-only viewer</b> <code>https://10.60.0.12/</code>: login <code>netadmin</code>, search by source and text, archives, "follow" mode; it runs as an account that cannot write the logs, locks an address after 5 wrong passwords and logs every login and search.</td><td>UDP/TCP 514, HTTPS 443 (viewer, admin zone)</td></tr>
 <tr><td><b>BMS-SIM</b></td><td>70<br>10.70.0.12</td><td>LEAF-B2</td><td>Simulates the power chain: UTILITY-A, UTILITY-B, UPS-A, UPS-B, GENERATOR. Rule: path X is powered if (utility X or generator) and UPS X. Computes load per path, raises alarms, sends every change to syslog.</td><td>HTTP 8080: <code>/api/state</code>, <code>/api/set</code>, <code>/api/reset</code>, <code>/metrics</code>, <code>/</code></td></tr>
 <tr><td><b>SRV-DCIM-01</b></td><td>70<br>10.70.0.11</td><td>LEAF-B1 + B2</td><td>DCIM / digital twin of the 96 racks. Polls BMS-SIM every 10 s and derives each rack state: OK, DEGRADED (one power path lost) or DOWN.</td><td>HTTP 8080: <code>/api/summary</code>, <code>/api/racks</code>, <code>/</code></td></tr>
 <tr><td><b>CCTV-SIM</b></td><td>80<br>10.80.0.11</td><td>LEAF-B2</td><td>Simulates 11 cameras and 6 doors. Emits events (motion, badge granted/denied, mantrap, camera health) to syslog about every 45 s.</td><td>HTTP 8080: <code>/api/cameras</code>, <code>/api/events</code></td></tr>
@@ -739,6 +739,7 @@ python automation/lab_proxy.py stop</pre>
 <tr><td><b>Grafana</b></td><td><code>http://10.60.0.11:3000</code></td><td><code>admin</code> / <code>Grafana-DC-2026!</code></td><td>Needs SRV-MON-01 running</td></tr>
 <tr><td><b>BMS-SIM</b> power dashboard</td><td><code>http://10.70.0.12:8080</code></td><td>none</td><td><code>/api/state</code>, <code>/api/set?...</code>, <code>/api/reset</code></td></tr>
 <tr><td><b>DCIM</b> 96 racks</td><td><code>http://10.70.0.11:8080</code></td><td>none</td><td><code>/api/summary</code>, <code>/api/racks</code></td></tr>
+<tr><td><b>Logs</b> (read-only viewer)</td><td><code>https://10.60.0.12</code></td><td><code>netadmin</code> / password of the network devices</td><td>Search by source and text; tick <i>archives</i> for the rotated days, <i>suivre</i> to refresh every 5 s</td></tr>
 <tr><td><b>Web site</b> (DMZ)</td><td><code>https://10.50.0.11</code></td><td>none</td><td>Self-signed certificate</td></tr>
 <tr><td><b>CCTV-SIM</b></td><td><code>http://10.80.0.11:8080</code></td><td>-</td><td><b>Not reachable, by design</b>: the policy opens port 8080 from the admin zone to VLAN 70 only. Its events are visible in the syslog.</td></tr>
 </tbody>
@@ -768,6 +769,7 @@ python automation/lab_proxy.py stop</pre>
 <tr><td><code>automation/totp.py</code></td><td>Current verification code of the bastion's second factor.</td></tr>
 <tr><td><code>automation/access_matrix.py</code></td><td>Proves that every running equipment is reachable for administration from ADMIN-WS and refused from an internal network and from the DMZ; <code>--login</code> opens a real SSH session on each.</td></tr>
 <tr><td><code>automation/fsck_servers.py</code><br><code>automation/check_disks.sh</code></td><td>After a host disk incident: check (or repair) the filesystem inside the server disks, and the disk image files themselves.</td></tr>
+<tr><td><code>automation/syslog_audit.py</code><br><code>automation/log_viewer.py</code></td><td>Who reaches the log collector: a marker from every running equipment, found or not (<code>--set-clock</code> sets the Cisco clocks when NTP is off). <code>log_viewer.py search | demo | lock</code>: the viewer from the PC, the 3 demo events, the lock test.</td></tr>
 <tr><td><code>automation/lab_proxy.py</code></td><td>Opens the lab web interfaces from the physical PC (SOCKS5 proxy through ADMIN-WS).</td></tr>
 <tr><td><code>automation/render_topology.py</code></td><td>Draws the live topology as a PNG (the figure in section 2).</td></tr>
 <tr><td><code>report/build.ps1</code></td><td>Builds the French report (<code>content/*.md</code> to .docx and .pdf). Needs Node.js and Word.</td></tr>
@@ -900,7 +902,7 @@ Gi0/1       30,70,80</pre>
 <tr><td>App to backup</td><td>on CMP-01: <code>rsync rsync://10.40.0.11/</code></td><td>Module <code>backup</code> listed</td></tr>
 <tr><td>SRV-MON-01</td><td><code>systemctl is-active zabbix-server nginx mariadb grafana-server</code><br><code>curl -sI http://127.0.0.1/ | head -1</code><br><code>curl -sI http://127.0.0.1:3000/login | head -1</code></td><td>All active; HTTP 200 from Zabbix and Grafana</td></tr>
 <tr><td>SRV-BASTION</td><td>from a host in VLAN 90: <code>ssh ubuntu@10.90.0.11</code>, then from the bastion <code>ssh netadmin@10.10.0.21</code><br>on the bastion: <code>systemctl is-active auditd</code></td><td>Banner shown, login accepted, jump to CORE-A works; audit daemon active</td></tr>
-<tr><td>SYSLOG</td><td><code>ls /var/log/remote/</code><br><code>tail -f /var/log/remote/all.log</code></td><td>One file per source (edges, cores, leafs, firewalls, servers, simulators); new lines arrive live</td></tr>
+<tr><td>SYSLOG</td><td><code>ls /var/log/remote/</code><br><code>tail -f /var/log/remote/all.log</code><br>PC: <code>python automation/syslog_audit.py</code></td><td>One file per source (edges, cores, leafs, firewalls, servers, simulators); new lines arrive live; marker OK for every running equipment</td></tr>
 <tr><td>SRV-WEB-01 (inside)</td><td>from an internal server: <code>curl -sk https://10.50.0.11/health</code></td><td><code>OK SRV-WEB-01 (TLS)</code></td></tr>
 <tr><td>SRV-WEB-01 (from Internet)</td><td>on ISP-A: <code>printf 'GET /health HTTP/1.0
 
@@ -966,7 +968,7 @@ Only T6 has been rehearsed (12 Oct 2026). The other scenarios are defined in the
 
 <div class="cols">
 <div class="box good" style="flex:1"><b class="t">Done and verified</b>Network, firewall cluster, service containers, administration (webterm, bastion + TOTP, access matrix 0 failure). Demo profile that holds without HSRP flapping. Zabbix: 17 hosts, devices by SNMPv3, power / racks / web / log collector checks, power-cut alarm in 6 to 10 s. Grafana: no anonymous access, Zabbix plugin installed offline, data source OK. TrueNAS backup NAS (plan 04): configured as code, nightly pulled backups, restore from a snapshot tested, supervised.</div>
-<div class="box warn" style="flex:1"><b class="t">In progress</b>Demo sprint (plan 03): S4 done (NOC dashboard provisioned, 28 panels checked on live data by <code>check_dashboard.py</code>). Next S5 log viewer and S6 cold-start rehearsal and runbook.</div>
+<div class="box warn" style="flex:1"><b class="t">In progress</b>Demo sprint (plan 03): S4 done (NOC dashboard, 28 panels on live data), S5 done (log rotation and read-only HTTPS viewer, demo events found in it). Next S6 cold-start rehearsal and runbook.</div>
 <div class="box" style="flex:1;border-color:#56606d;background:#e9edf1"><b class="t">To do</b>Firewall tasks FW.3-FW.5, BGP/OSPF triggers (ZBX.7), log retention and viewer, compliance matrix, four servers not deployed, resilience tests, final report.</div>
 </div>
 
@@ -992,7 +994,7 @@ Only T6 has been rehearsed (12 Oct 2026). The other scenarios are defined in the
 <tr><td>ADM</td><td>Administration webterm, access matrix, privileged access rules</td><td><span class="pill ok">Done</span></td><td>16 accesses tested, 0 failure; named account and TOTP on the bastion (ADM.4)</td></tr>
 <tr><td>FW.1-2</td><td>Firewalls audited (0 difference); deployment without reboot; rule EXT-8, web session 15 min</td><td><span class="pill ok">Done</span></td><td>Verified with FW-B as master too</td></tr>
 <tr><td>FW.3-5</td><td>Firewall LAN side when a core stops, flow matrix, evidence</td><td><span class="pill wip">Next</span></td><td>Plan 02</td></tr>
-<tr><td>LOG</td><td>Log collection server</td><td><span class="pill todo">To do</span></td><td>Plan 02; trimmed version in plan 03 phase S5</td></tr>
+<tr><td>LOG (S5)</td><td>Log server: every source checked, daily rotation 30 days, read-only HTTPS viewer, demo events</td><td><span class="pill ok">Done</span></td><td>S5 trimmed version; LOG.3 (source filter, disk queue) and LOG.6 left in plan 02</td></tr>
 <tr><td>S1</td><td>Plan 03: demo profile, core HSRP timers 1 s / 3 s, VM swap flushed after start-up</td><td><span class="pill ok">Done</span></td><td><code>7cb77c5</code>..<code>ce61cc3</code>; idle 10 min without HSRP change</td></tr>
 <tr><td>ZBX.1-5</td><td>Zabbix base, groups, Cisco devices by SNMPv3, firewalls by SNMP v2c, agents</td><td><span class="pill ok">Done</span></td><td><code>0c260a8</code>..<code>848bc8d</code>; <code>zabbix_setup.py</code>; stopped nodes in maintenance <code>demo-off</code></td></tr>
 <tr><td>ZBX.6</td><td>Services: power (BMS-SIM), racks (DCIM), web site, log collector</td><td><span class="pill ok">Done</span></td><td><code>6766eaa</code>, <code>961c282</code>; power cut seen in 6.3 s / 9.5 s, cleared in 6.3 s</td></tr>
@@ -1047,6 +1049,7 @@ Only T6 has been rehearsed (12 Oct 2026). The other scenarios are defined in the
 <tr><td>S2</td><td><code>zabbix_setup.py check | apply | status</code> configures Zabbix from the inventory over its API: password and timezone, groups <code>DC/*</code>, Cisco devices by SNMPv3 (authPriv SHA/AES), firewalls by SNMP v2c, server agents, maintenance for stopped nodes. LEAF-B2 had lost its SNMPv3 user (restored).</td></tr>
 <tr><td>S3</td><td>Service checks: BMS-SIM and DCIM read through their JSON API every 10 s, web scenario on the DMZ site, ping of the log collector, triggers from the design thresholds (45 %, 50 %, path not powered). Grafana: no sign-up, no anonymous access, Zabbix plugin 6.8.0 installed offline (checksum verified), data source provisioned with a read-only Zabbix account.</td></tr>
 <tr><td>S4</td><td>NOC dashboard generated by <code>automation/gen_dashboards.py</code>, provisioned by the Grafana role, checked panel by panel by <code>automation/check_dashboard.py</code>.</td></tr>
+<tr><td>S5</td><td>Image <code>dc/syslog:1.1</code>: rotation, files 0640, read-only viewer on <code>https://10.60.0.12/</code> (port 443 already open from the admin zone by rule T18-6, so no new firewall rule). <code>deploy_containers.py</code> now carries the volumes over when it re-creates a node (logs 21 files kept). Failed SSH login, <code>conf t</code> and a DMZ block found in the viewer within 3 s. The emulated Cisco clocks lose about 7 s per minute without NTP: read the collector time (first column).</td></tr>
 </tbody>
 </table>
 
@@ -1089,7 +1092,7 @@ Only T6 has been rehearsed (12 Oct 2026). The other scenarios are defined in the
 </table>
 
 <h2>Next steps</h2>
-<p>First the end of the demo sprint (<code>plans/PLAN_03_Demo_Sprint.md</code>): <b>S5</b> log viewer and demo security events, <b>S6</b> cold-start rehearsal and French runbook. Then back to
+<p>First the end of the demo sprint (<code>plans/PLAN_03_Demo_Sprint.md</code>): <b>S6</b> cold-start rehearsal and French runbook. Then back to
 <code>plans/PLAN_02_Admin_Firewall_Logs_Supervision.md</code>, one sub-task per commit:</p>
 <ol>
 <li><b>FW</b>: behaviour when a core stops, flow matrix, evidence (FW.3-FW.5).</li>

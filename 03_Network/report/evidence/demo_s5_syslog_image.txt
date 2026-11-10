@@ -1,0 +1,66 @@
+# PLAN_03 S5 - image dc/syslog:1.1 (rsyslog + logrotate + read-only HTTPS viewer), 10 Nov 2026
+
+## build_images.py syslog -> self-test inside a throw-away container (docker/syslog/selftest.py)
+== dc/syslog:1.1  OK   size=50742827
+   rsyslogd: version 8.2404.0, config validation run (level 1), master config /etc/rsyslog.conf
+   ok   health
+   ok   anonymous page refused
+   ok   TLS >= 1.2 TLSv1.3
+   ok   wrong password -> 401 401
+   ok   login 200
+   ok   search finds the test line
+   ok   HTML escaped
+   ok   PUT refused
+   ok   POST elsewhere refused
+   ok   path traversal ignored
+   ok   viewer not running as root ['100']
+   ok   directory 0750 root:logread 0o750
+   ok   files 0640 0o640
+   ok   viewer account cannot write 1
+   ok   viewer account cannot delete
+   ok   logrotate config valid
+   ok   viewer actions logged
+   SELFTEST-OK
+
+## deploy_containers.py (node re-created for the new image, volume carried over)
+   volumes /var/log/remote: 21 file(s) before, 21 after
+SYSLOG       dc/syslog:1.1          re-created (1 link(s) restored)      interfaces <- configs/docker/SYSLOG.interfaces
+   volumes /root: 2273 file(s) before, 2273 after
+ADMIN-WS     dc/admin-ws:1.0        re-created (1 link(s) restored)      (portal page: new entry "Journaux (syslog)")
+
+## live container after start
+drwxr-x---    2 root     logread       4096 Nov 10 10:47 /var/log/remote
+-rw-r-----    1 root     logread   12591154 Nov 10 10:46 10.10.0.11_10.10.0.11.log      (older 0644 files fixed at start)
+root     rsyslogd -n -f /etc/rsyslog.conf
+root     crond -b -L /dev/null                       (02:00 run-parts /etc/periodic/daily -> logrotate)
+viewer   python3 /opt/viewer/viewer.py               (binds 443 as root, then setuid viewer)
+2026-11-10T10:47:23+01:00 127.0.0.1 syslog logviewer: viewer started on :443 uid=100 users=netadmin
+ADMIN-WS: curl -sk https://10.60.0.12/health -> "OK logviewer" 200
+
+## forced rotation on the live collector (logrotate -f /etc/logrotate.d/remote), retention 30 days (inventory)
+BEFORE: 21 files 119 MB
+rc=0
+AFTER: 42 files 10 MB
+-rw-r-----    1 root     logread          0 Nov 10 10:55 10.10.0.21_10.10.0.21.log
+-rw-r-----    1 root     logread      59097 Nov 10 10:54 10.10.0.21_10.10.0.21.log-20261110.gz
+-rw-r-----    1 root     logread       1008 Nov 10 10:55 all.log
+-rw-r-----    1 root     logread    5323075 Nov 10 10:55 all.log-20261110.gz
+after the HUP every running source writes again (syslog_audit.py marker S5-AUDIT-105740: 6/6 OK);
+log_viewer.py search LOGIN_FAILED --src CORE-A        -> nothing (current file is new)
+log_viewer.py search LOGIN_FAILED --src CORE-A --arch -> the 2 lines of 10:54:39/40 found in the .gz archive
+
+## access matrix (access_matrix.py)
+SYSLOG       Web - Journaux (syslog)  ADMIN-WS reachable / SRV-WEB-01 (DMZ) refused   OK
+15 target(s) tested, 0 failure(s), 13 not running
+Port 443 is already allowed ADMIN_NET -> internal by rule T18-6 (ADMIN_SVC 22/443): no new firewall rule (EXT-9 dropped).
+
+## brute force on the viewer (log_viewer.py lock, from SRV-MON-01)
+6 wrong logins from SRV-MON-01: 401 401 401 401 401 429  (401 x5 then 429 = locked 5 min)
+2026-11-10T10:55:17.681793+01:00 127.0.0.1 syslog logviewer: login refused (locked) from=10.60.0.11
+2026-11-10T10:55:17.644164+01:00 127.0.0.1 syslog logviewer: login failed user='netadmin' from=10.60.0.11
+2026-11-10T10:55:21.517064+01:00 127.0.0.1 syslog logviewer: login ok user=netadmin from=10.90.0.12   (admin zone not affected)
+
+## Zabbix (zabbix_setup.py apply: service SYSLOG web scenario "Lecteur de journaux" + trigger, average)
+web.test.fail[Lecteur de journaux] 0
+web.test.rspcode[Lecteur de journaux,health] 200
+web.test.time[Lecteur de journaux,health,resp] 0.030837

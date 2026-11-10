@@ -9,7 +9,7 @@ Table: Serveurs et conteneurs (source : inventaire)
 | **SRV-INF-01** | VM | 100 | `10.100.0.11` | LEAF-B1 Gi0/3 + LEAF-B2 Gi0/3 | bond0 actif/passif | dns, ntp, dhcp, backup-source |
 | **SRV-MON-01** | VM | 60 | `10.60.0.11` | LEAF-B1 Gi1/0 + LEAF-B2 Gi1/0 | bond0 actif/passif | zabbix, grafana, backup-source |
 | **SRV-DCIM-01** | Conteneur | 70 | `10.70.0.11` | LEAF-B1 Gi1/1 + LEAF-B2 Gi1/1 | bond0 actif/passif | dcim |
-| **SYSLOG** | Conteneur | 60 | `10.60.0.12` | LEAF-B1 Gi1/2 | simple | syslog |
+| **SYSLOG** | Conteneur | 60 | `10.60.0.12` | LEAF-B1 Gi1/2 | simple | syslog, log-viewer |
 | **BMS-SIM** | Conteneur | 70 | `10.70.0.12` | LEAF-B2 Gi1/2 | simple | bms-sim |
 | **CCTV-SIM** | Conteneur | 80 | `10.80.0.11` | LEAF-B2 Gi1/3 | simple | cctv-sim |
 | **SRV-WEB-01** | Conteneur | 50 | `10.50.0.11` | SW-DMZ Ethernet2 | simple | web |

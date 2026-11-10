@@ -546,7 +546,7 @@ def s11_services():
     rows = [["Web site", "SRV-WEB-01 10.50.0.11 (DMZ)", "nginx: HTTP → HTTPS redirect, TLS 1.2/1.3, HSTS, CSP, /health", "80, 443"],
             ["DNS / NTP / DHCP", "SRV-INF-01 10.100.0.11", "dnsmasq (zone dc.casa.lab, forwarders 1.1.1.1 / 8.8.8.8), chrony", "53, 123"],
             ["Monitoring", "SRV-MON-01 10.60.0.11", "Zabbix 6.0.48 (MariaDB, nginx + PHP-FPM), Grafana 13.2.3 + Zabbix plugin 6.8.0", "80, 3000, 10051"],
-            ["Log collection", "SYSLOG 10.60.0.12", "rsyslog UDP/TCP 514, one file per source in /var/log/remote", "514"],
+            ["Log collection", "SYSLOG 10.60.0.12", "rsyslog UDP/TCP 514, one file per source in /var/log/remote, rotation 30 days, read-only viewer", "514, 443"],
             ["Power simulator (BMS)", "BMS-SIM 10.70.0.12", "Python API: /api/state, /api/set, /api/reset, /metrics; alarms to syslog", "8080"],
             ["DCIM", "SRV-DCIM-01 10.70.0.11", "96 racks, reads the BMS, /api/summary, dashboard", "8080"],
             ["CCTV / access control", "CCTV-SIM 10.80.0.11", "Camera, motion and badge events to syslog", "-"],
@@ -594,7 +594,15 @@ provisioned by the Grafana role and checked panel by panel on live data by <code
 <h2>Logs</h2>
 <p>Every Cisco device logs (informational and above) to 10.60.0.12 from its management VRF; pfSense, servers
 (journald → rsyslog), BMS-SIM, CCTV-SIM and the admin webterm also send there. The collector writes one file per
-source and one combined file. Retention, permissions and a read-only viewer are the next step (plan 03 S5).</p>
+source and one combined file (image <code>dc/syslog:1.1</code>). Files are <code>0640 root:logread</code> in a <code>0750</code>
+directory, rotated every night, compressed and kept 30 days (<code>services.log_retention_days</code>; 119 MB became 10 MB
+at the first rotation). A <b>read-only viewer</b> (<code>https://10.60.0.12/</code>, standard-library Python, TLS 1.2+) lets
+the administrator search by source and text, including the archives; it runs under an account that can read the files
+but not change or delete them, locks an address after 5 wrong passwords and logs every login and search back to the
+collector. <code>automation/syslog_audit.py</code> sends a marker from every running equipment and finds it (6/6 on
+10 Nov 2026); <code>automation/log_viewer.py demo</code> finds a failed SSH login, a configuration session and a DMZ block
+in the viewer within 3 s. Known limit: without the NTP server (SRV-INF-01 off in the small profiles) the emulated Cisco
+clocks lose about 7 s per minute, so the collector time is the reference.</p>
 {siem_edr()}"""
 
 
@@ -635,7 +643,7 @@ def s14_iso():
         ("A.8.9", "Configuration management", "Inventory = source of truth, generated configurations, audit, one Git commit per change.", "fw_audit.py: 0 difference", "Met"),
         ("A.8.13", "Information backup", "Configurations versioned in Git.", "No scheduled device backup or restore test yet (ISO.2)", "Partial"),
         ("A.8.14", "Redundancy", f"2N at every layer ({ref('ha')}).", "Failover times not yet measured", "Partial"),
-        ("A.8.15", "Logging", "Central collector for devices, firewalls, servers, simulators, admin sessions.", "Retention and protection not configured yet (LOG.2)", "Partial"),
+        ("A.8.15", "Logging", "Central collector for devices, firewalls, servers, simulators, admin sessions.", "No integrity seal (hash chain) or off-site copy; no TLS transport", "Partial"),
         ("A.8.16", "Monitoring activities", "Zabbix on 17 hosts, service triggers, Grafana.", "zabbix_setup.py status: 0 running host unavailable", "Met"),
         ("A.8.17", "Clock synchronisation", "Every device points to SRV-INF-01 (NTP).", "SRV-INF-01 off in the demo profile; IOSvL2 clocks run slow", "Gap"),
         ("A.8.20", "Network security", "Hardening, anti-spoofing, routing protocol authentication (MD5).", "Configurations", "Met"),
@@ -680,7 +688,7 @@ WORKSTREAMS = [  # (work, weight, % done, what proves it / what is left)
     ("Servers and containers (phase 6)", 12, 71, "10 of 14 deployed. SRV-CMP-01..03, SRV-STO-01: configuration generated, not deployed."),
     ("TrueNAS backup NAS (plan 04, NAS.1-NAS.6)", 6, 100, "Installed, bond failover tested (0-1 ping lost), configuration as code (truenas_setup.py), mirror pool, snapshots, nightly pull of SRV-MON-01/SRV-INF-01 (read-only rrsync account), network configs saved by backup_configs.py, restore from a snapshot with the same SHA-256, Zabbix SNMPv3 + trapper items, 3 triggers proven on real faults."),
     ("Administration (ADM.1-ADM.4)", 6, 100, "Webterm, bastion with TOTP, access matrix 16 targets / 0 failure."),
-    ("Log collection (LOG.1-LOG.6)", 8, 25, "Collection works (15 sources). Left: clocks, retention, protection, viewer, proof of each security event."),
+    ("Log collection (LOG.1-LOG.6)", 8, 75, "Every running source proven (syslog_audit.py), rotation 30 days, files protected, read-only HTTPS viewer, 3 demo events found. Left: sender filter + disk queue (LOG.3), NTP in every profile, LOG.6 write-up."),
     ("Zabbix (ZBX.1-ZBX.7)", 8, 85, "17 hosts, service triggers, power alarm in 6-10 s. Left: BGP/OSPF triggers and alert timing (ZBX.7)."),
     ("Grafana (GRF.1-GRF.5)", 6, 90, "Base, offline plugin, data source; NOC dashboard (28 panels, storage row) provisioned and validated on live data, power cut red in 9.6 s. Left: GRF.5 documentation."),
     ("Resilience tests (phase 8)", 8, 10, "Only the power scenario T6 is measured; T1-T5 and M1 are not run."),
@@ -694,7 +702,7 @@ SEC_DOMAINS = [  # (domain, weight %, score now /5, target /5 after the roadmap,
     ("Identity and privileged access", 15, 4.0, 4.5, "OOB + jump host, TOTP on the bastion, named accounts, lockout, SSH only", "Local accounts only (no TACACS+/RADIUS), shared netadmin, no MFA on Zabbix/Grafana/pfSense, console without timeout"),
     ("Cryptography in transit", 10, 2.5, 4.0, "SSH v2, SNMPv3 AES-128, TLS 1.2/1.3 on the web site, HTTPS on pfSense", "Zabbix/Grafana over HTTP, syslog in clear, SNMP v2c on pfSense, MD5 for routing auth, self-signed certificates"),
     ("Hardening and configuration management", 10, 4.0, 4.5, "Generated configs, audit 0 difference, CIS-style IOS hardening, unused ports shut", "No storm-control / DHCP snooping / DAI, no config archive, container images on latest tags"),
-    ("Logging and detection (SIEM)", 15, 2.0, 4.0, "Central collector for every device, firewall blocks and admin sessions logged, Zabbix alarms", "No SIEM, no correlation, no retention or integrity, clocks not synchronised in the demo"),
+    ("Logging and detection (SIEM)", 15, 2.0, 4.0, "Central collector for every device, firewall blocks and admin sessions logged, Zabbix alarms", "No SIEM, no correlation, no integrity seal, clocks not synchronised in the demo"),
     ("Endpoint protection (EDR)", 5, 1.0, 3.5, "auditd on the bastion, Zabbix agents", "No EDR/antivirus, no file integrity monitoring, no host firewall"),
     ("Resilience and availability", 10, 3.5, 4.5, "2N at every layer, CARP + pfsync, HSRP, bonds, power paths A/B", "Failover not measured; DNS/NTP and monitoring are single servers"),
     ("Vulnerability and patch management", 5, 0.5, 3.0, "Fixed, known versions", "No scanner, automatic updates disabled on purpose, no patch cycle"),
@@ -713,7 +721,7 @@ DC_PRACTICES = [  # (real data-center practice, what the lab has, status)
     ("Central AAA (TACACS+ / RADIUS)", "Local accounts on every device", "Gap"),
     ("NTP hierarchy, authenticated", "One NTP server, off in the demo, no authentication", "Partial"),
     ("Redundant DNS", "One DNS server (SRV-INF-01)", "Partial"),
-    ("Central logging with retention", "Collector yes; retention and protection not set", "Partial"),
+    ("Central logging with retention", "Collector, 30-day rotation, read-only viewer; no integrity seal", "Met"),
     ("SIEM with correlation and use cases", "None", "Gap"),
     ("IDS / IPS", "None", "Gap"),
     ("EDR on servers", "None", "Gap"),
@@ -1013,7 +1021,7 @@ THREATS = [  # (threat, example, countermeasure in place, status, what is missin
     ("ARP / DHCP spoofing in a VLAN", "Man in the middle on VLAN 20", "Static addressing, DHCP off", "Gap", "DHCP snooping, DAI"),
     ("Gateway hijack (rogue HSRP/CARP)", "Fake router with higher priority", "HSRP MD5, CARP password", "Met", "-"),
     ("Eavesdropping on management", "Sniffing SNMP or web logins", "SSH, SNMPv3 AES, HTTPS on pfSense", "Partial", "HTTPS on Zabbix/Grafana, TLS syslog, SNMPv3 on pfSense"),
-    ("Log tampering / denial", "Attacker deletes local logs", "Logs copied at once to a separate collector", "Partial", "Retention, permissions, integrity, NTP"),
+    ("Log tampering / denial", "Attacker deletes local logs", "Logs copied at once to a separate collector, 0640 files, viewer cannot write", "Partial", "Integrity seal, off-site copy, NTP"),
     ("Malware on a server", "Crypto-miner on SRV-CMP-01", "Network ACLs limit its reach; Zabbix sees CPU", "Gap", "EDR, FIM, antivirus"),
     ("Unpatched vulnerability", "Known CVE in nginx", "Small images, few services", "Gap", "Scanner, patch cycle"),
     ("Secret leak", "Repository copied", "Private repository, redacted pfSense exports", "Partial", "Vault, rotation"),
@@ -1057,7 +1065,7 @@ SOFTWARE = [  # (software, version, node, how it is configured)
     ("Zabbix agent", "Ubuntu package", "SRV-MON-01, SRV-INF-01, SRV-BASTION", "Passive (10050) or active (10051)"),
     ("dnsmasq, chrony", "Ubuntu packages", "SRV-INF-01", "Zone dc.casa.lab, forwarders 1.1.1.1 / 8.8.8.8; NTP for every device"),
     ("libpam-google-authenticator, auditd", "Ubuntu packages", "SRV-BASTION", "TOTP enforced for SSH, audit of commands"),
-    ("rsyslog", "Alpine 3.20", "SYSLOG", "UDP/TCP 514, one file per source (docker/syslog/rsyslog.conf)"),
+    ("rsyslog + logrotate + viewer", "Alpine 3.20", "SYSLOG", "UDP/TCP 514, one file per source, 30-day rotation, read-only HTTPS viewer (docker/syslog)"),
     ("nginx", "Alpine (latest)", "SRV-WEB-01", "docker/web/default.conf: HTTPS, security headers, /health"),
     ("Python simulators", "Python 3.12 Alpine", "BMS-SIM, SRV-DCIM-01, CCTV-SIM", "docker/bms-sim, dcim, cctv-sim: JSON APIs, events to syslog"),
     ("gns3/webterm + tools", "Debian (latest)", "ADMIN-WS", "Firefox portal, SSH aliases and portal generated from the inventory"),
@@ -1085,7 +1093,7 @@ def siem_edr():
 <h2>Security detection: SIEM, EDR, IDS (honest state)</h2>
 <table><thead><tr><th style="width:18%">Capability</th><th style="width:12%">State</th><th>What exists today</th></tr></thead><tbody>
 <tr><td><b>Supervision (NMS)</b></td><td>{pill("Met")}</td><td>Zabbix: availability, performance, power, racks, web site, collector; alarms in seconds.</td></tr>
-<tr><td><b>Central log collection</b></td><td>{pill("Partial")}</td><td>Every device, firewall, server, simulator and admin session sends to 10.60.0.12. This is the first brick of a SIEM, not a SIEM: no parsing, no correlation, no alert on log content, no retention policy.</td></tr>
+<tr><td><b>Central log collection</b></td><td>{pill("Partial")}</td><td>Every device, firewall, server, simulator and admin session sends to 10.60.0.12. This is the first brick of a SIEM, not a SIEM: no parsing, no correlation, no alert on log content. Retention 30 days and a read-only viewer are in place.</td></tr>
 <tr><td><b>SIEM</b></td><td>{pill("Gap")}</td><td>None. Security events are written but only found by a person who searches the files.</td></tr>
 <tr><td><b>EDR / XDR</b></td><td>{pill("Gap")}</td><td>None. auditd on the bastion only; Zabbix agents give metrics, not security telemetry.</td></tr>
 <tr><td><b>IDS / IPS</b></td><td>{pill("Gap")}</td><td>None. The firewall filters by address and port, it does not inspect content.</td></tr>
@@ -1110,11 +1118,12 @@ needs a bigger host, or stopping simulators while it runs.</li>
 def s_state():
     ws = [[E(w), f"{wt}", f"<b>{d} %</b>{bar(d, tone(d))}", E(ev)] for w, wt, d, ev in WORKSTREAMS]
     feats = [
-        ("Active (running in the demo profile)", "ok", "BGP to ISP-A and ISP-B from EDGE-A, NAT and Internet access, firewall cluster with CARP + pfsync, all firewall rules, core HSRP/OSPF/RPVST+/LACP/ACLs, hall B leafs, DMZ web site with TLS, central syslog, Zabbix on 17 hosts, Grafana with read-only data source, BMS/DCIM simulators, admin webterm, lab proxy."),
+        ("Active (running in the demo profile)", "ok", "BGP to ISP-A and ISP-B from EDGE-A, NAT and Internet access, firewall cluster with CARP + pfsync, all firewall rules, core HSRP/OSPF/RPVST+/LACP/ACLs, hall B leafs, DMZ web site with TLS, central syslog with a read-only viewer, Zabbix on 17 hosts, Grafana with read-only data source, BMS/DCIM simulators, admin webterm, lab proxy."),
         ("Configured and verified, off in the demo (memory)", "wip", "EDGE-B (second border router), LEAF-A1/A2 (hall A), SRV-INF-01 (DNS/NTP), SRV-BASTION (TOTP jump host), CCTV-SIM. They are in the Zabbix maintenance demo-off and start with the full profile."),
         ("Configured, not deployed", "todo", "SRV-CMP-01..03 (application + keepalived VIP), SRV-STO-01 (NFS/iSCSI): netplan and role scripts exist; the VMs were never installed (host RAM)."),
         ("Done (plan 04, profile nas)", "ok", "TrueNAS SRV-BCK-01: configured as code; nightly pulled backups and config backups; restore tested; supervised by Zabbix (pool, snapshot age, failed pulls)."),
-        ("In progress", "wip", "Log viewer and retention (plan 03 S5), cold-start runbook (S6)."),
+        ("Done (plan 03 S5)", "ok", "Log server: every running source proven, 30-day rotation, protected files, read-only HTTPS viewer with login lock and audit trail, demo events found."),
+        ("In progress", "wip", "Cold-start rehearsal and French demo runbook (plan 03 S6)."),
         ("Not configured (planned)", "bad", "Network triggers BGP/OSPF (ZBX.7), firewall LAN test when a core stops (FW.3), flow matrix (FW.4), measured failover T1-T6 and M1, NTP in every profile, HTTPS on Zabbix/Grafana."),
         ("Not in any plan yet", "bad", "SIEM, IDS/IPS, EDR, vulnerability scanning, secrets vault, central AAA, application load balancer, IPv6."),
     ]
@@ -1187,7 +1196,7 @@ auditor asks about first.</p>
 
 
 ROADMAP = [  # (horizon, action, why / control, effort)
-    ("1. Finish the plans", "Log viewer + retention (S5), cold-start runbook (S6)", "Demo-ready, A.8.15", "0.5 day"),
+    ("1. Finish the plans", "Cold-start rehearsal + runbook (S6)", "Demo-ready", "0.5 day"),
     ("1. Finish the plans", "FW.3 firewall LAN side when a core stops, FW.4 flow matrix, FW.5 evidence", "Policy proven end to end, A.8.22", "1 day"),
     ("1. Finish the plans", "ZBX.7 BGP/OSPF triggers and alert timing", "Network faults alarmed, A.8.16", "0.5 day"),
     ("1. Finish the plans", "Resilience campaign T1-T6 and M1, measured (resilience_tests.py)", "Rated-3 claim proven, A.8.14", "1 day"),

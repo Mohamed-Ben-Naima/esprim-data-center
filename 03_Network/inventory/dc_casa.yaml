@@ -19,6 +19,8 @@ services:
   dns: 10.100.0.11
   ntp: 10.100.0.11
   syslog: 10.60.0.12
+  log_retention_days: 30           # collector: daily rotation, gzip, 30 files kept per source (dc/syslog 1.1, LOG.2)
+  log_viewer: https://10.60.0.12/  # read-only viewer, login credentials.admin_user (A.8.15), port 443 = rule T18-6
   monitoring: 10.60.0.11
   snmp_trap: 10.60.0.11
 
@@ -277,7 +279,7 @@ servers:
   SRV-INF-01:  {kind: vm,     tia: EDA-B, vlan: 100, ip: 10.100.0.11, bond: true,  roles: [dns, ntp, dhcp, backup-source]}
   SRV-MON-01:  {kind: vm,     tia: EDA-B, vlan: 60,  ip: 10.60.0.11,  bond: true,  roles: [zabbix, grafana, backup-source], ram: 1536}
   SRV-DCIM-01: {kind: docker, tia: EDA-B, vlan: 70,  ip: 10.70.0.11,  bond: true,  roles: [dcim], image: "dc/dcim:1.0"}
-  SYSLOG:      {kind: docker, tia: EDA-B, vlan: 60,  ip: 10.60.0.12,  bond: false, roles: [syslog], image: "dc/syslog:1.0"}
+  SYSLOG:      {kind: docker, tia: EDA-B, vlan: 60,  ip: 10.60.0.12,  bond: false, roles: [syslog, log-viewer], image: "dc/syslog:1.1"}
   BMS-SIM:     {kind: docker, tia: EDA-B, vlan: 70,  ip: 10.70.0.12,  bond: false, roles: [bms-sim], image: "dc/bms-sim:1.0"}
   CCTV-SIM:    {kind: docker, tia: EDA-B, vlan: 80,  ip: 10.80.0.11,  bond: false, roles: [cctv-sim], image: "dc/cctv-sim:1.0"}
   SRV-WEB-01:  {kind: docker, tia: DMZ,   vlan: 50,  ip: 10.50.0.11,  bond: false, roles: [web], image: "nginx:alpine"}
@@ -328,6 +330,7 @@ web_interfaces:
   - {name: "Grafana", node: SRV-MON-01, url: "http://10.60.0.11:3000/", login: admin, descr: "NOC dashboard"}
   - {name: "BMS-SIM", node: BMS-SIM, url: "http://10.70.0.12:8080/", login: "", descr: "Power paths A and B, load, alarms"}
   - {name: "TrueNAS", node: SRV-BCK-01, url: "https://10.40.0.11/", login: truenas_admin, descr: "Backup NAS: pool, snapshots, backup tasks"}
+  - {name: "Journaux (syslog)", node: SYSLOG, url: "https://10.60.0.12/", login: netadmin, descr: "Central logs, read only: search by source and text"}
   - {name: "DCIM", node: SRV-DCIM-01, url: "http://10.70.0.11:8080/", login: "", descr: "State of the 96 racks"}
   - {name: "Web site (DMZ)", node: SRV-WEB-01, url: "https://10.50.0.11/", login: "", scope: all, descr: "Public site as served inside the DMZ"}
 
@@ -417,8 +420,10 @@ monitoring:
         - {name: "NAS : plus de données de supervision (15 min)", expr: "nodata(/SRV-BCK-01/nas.snapshot.age,15m)=1", severity: average}
     SYSLOG:
       icmp: true
+      web: {name: "Lecteur de journaux", url: "https://10.60.0.12/health", required: "OK logviewer", delay: 60s}
       triggers:
         - {name: "Collecteur syslog injoignable (ICMP)", expr: "max(/SYSLOG/icmpping,#3)=0", severity: high}
+        - {name: "Lecteur de journaux en échec", expr: "last(/SYSLOG/web.test.fail[Lecteur de journaux])<>0", severity: average}
 
 # ---------------------------------------------------------------------------------------------------
 # Security policy (PDF Table 18). Ports: alias names resolved in `port_aliases`.

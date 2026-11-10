@@ -1659,38 +1659,6 @@
             },
             {
                 "filters": {},
-                "link_id": "4a735180-3e42-4c3a-a0c4-a69f86169131",
-                "link_style": {},
-                "nodes": [
-                    {
-                        "adapter_number": 0,
-                        "label": {
-                            "rotation": 0,
-                            "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
-                            "text": "0/0",
-                            "x": -4,
-                            "y": 15
-                        },
-                        "node_id": "a5f83081-cc0a-4a94-96a7-5a6a2ee7c530",
-                        "port_number": 0
-                    },
-                    {
-                        "adapter_number": 6,
-                        "label": {
-                            "rotation": 0,
-                            "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
-                            "text": "6/0",
-                            "x": 61,
-                            "y": 38
-                        },
-                        "node_id": "a8f17b55-86b2-4812-abce-45e437265175",
-                        "port_number": 0
-                    }
-                ],
-                "suspend": false
-            },
-            {
-                "filters": {},
                 "link_id": "519fc84b-08b5-4c5f-bf53-f6d0b3e36f52",
                 "link_style": {},
                 "nodes": [
@@ -1851,32 +1819,6 @@
             },
             {
                 "filters": {},
-                "link_id": "a1b6f986-e6de-42ff-ba63-a30ce21d5dff",
-                "link_style": {},
-                "nodes": [
-                    {
-                        "adapter_number": 0,
-                        "label": {
-                            "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
-                            "text": "0/0"
-                        },
-                        "node_id": "290a60b5-798e-4432-8ae2-8b5821263e00",
-                        "port_number": 0
-                    },
-                    {
-                        "adapter_number": 0,
-                        "label": {
-                            "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
-                            "text": "0/11"
-                        },
-                        "node_id": "cb11e00f-70c1-4a2a-8d30-e7e94e11e31d",
-                        "port_number": 11
-                    }
-                ],
-                "suspend": false
-            },
-            {
-                "filters": {},
                 "link_id": "23f1e547-db5d-4851-aa9f-3c32157970f0",
                 "link_style": {},
                 "nodes": [
@@ -1923,6 +1865,58 @@
                         },
                         "node_id": "9b503135-e7c4-43fb-ae7b-a1ad6d14af12",
                         "port_number": 0
+                    }
+                ],
+                "suspend": false
+            },
+            {
+                "filters": {},
+                "link_id": "32549944-957b-4858-b10a-cd95dbc7f150",
+                "link_style": {},
+                "nodes": [
+                    {
+                        "adapter_number": 0,
+                        "label": {
+                            "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
+                            "text": "0/0"
+                        },
+                        "node_id": "7c018031-9ab1-4e2e-bdfe-dc600f3a5ef0",
+                        "port_number": 0
+                    },
+                    {
+                        "adapter_number": 6,
+                        "label": {
+                            "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
+                            "text": "6/0"
+                        },
+                        "node_id": "a8f17b55-86b2-4812-abce-45e437265175",
+                        "port_number": 0
+                    }
+                ],
+                "suspend": false
+            },
+            {
+                "filters": {},
+                "link_id": "5a0278be-2bc6-4283-ba8c-dc02e92a884f",
+                "link_style": {},
+                "nodes": [
+                    {
+                        "adapter_number": 0,
+                        "label": {
+                            "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
+                            "text": "0/0"
+                        },
+                        "node_id": "9ac088c7-6280-4ba8-9a40-d9f3c9a33a21",
+                        "port_number": 0
+                    },
+                    {
+                        "adapter_number": 0,
+                        "label": {
+                            "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
+                            "text": "0/11"
+                        },
+                        "node_id": "cb11e00f-70c1-4a2a-8d30-e7e94e11e31d",
+                        "port_number": 11
                     }
                 ],
                 "suspend": false
@@ -3549,51 +3543,6 @@
             },
             {
                 "compute_id": "vm",
-                "console": 5042,
-                "console_auto_start": false,
-                "console_type": "telnet",
-                "custom_adapters": [],
-                "first_port_name": null,
-                "height": 59,
-                "label": {
-                    "rotation": 0,
-                    "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
-                    "text": "SYSLOG",
-                    "x": -5,
-                    "y": -25
-                },
-                "locked": false,
-                "name": "SYSLOG",
-                "node_id": "a5f83081-cc0a-4a94-96a7-5a6a2ee7c530",
-                "node_type": "docker",
-                "port_name_format": "Ethernet{0}",
-                "port_segment_size": 0,
-                "properties": {
-                    "adapters": 1,
-                    "aux": 5043,
-                    "console_http_path": "/",
-                    "console_http_port": 80,
-                    "console_resolution": "1024x768",
-                    "container_id": "e7ba836671983391fbecd1706782664113619c65671663e2ecaea5752733335f",
-                    "environment": "TZ=Africa/Casablanca",
-                    "extra_hosts": "",
-                    "extra_volumes": [
-                        "/var/log/remote"
-                    ],
-                    "image": "dc/syslog:1.0",
-                    "mac_address": "02:42:f8:30:81:00",
-                    "start_command": "",
-                    "usage": ""
-                },
-                "symbol": ":/symbols/classic/docker_guest.svg",
-                "template_id": null,
-                "width": 65,
-                "x": -407,
-                "y": 720,
-                "z": 1
-            },
-            {
-                "compute_id": "vm",
                 "console": 5044,
                 "console_auto_start": false,
                 "console_type": "telnet",
@@ -3766,51 +3715,6 @@
             },
             {
                 "compute_id": "vm",
-                "console": 5904,
-                "console_auto_start": false,
-                "console_type": "vnc",
-                "custom_adapters": [],
-                "first_port_name": null,
-                "height": 59,
-                "label": {
-                    "rotation": 0,
-                    "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
-                    "text": "ADMIN-WS",
-                    "x": -8,
-                    "y": -25
-                },
-                "locked": false,
-                "name": "ADMIN-WS",
-                "node_id": "290a60b5-798e-4432-8ae2-8b5821263e00",
-                "node_type": "docker",
-                "port_name_format": "Ethernet{0}",
-                "port_segment_size": 0,
-                "properties": {
-                    "adapters": 1,
-                    "aux": 5053,
-                    "console_http_path": "/",
-                    "console_http_port": 80,
-                    "console_resolution": "1280x800",
-                    "container_id": "bce40393fdcdb7bc852e6867e88a41bef580e337ff76de9aa8107176c7259965",
-                    "environment": "TZ=Africa/Casablanca\nSYSLOG_HOST=10.60.0.12",
-                    "extra_hosts": "",
-                    "extra_volumes": [
-                        "/root"
-                    ],
-                    "image": "dc/admin-ws:1.0",
-                    "mac_address": "02:42:0a:60:b5:00",
-                    "start_command": "",
-                    "usage": ""
-                },
-                "symbol": ":/symbols/classic/computer.svg",
-                "template_id": null,
-                "width": 65,
-                "x": 642,
-                "y": -254,
-                "z": 1
-            },
-            {
-                "compute_id": "vm",
                 "console": 5902,
                 "console_auto_start": false,
                 "console_type": "vnc",
@@ -3877,6 +3781,96 @@
                 "width": 65,
                 "x": -1082,
                 "y": 720,
+                "z": 1
+            },
+            {
+                "compute_id": "vm",
+                "console": 5042,
+                "console_auto_start": false,
+                "console_type": "telnet",
+                "custom_adapters": [],
+                "first_port_name": null,
+                "height": 59,
+                "label": {
+                    "rotation": 0,
+                    "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
+                    "text": "SYSLOG",
+                    "x": -5,
+                    "y": -25
+                },
+                "locked": false,
+                "name": "SYSLOG",
+                "node_id": "7c018031-9ab1-4e2e-bdfe-dc600f3a5ef0",
+                "node_type": "docker",
+                "port_name_format": "Ethernet{0}",
+                "port_segment_size": 0,
+                "properties": {
+                    "adapters": 1,
+                    "aux": 5043,
+                    "console_http_path": "/",
+                    "console_http_port": 80,
+                    "console_resolution": "1024x768",
+                    "container_id": "ff67bf95cd80140a94456032605d07670d39e47a3bd02921e3e6d3d75f1a302a",
+                    "environment": "TZ=Africa/Casablanca\nVIEWER_AUTH=netadmin:pbkdf2_sha256$200000$06bbdd4647a3ba923627ea742bce7ed0$1355f5d06cbeb6af28918d09398712d60bc7406018a8e2ffab10318d4b3d5cb3\nVIEWER_NAMES=10.10.0.1=EDGE-A,10.10.0.2=EDGE-B,10.10.0.11=FW-A,10.10.0.12=FW-B,10.10.0.21=CORE-A,10.10.0.22=CORE-B,10.10.0.31=LEAF-A1,10.10.0.32=LEAF-A2,10.10.0.33=LEAF-B1,10.10.0.34=LEAF-B2,10.20.0.11=SRV-CMP-01,10.20.0.12=SRV-CMP-02,10.20.0.13=SRV-CMP-03,10.30.0.11=SRV-STO-01,10.40.0.11=SRV-BCK-01,10.100.0.11=SRV-INF-01,10.60.0.11=SRV-MON-01,10.70.0.11=SRV-DCIM-01,10.60.0.12=SYSLOG,10.70.0.12=BMS-SIM,10.80.0.11=CCTV-SIM,10.50.0.11=SRV-WEB-01,10.90.0.11=SRV-BASTION,10.90.0.12=ADMIN-WS,127.0.0.1=SYSLOG-viewer\nVIEWER_IP=10.60.0.12\nLOG_RETENTION_DAYS=30",
+                    "extra_hosts": "",
+                    "extra_volumes": [
+                        "/var/log/remote"
+                    ],
+                    "image": "dc/syslog:1.1",
+                    "mac_address": "02:42:01:80:31:00",
+                    "start_command": "",
+                    "usage": ""
+                },
+                "symbol": ":/symbols/classic/docker_guest.svg",
+                "template_id": null,
+                "width": 65,
+                "x": -407,
+                "y": 720,
+                "z": 1
+            },
+            {
+                "compute_id": "vm",
+                "console": 5904,
+                "console_auto_start": false,
+                "console_type": "vnc",
+                "custom_adapters": [],
+                "first_port_name": null,
+                "height": 59,
+                "label": {
+                    "rotation": 0,
+                    "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
+                    "text": "ADMIN-WS",
+                    "x": -8,
+                    "y": -25
+                },
+                "locked": false,
+                "name": "ADMIN-WS",
+                "node_id": "9ac088c7-6280-4ba8-9a40-d9f3c9a33a21",
+                "node_type": "docker",
+                "port_name_format": "Ethernet{0}",
+                "port_segment_size": 0,
+                "properties": {
+                    "adapters": 1,
+                    "aux": 5053,
+                    "console_http_path": "/",
+                    "console_http_port": 80,
+                    "console_resolution": "1280x800",
+                    "container_id": "dc0bbb02bd577cf486f3d6dad5d430bda0f5c8d257c72b7f38dc7fc52077ac83",
+                    "environment": "TZ=Africa/Casablanca\nSYSLOG_HOST=10.60.0.12",
+                    "extra_hosts": "",
+                    "extra_volumes": [
+                        "/root"
+                    ],
+                    "image": "dc/admin-ws:1.0",
+                    "mac_address": "02:42:c0:88:c7:00",
+                    "start_command": "",
+                    "usage": ""
+                },
+                "symbol": ":/symbols/classic/computer.svg",
+                "template_id": null,
+                "width": 65,
+                "x": 642,
+                "y": -254,
                 "z": 1
             }
         ]
