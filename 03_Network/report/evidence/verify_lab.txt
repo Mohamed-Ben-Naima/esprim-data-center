@@ -1,0 +1,65 @@
+# verify_lab.py 2026-11-10 21:05-21:15, profile demo after a cold start (lab_down, stages, lab_up --from 9), demo_check 12/12
+PASS PLT-01   2 replies
+PASS PLT-02   32 nodes listed
+PASS PLT-03   images with problems: 0
+PASS PLT-04   e2fsck exit 0 twice (nodes stopped)
+PASS PLT-05   AC index 0x00000000 on both
+PASS EDGE-01  ISP-A (198.51.100.1) and ISP-B (203.0.113.5) established, a prefix count each
+PASS EDGE-03  Gi0/3 group 1 Active, VIP 10.254.1.6
+PASS EDGE-04  Internet reached (100 %, 80 % when the first ARP is lost)
+N/A  EDGE-05  needs EDGE-B started
+PASS EDGE-06  EDGE-A session up, 1 prefix received
+PASS EDGE-07  0% packet loss
+PASS FW-01    5 x MASTER
+PASS FW-02    5 x BACKUP
+PASS FW-03    syncdev em2, syncpeer FW-B
+PASS FW-03b   syncdev em2, syncpeer FW-A
+PASS FW-04    0.0% packet loss
+PASS FW-05    login page of both firewalls (no wizard)
+PASS FW-06    200 OK, OK SRV-WEB-01 (public DNAT)
+PASS FW-07    0 difference(s)
+PASS FW-08    same number of pf lines on both
+PASS FW-12    15 min on both
+PASS FW-15    Vl902 Active, 902 not on Po1
+PASS CORE-01  Active 20/40/60/100/902, Standby 30/70/80
+PASS CORE-02  Active 30/70/80, Standby the others
+PASS CORE-03  Po1(SU) Gi0/2(P) Gi0/3(P)
+PASS CORE-04  2 x FULL
+PASS CORE-05  root for 20/40/60/100/998, root port Po1 for 30/70/80
+PASS CORE-06  Internet from VLAN 20, source 10.20.0.2
+PASS CORE-07  Gi0/0 20,40,60,100; Gi0/1 30,70,80
+PASS CORE-07b same on LEAF-B2
+PASS LOG-01   one file per source + all.log
+PASS LOG-02   last line less than 5 min old
+PASS LOG-03   marker OK for every running source
+PASS LOG-04   login + search answer
+PASS LOG-05   the 3 demo events found
+PASS WT-01    six paths, ssh = logging wrapper
+PASS WT-02    uptime of the 3 devices
+PASS WT-03    hostname + rule count
+PASS WT-05    session lines of the wrapper
+PASS WT-06    one ssh line per equipment
+LIMIT WT-07    same offset on both (known limit: ADMIN-WS +0000 with tzdata 2026c, Morocco back to UTC+0 on 20 Sep 2026; SYSLOG +0100 with older tz data)
+PASS ACC-02   SSH v2 enabled
+PASS ACC-04   DMZ -> MGMT blocks logged
+PASS PRV-04   Idle EXEC 00:10:00
+PASS PWR-01   A DOWN, B POWERED at 94.2 %
+PASS PWR-02   DEGRADED 96, bms CRITICAL
+PASS PWR-03   BMS alarm lines in the log
+PASS PWR-04   both POWERED, OK 96
+PASS MON-01   active x4
+PASS MON-02   size 7.8G
+PASS MON-03   200, 200
+PASS MON-04   0 empty panel
+PASS MON-05   power problems raised, then resolved (seconds measured)
+PASS WEB-01   proxy listening on 1080
+PASS WEB-02   200 x6
+PASS WEB-02b  log viewer: 303 to its login page
+PASS WEB-03   API login, server running
+PASS WEB-04   Main Org.
+N/A  WEB-05   needs CCTV-SIM started
+PASS DEMO-03  every check OK
+PASS DEMO-04  ssh ok, snmpv3 ok
+PASS DEMO-05  0 deviation, every denied flow traced
+# disruptive pair run at 17:39 the same day: PASS PRV-02 SSH refused after 6 wrong passwords; PASS PRV-03 LOGIN_FAILED then QUIET_MODE_ON
+59 PASS, 0 FAIL, 1 known limit (WT-07), 2 N/A (EDGE-05 needs EDGE-B, WEB-05 needs CCTV-SIM); + PRV-02/03 PASS

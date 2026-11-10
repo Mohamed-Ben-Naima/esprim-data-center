@@ -96,7 +96,9 @@ def main(argv):
 
     rc, out = script("check_dashboard.py")
     row("grafana", rc == 0, (out[-1] if out else "no output"),
-        "python automation/deploy_servers.py --role=grafana SRV-MON-01; empty panel = its host is not reporting")
+        "just after a start some items have no value yet (polled every 5 min): wait 5 min and run demo_check again "
+        "(cold start 10 Nov: 1 empty, 0 five minutes later); still empty = its host is not reporting; deployed "
+        "dashboard differs = python automation/deploy_servers.py --role=grafana SRV-MON-01")
 
     try:
         bms = json.loads(res[1][1] or "{}")

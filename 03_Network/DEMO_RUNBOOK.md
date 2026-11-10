@@ -2,8 +2,10 @@
 
 Tout se lance depuis le PC Windows, dans un terminal ouvert sur le dossier `03_Network`.
 Les identifiants sont ceux du lab (inventaire `inventory/dc_casa.yaml`, rubrique `credentials`) ; ils ne servent nulle part ailleurs.
-Répété à froid le 10 novembre 2026 : arrêt propre en **1 min**, démarrage en **≈ 12 min**, puis **11/11 contrôles OK**
-(en 46 s), sans aucune correction manuelle. Lancer le démarrage **25 min avant** la démonstration.
+Répété à froid le 10 novembre 2026 : arrêt propre en **1 min**, démarrage en **≈ 12 min**, puis **12/12 contrôles OK**
+(en 65 s), sans aucune correction manuelle (après rotation des clés SNMP : les 5 équipements Cisco redémarrent avec le
+nouvel utilisateur). Puis `verify_lab.py` : **59 PASS, 0 FAIL**, 1 limite connue, 2 N/A (`report/evidence/verify_lab.txt`).
+Si `grafana` montre 1 panneau vide juste après le démarrage : attendre 5 min et relancer `demo_check.py`. Lancer le démarrage **25 min avant** la démonstration.
 
 ## 1. Démarrage (T – 25 min)
 

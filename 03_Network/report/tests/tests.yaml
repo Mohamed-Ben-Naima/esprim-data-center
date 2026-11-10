@@ -17,26 +17,26 @@ sections:
         from: Windows host
         command: ping -n 2 192.168.75.128
         expected: 2 replies
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: PLT-02
         proves: The controller reaches the VM and knows the state of every node
         from: Windows host, folder 03_Network
         command: python automation/labctl.py status
         expected: 32 lines; the nodes you started show "started"
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: PLT-03
         proves: No node disk is damaged (run after any host disk incident)
         from: Windows host, folder 03_Network
         command: python automation/gns3vm.py --sudo -f automation/check_disks.sh
         expected: '"No errors were found on the image" on each line, then "images with problems: 0"'
-        verified: 2026-10-12
+        verified: 2026-11-10
 
       - id: PLT-04
         proves: The filesystem inside a server disk is clean (qemu-img check does not look inside)
         from: Windows host, folder 03_Network; the nodes must be stopped
         command: python automation/fsck_servers.py SRV-BASTION SRV-CMP-01
         expected: '"e2fsck exit 0" for each node. Exit 4 means errors: repair with --repair.'
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: PLT-05
         proves: Windows does not spin the VM disk down or suspend its USB link on mains power
         from: Windows host, PowerShell
@@ -44,7 +44,7 @@ sections:
           powercfg /query SCHEME_CURRENT 0012ee47-9041-4b5d-9b77-535fba8b1442 6738e2c4-e8a5-4a42-b16a-e040e769756e
           powercfg /query SCHEME_CURRENT 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226
         expected: "AC index 0x00000000 on both: disk turn-off never, USB selective suspend off"
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: PLT-06
         proves: The external disk holding the VM had no error in the last hour
         from: Windows host, PowerShell
@@ -63,7 +63,7 @@ sections:
         from: EDGE-A console (telnet 192.168.75.128 5004)
         command: show ip bgp summary
         expected: 3 neighbours with a number in the last column (2, 1, 1). EDGE-B shows Idle until it has finished booting (always Idle in the demo profile, where EDGE-B is off).
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: EDGE-02
         proves: EDGE-B has its three BGP sessions
         from: EDGE-B console (5006)
@@ -75,13 +75,13 @@ sections:
         from: EDGE-A console (5004)
         command: show standby brief
         expected: Gi0/3 group 1 Active, standby 10.254.1.3, virtual IP 10.254.1.6
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: EDGE-04
         proves: The edge reaches the real Internet through its provider
         from: EDGE-A console (5004)
         command: ping 8.8.8.8 repeat 5
         expected: '"!!!!!", success rate 100 percent'
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: EDGE-05
         proves: OSPF is up between the two edges
         from: EDGE-A console (5004)
@@ -93,13 +93,13 @@ sections:
         from: ISP-A auxiliary console (5037)
         command: vtysh -c "show ip bgp summary"
         expected: 2 neighbours (EDGE-A, EDGE-B), PfxRcd 1 each
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: EDGE-07
         proves: The provider container reaches the real Internet
         from: ISP-A auxiliary console (5037)
         command: ping -c 2 8.8.8.8
         expected: 0% packet loss
-        verified: 2026-10-12
+        verified: 2026-11-10
 
   - id: FW
     title: Firewalls
@@ -110,25 +110,25 @@ sections:
         from: FW-A shell (VNC 192.168.75.128:5900, option 8)
         command: "ifconfig | grep carp:"
         expected: 5 lines "carp MASTER" (vhid 1, 2, 10, 50, 90), advskew 0
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: FW-02
         proves: FW-B is backup of the five virtual addresses
         from: FW-B shell (VNC 5901, option 8)
         command: "ifconfig | grep carp:"
         expected: 5 lines "carp BACKUP", advskew 100
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: FW-03
         proves: The session table is replicated between the firewalls
         from: FW-A shell, then FW-B shell
         command: ifconfig pfsync0 | grep syncdev
         expected: syncdev em2, syncpeer 10.254.3.2 on FW-A and 10.254.3.1 on FW-B
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: FW-04
         proves: The master firewall reaches the Internet through the edge
         from: FW-A shell
         command: ping -c 2 8.8.8.8
         expected: 0.0% packet loss. On the backup it fails, which is normal.
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: FW-05
         proves: The web interface of each firewall opens on its dashboard
         from: host browser through the proxy (see WEB-01)
@@ -136,26 +136,26 @@ sections:
           open https://10.90.0.1 (master) and https://10.90.0.3 (FW-B)
           login admin + administrator password
         expected: page "fw-a.dc.casa.lab - Status Dashboard" (fw-b on .3), no setup wizard
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: FW-06
         proves: The public web site is published to the Internet side (BGP, static route, port forward, WAN rule)
         from: ISP-A auxiliary console (5037)
         command: printf 'GET /health HTTP/1.0\r\n\r\n' | nc -w 5 192.0.2.80 80
         expected: '"HTTP/1.1 200 OK" and "OK SRV-WEB-01"'
-        verified: 2026-10-12
+        verified: 2026-11-10
 
       - id: FW-07
         proves: Both live firewalls run exactly the configuration generated from the inventory
         from: Windows host, folder 03_Network (ADMIN-WS, FW-A and FW-B running)
         command: python automation/fw_audit.py
         expected: 'every line "[ok]" for FW-A and FW-B (12 configuration sections, 32/32 rules loaded in pf, NAT, CARP roles, no setup wizard), last line "0 difference(s)"'
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: FW-08
         proves: A command can be run on a firewall by the administrator path (SSH from ADMIN-WS)
         from: Windows host, folder 03_Network
         command: python automation/adminws.py fw-a "pfctl -sr | wc -l"
         expected: the number of loaded pf lines (165 on 12 Oct), the same on fw-b
-        verified: 2026-10-12
+        verified: 2026-11-10
 
       - id: FW-09
         proves: A change of the inventory reaches both firewalls without reboot, and nothing else changes
@@ -189,7 +189,7 @@ sections:
         from: Windows host, folder 03_Network
         command: python automation/fw_audit.py
         expected: 'line "[ok] web session timeout: 15 min (generated: 15 min)" for FW-A and FW-B'
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: FW-13
         proves: The Zabbix server port is really open end to end from the bastion (needs SRV-MON-01 running)
         from: SRV-BASTION (ssh bastion from ADMIN-WS)
@@ -224,43 +224,43 @@ sections:
         from: CORE-A console (5010)
         command: show standby brief
         expected: Active on Vl20, Vl40, Vl60, Vl100, Vl902; Standby on Vl30, Vl70, Vl80
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: CORE-02
         proves: CORE-B is the gateway of the other VLANs
         from: CORE-B console (5012)
         command: show standby brief
         expected: Active on Vl30, Vl70, Vl80; Standby on the others
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: CORE-03
         proves: The two links between the cores are bundled by LACP
         from: CORE-A console (5010)
         command: show etherchannel summary | begin Group
         expected: Po1(SU) with Gi0/2(P) Gi0/3(P). Shows (SD) while CORE-B is still booting.
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: CORE-04
         proves: OSPF is up between the cores
         from: CORE-B console (5012)
         command: show ip ospf neighbor
         expected: 2 lines FULL (Vlan998 and Vlan902)
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: CORE-05
         proves: The spanning-tree root of each VLAN is its active gateway
         from: CORE-A console (5010)
         command: show spanning-tree root
         expected: no root port for VLAN 20, 40, 60, 100, 902, 998 (CORE-A is root); root port Po1 for 30, 70, 80
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: CORE-06
         proves: The whole chain core, firewall, NAT, edge, provider works
         from: CORE-A console (5010)
         command: ping 8.8.8.8 source vlan20 repeat 5
         expected: '"!!!!!", source address 10.20.0.2'
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: CORE-07
         proves: Each leaf uplink forwards the VLANs of "its" core
         from: LEAF-B1 console (5018) and LEAF-B2 console (5020)
         command: show interfaces trunk | begin Vlans in spanning
         expected: Gi0/0 forwards 20,40,60,100; Gi0/1 forwards 30,70,80
-        verified: 2026-10-12
+        verified: 2026-11-10
 
   - id: CMP
     title: Compute cluster (application VIP 10.20.0.10, keepalived)
@@ -343,13 +343,13 @@ sections:
         from: SYSLOG auxiliary console (5041)
         command: ls /var/log/remote/
         expected: one file per source (10 network devices 10.10.0.x, servers, simulators) plus all.log; 15 files on 12 Oct
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: LOG-02
         proves: Logs arrive live
         from: SYSLOG auxiliary console (5041)
         command: tail -3 /var/log/remote/all.log
         expected: lines of the last seconds
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: LOG-03
         proves: Every running equipment reaches the collector (marker sent and found)
         from: Windows host, folder 03_Network
@@ -433,19 +433,19 @@ sections:
         from: ADMIN-WS auxiliary console (telnet 192.168.75.128 5053)
         command: command -v ssh firefox-esr curl snmpget dig nc
         expected: six paths; ssh is /usr/local/bin/ssh (the logging wrapper)
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: WT-02
         proves: An administrator opens a real SSH session on a network device by its alias
         from: ADMIN-WS terminal (VNC 192.168.75.128:5904, desktop menu > Terminal)
         command: ssh core-a "show version | include uptime"
         expected: legal banner, password prompt, then "CORE-A uptime is ...". Same for edge-a and leaf-b1.
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: WT-03
         proves: The firewalls are administered by SSH from the same place
         from: ADMIN-WS terminal (VNC 5904)
         command: ssh fw-a "hostname; pfctl -sr | wc -l"
         expected: fw-a.dc.casa.lab and the number of loaded rules (165 on 12 Oct)
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: WT-04
         proves: The browser opens on the portal that lists every web interface and SSH alias
         from: ADMIN-WS desktop (VNC 5904)
@@ -457,13 +457,13 @@ sections:
         from: SYSLOG auxiliary console (5041)
         command: grep admin-ssh /var/log/remote/all.log | tail -2
         expected: 'a "session start" and a "session end ... rc=0" line with the target'
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: WT-06
         proves: The list of aliases is at hand in the terminal
         from: ADMIN-WS terminal or auxiliary console (5053)
         command: dc-hosts
         expected: one line "ssh <alias>  <user>@<address>" per equipment
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: WT-07
         proves: The webterm shows the same local time as the log collector
         from: ADMIN-WS auxiliary console (5053), then SYSLOG auxiliary console (5041)
@@ -487,7 +487,7 @@ sections:
         from: LEAF-B2 console (5020), or any Cisco console
         command: show ip ssh
         expected: '"SSH Enabled - version 2.0". If "SSH Disabled": conf t, crypto key generate rsa modulus 2048, end, write memory'
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: ACC-03
         proves: A refused attempt from an internal network is counted by the core
         from: CORE-A console (5010), after ACC-01
@@ -499,7 +499,7 @@ sections:
         from: SYSLOG auxiliary console (5041), after ACC-01
         command: grep filterlog /var/log/remote/all.log | grep ",10.50.0.11,10.10.0" | tail -2
         expected: 'lines "em5,match,block,in ... tcp ... 10.50.0.11,10.10.0.x,...,22"'
-        verified: 2026-10-12
+        verified: 2026-11-10
 
   - id: PRV
     title: Privileged access rules
@@ -518,13 +518,13 @@ sections:
           ssh leaf-b2      (wrong password, three times in a row)
           ssh leaf-b2      (right password)
         expected: '"Connection refused" from the fifth failed authentication, also with the right password; accepted again after the quiet period (120 s on the device clock, about 4 min in real time on this host)'
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: PRV-03
         proves: The lockout is reported to the log collector
         from: SYSLOG auxiliary console (5041)
         command: grep -E "SEC_LOGIN|QUIET" /var/log/remote/10.10.0.34_*.log | tail -5
         expected: 'lines "LOGIN_FAILED ... Source: 10.90.0.12" then "QUIET_MODE_ON"'
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: PRV-04
         proves: An idle administration session is closed by the device
         from: LEAF-B1 console (5018) for the setting; ADMIN-WS for the behaviour
@@ -532,7 +532,7 @@ sections:
           show line vty 0 | begin Timeouts
           ssh edge-a       (then type nothing)
         expected: 'Idle EXEC 00:10:00; the session is closed by the device ("Connection to ... closed by remote host"). EDGE-A closed an idle session by itself after 634 s of real time (10 min on its clock); LEAF-B1 had not closed it after 840 s because its clock runs slow (known lab limit).'
-        verified: 2026-10-12
+        verified: 2026-11-10
 
       - id: PRV-05
         proves: The image default account cannot open an SSH session any more
@@ -578,19 +578,19 @@ sections:
         from: SRV-BASTION console (5036)
         command: curl -s 'http://10.70.0.12:8080/api/set?UTILITY-A=DOWN&UPS-A=DOWN&GENERATOR=DOWN'
         expected: paths A DOWN and B POWERED, path B load 94.2 %, status CRITICAL
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: PWR-02
         proves: The DCIM follows within its 10 s polling period
         from: SRV-BASTION console (5036), about 15 s later
         command: curl -s http://10.70.0.11:8080/api/summary
         expected: by_status DEGRADED 96, bms_status CRITICAL
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: PWR-03
         proves: The state change is logged centrally
         from: SYSLOG auxiliary console (5041)
         command: grep -i bms /var/log/remote/all.log | tail -5
         expected: lines "BMS-SIM bms" with the alarms raised and cleared
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: PWR-04
         proves: Restoring power clears the alarm (always run after PWR-01)
         from: SRV-BASTION console (5036)
@@ -598,7 +598,7 @@ sections:
           curl -s http://10.70.0.12:8080/api/reset
           curl -s http://10.70.0.11:8080/api/summary
         expected: both paths POWERED at 47.1 %; after 15 s by_status OK 96
-        verified: 2026-10-12
+        verified: 2026-11-10
 
   - id: MON
     title: Monitoring server (SRV-MON-01)
@@ -609,13 +609,13 @@ sections:
         from: SRV-MON-01 console (5034), login ubuntu, then sudo -i
         command: systemctl is-active zabbix-server nginx mariadb php7.4-fpm
         expected: active four times
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: MON-02
         proves: The disk was enlarged (Grafana does not fit on the 2 GB image)
         from: SRV-MON-01 console (5034)
         command: df -h /
         expected: size 7.8G
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: MON-03
         proves: Zabbix and Grafana answer locally
         from: SRV-MON-01 console (5034)
@@ -623,7 +623,7 @@ sections:
           curl -s -m 5 -o /dev/null -w '%{http_code}\n' http://127.0.0.1/
           curl -s -m 5 -o /dev/null -w '%{http_code}\n' http://127.0.0.1:3000/login
         expected: "200, 200"
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: MON-04
         proves: Every panel of the NOC dashboard shows live data (or says "hors profil" for a stopped host)
         from: Windows host, folder 03_Network; lab proxy started
@@ -646,7 +646,7 @@ sections:
         from: Windows host, folder 03_Network
         command: python automation/lab_proxy.py start
         expected: '"LISTEN ... 192.168.75.128:1080" and "SOCKS5 on 192.168.75.128:1080 -> network namespace of ADMIN-WS"'
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: WEB-02
         proves: Each interface answers from the PC
         from: Windows host
@@ -655,19 +655,19 @@ sections:
           URL = https://10.90.0.1/  http://10.60.0.11/  http://10.60.0.11:3000/login
                 http://10.70.0.12:8080/  http://10.70.0.11:8080/  https://10.50.0.11/health
         expected: "200 for each of the six"
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: WEB-03
         proves: Zabbix accepts the administrator and its server process is running
         from: host browser through the proxy (python automation/lab_proxy.py open)
         command: open http://10.60.0.11 and log in as Admin
         expected: 'dashboard "DC Casablanca NOC", no banner "Zabbix server is not running"'
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: WEB-04
         proves: Grafana accepts the administrator
         from: Windows host
         command: curl --socks5 192.168.75.128:1080 -s -u admin:PASSWORD http://10.60.0.11:3000/api/org
         expected: '"name":"Main Org."'
-        verified: 2026-10-12
+        verified: 2026-11-10
       - id: WEB-05
         proves: The CCTV simulator is not reachable from the administration zone (policy)
         from: Windows host

@@ -1,13 +1,14 @@
-# PLAN_03 S6 - demo_check.py 2026-11-10 11:55:20 (profile demo)
+# PLAN_03 S6 - demo_check.py 2026-11-10 21:05:22 (profile demo)
 OK   nodes       20/20 started
-OK   resources   GNS3 VM available 1350 MB, swap 9 MB; host free 1 GB
+OK   resources   GNS3 VM available 1264 MB, swap 95 MB; host free 1.1 GB
 OK   proxy       SOCKS5 192.168.75.128:1080
 OK   SRV-MON-01  mariadb=active zabbix-server=active nginx=active php7.4-fpm=active grafana-server=active
 OK   zabbix      18 hosts, 0 running host(s) not available; service problems: 5
-OK   grafana     panels: 25 with data, 3 hors profil, 0 empty
+OK   grafana     panels: 24 with data, 4 hors profil, 0 empty
 OK   power       paths {'A': 'POWERED', 'B': 'POWERED'}, load {'A': 47.1, 'B': 47.1}, 2 warning(s) (design margin 47.1 % > 45 %)
 OK   syslog      marker found for 8/8 running source(s) that can be driven
-OK   viewer      login ok, 21 sources, last line 2026-11-10T11:55:20
-OK   loop guard  0 LOOPGUARD_BLOCK in 15 min
+OK   viewer      login ok, 23 sources, last line 2026-11-10T21:05:03
+OK   loop guard  0 inconsistent port on 4 switches; 0 block(s) logged in 15 min
+OK   redundancy  HSRP pairs CORE-A/CORE-B complete, CARP FW-A 5 MASTER / FW-B 5 BACKUP
 OK   web         https://10.50.0.11/health -> OK SRV-WEB-01 (TLS)
-11/11 checks OK
+12/12 checks OK
