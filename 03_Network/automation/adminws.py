@@ -59,7 +59,7 @@ def put(alias, local, remote, timeout=60):
     out = gns3vm.run(f"""c=$(docker ps -q --filter name=ADMIN-WS)
 cat > /tmp/ap_put.sh <<'EOP'
 #!/bin/sh
-case "$1" in *sysadmin@*) echo '{c['server_admin_password']}' ;; *) echo '{c['admin_password']}' ;; esac
+case "$1" in *sysadmin@*) echo '{c['server_admin_password']}' ;; *truenas_admin@*) echo '{c['truenas_admin_password']}' ;; *) echo '{c['admin_password']}' ;; esac
 EOP
 chmod 700 /tmp/ap_put.sh; docker cp /tmp/ap_put.sh $c:/tmp/ap_put.sh; docker cp /tmp/adminws_put.bin $c:/tmp/adminws_put.bin
 docker exec -e SSH_ASKPASS=/tmp/ap_put.sh -e SSH_ASKPASS_REQUIRE=force -e DISPLAY=:0 $c sh -c 'timeout {timeout} setsid -w ssh -o NumberOfPasswordPrompts=1 -o LogLevel=ERROR {alias} "cat > {remote}" < /tmp/adminws_put.bin' 2>/dev/null

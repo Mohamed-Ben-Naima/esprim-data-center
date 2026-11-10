@@ -281,10 +281,56 @@ def accounts(lx, name, s):
     return rc
 
 
+PULL_KEY = NET / "configs" / "servers" / "SRV-BCK-01.backup_pull.pub"   # written by truenas_setup.py apply
+
+
+def backup_source(name):
+    """PLAN_04 NAS.5: read-only source for the backups the NAS pulls (rsync over SSH). Account `pull_user` with no
+    password; its only key is the NAS key, usable from the NAS address only, and forced to `sudo rrsync -ro /`
+    (rsync as sender only: no write, no delete, no shell). On SRV-MON-01 a nightly dump of the Zabbix database and
+    the Grafana data lands in /var/backups/dc (01:30), before the 02:00 pull."""
+    if not PULL_KEY.exists():
+        raise SystemExit(f"{PULL_KEY} missing: run `python automation/truenas_setup.py apply` first")
+    T = INV["truenas"]
+    u, nas = T["pull_user"], INV["servers"]["SRV-BCK-01"]["ip"]
+    key = PULL_KEY.read_text(encoding="utf-8").strip()
+    dump = ""
+    if "zabbix" in INV["servers"][name]["roles"]:
+        dump = """mkdir -p /var/backups/dc && chmod 0700 /var/backups/dc
+cat > /usr/local/sbin/dc-dump.sh <<'EOF'
+#!/bin/sh
+# nightly dump for the NAS pull (PLAN_04 NAS.5): Zabbix database + Grafana data, kept 1 copy (history is on the NAS)
+set -e
+umask 077
+mysqldump --single-transaction --quick zabbix | gzip -1 > /var/backups/dc/zabbix.sql.gz.tmp
+mv /var/backups/dc/zabbix.sql.gz.tmp /var/backups/dc/zabbix.sql.gz
+# Grafana writes its SQLite DB continuously: exit code 1 ("file changed as we read it") is accepted
+# plugins and plugins-bundled (~390 MB) come with the package: only the Grafana database and state are kept
+tar --warning=no-file-changed --exclude=./plugins --exclude=./plugins-bundled -czf /var/backups/dc/grafana.tar.gz.tmp -C /var/lib/grafana . || [ $? -eq 1 ]
+mv /var/backups/dc/grafana.tar.gz.tmp /var/backups/dc/grafana.tar.gz
+sha256sum /var/backups/dc/*.gz > /var/backups/dc/SHA256SUMS
+EOF
+chmod 0700 /usr/local/sbin/dc-dump.sh
+echo '30 1 * * * root /usr/local/sbin/dc-dump.sh' > /etc/cron.d/dc-dump
+/usr/local/sbin/dc-dump.sh && ls -la /var/backups/dc
+"""
+    return f"""[ -x /usr/bin/rrsync ] && RR=/usr/bin/rrsync || {{ zcat /usr/share/doc/rsync/scripts/rrsync.gz > /usr/local/bin/rrsync; chmod 0755 /usr/local/bin/rrsync; RR=/usr/local/bin/rrsync; }}
+id {u} >/dev/null 2>&1 || useradd -r -m -d /var/lib/{u} -s /bin/sh -c "NAS backup pull (read-only)" {u}
+passwd -l {u} >/dev/null
+install -d -m 0700 -o {u} -g {u} /var/lib/{u}/.ssh
+echo 'restrict,from="{nas}",command="sudo -n '$RR' -ro /" {key}' > /var/lib/{u}/.ssh/authorized_keys
+chown {u}:{u} /var/lib/{u}/.ssh/authorized_keys && chmod 0600 /var/lib/{u}/.ssh/authorized_keys
+printf 'Defaults!%s env_keep += "SSH_ORIGINAL_COMMAND"\\n{u} ALL=(root) NOPASSWD: %s -ro /\\n' $RR $RR > /etc/sudoers.d/90-{u}
+chmod 0440 /etc/sudoers.d/90-{u} && visudo -cf /etc/sudoers.d/90-{u}
+{dump}echo backup-source-ok"""
+
+
 def run_role(lx, name, role):
     print(f"[{name}] role {role} ...", flush=True)
     if role.startswith("keepalived"):
         body = keepalived(150 if role.endswith("master") else 100)
+    elif role == "backup-source":
+        body = backup_source(name)
     else:
         body = ROLE_SCRIPTS.get(role, "true")
     lx.put_file("/root/role.sh", "set -e\n" + body + "\n", "700")

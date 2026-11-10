@@ -1,0 +1,18 @@
+# NAS.5 restore test and write/delete refusal, 10 Nov 2026 06:44
+1. SRV-INF-01 test file created: 4b54674e044dc4940ff2988f6c99d98a46b1142e0d8581963faeb9bfce7e334d  /etc/dc-restore-test.txt
+2. NAS pull SRV-INF-01:/etc: SUCCESS
+3. snapshot tank/backups@nas5-restore-test (recursive)
+4. file deleted on the server: ls: cannot access '/etc/dc-restore-test.txt': No such file or directory
+5. pull again (delete=True): file in the live backup: False
+6. read from the snapshot on the NAS (rc=0): 4b54674e044dc4940ff2988f6c99d98a46b1142e0d8581963faeb9bfce7e334d  /mnt/tank/backups/servers/.zfs/snapshot/nas5-restore-test/SRV-INF-01/etc/dc-restore-test.txt
+7. upload to SRV-INF-01:/tmp as sysadmin: rc=0
+8. restored: 4b54674e044dc4940ff2988f6c99d98a46b1142e0d8581963faeb9bfce7e334d  /etc/dc-restore-test.txt
+RESULT restore: OK, same SHA-256
+   rrsync refuses a push (write): /usr/bin/rrsync sending to read-only server not allowed | rc=255
+   rrsync refuses --remove-source-files: /usr/bin/rrsync: option --remove-source-files has been disabled on this server. | rc=2
+   rrsync refuses a shell command: /usr/bin/rrsync: SSH_ORIGINAL_COMMAND='rm -rf /etc/dc-restore-test.txt' is not rsync | rc=255
+   account: -rw-r--r-- 1 root root 4053 Nov 10 06:43 | nasbackup L 11/10/2026 -1 -1 -1 -1 | restrict,from="10.40.0.11",command="sudo -n /usr/bin/rrsync -ro /"
+   SRV-MON-01 -> NAS tcp 22: blocked
+   SRV-MON-01 -> NAS tcp 443: blocked
+   SRV-MON-01 -> NAS tcp 80: blocked
+   SRV-MON-01 -> NAS tcp 873: blocked

@@ -1,0 +1,3 @@
+   pull SRV-MON-01:/var/backups/dc: SUCCESS in 110 s
+   pull SRV-MON-01:/etc: SUCCESS in 2 s
+   pull SRV-INF-01:/etc: SUCCESS in 2 s

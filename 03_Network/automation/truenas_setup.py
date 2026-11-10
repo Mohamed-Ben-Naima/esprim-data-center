@@ -1,8 +1,9 @@
 """truenas_setup – configure the TrueNAS SCALE backup NAS SRV-BCK-01 from the inventory (PLAN_04 NAS.4).
 
   python automation/truenas_setup.py check     API reachable, login, version, disks seen
-  python automation/truenas_setup.py apply     pool, datasets, snapshot tasks, services, UI settings (idempotent)
+  python automation/truenas_setup.py apply     pool, datasets, snapshots, pull key/tasks, services, UI (idempotent)
   python automation/truenas_setup.py status    pool health, datasets, snapshot tasks, services, network settings
+  python automation/truenas_setup.py pull      run every rsync PULL task now and wait (NAS.5)
 
 Transport: the TrueNAS JSON-RPC 2.0 API over a websocket (wss://10.40.0.11/api/current), opened through the lab proxy
 (`python automation/lab_proxy.py start`) so the traffic enters the lab as ADMIN-WS and is filtered like any
@@ -293,9 +294,108 @@ def apply_settings(c, done):
     return bool(d)
 
 
+PULL_KEY = NET / "configs" / "servers" / f"{NAME}.backup_pull.pub"
+KEY_NAME = "nas-backup-pull"
+SERVERS_DIR = f"/mnt/{POOL}/backups/servers"
+CONFIGS_DIR = f"/mnt/{POOL}/backups/configs"
+
+
+def pull_jobs():
+    """[(source, remote path, local path, description)] from truenas.pull."""
+    out = []
+    for src, paths in T["pull"].items():
+        for rp in paths:
+            out.append((src, rp.rstrip("/") + "/", f"{SERVERS_DIR}/{src}/{rp.strip('/').replace('/', '_')}",
+                        f"pull {src}:{rp}"))
+    return out
+
+
+def mkdirs(c, path):
+    parts = path.split("/")
+    for i in range(4, len(parts) + 1):                     # below /mnt/<pool>
+        p = "/".join(parts[:i])
+        try:
+            c.call("filesystem.stat", [p])
+        except ApiError:
+            c.call("filesystem.mkdir", [{"path": p, "options": {"mode": "700"}}])
+
+
+def apply_pull(c, done):
+    """Key pair of the NAS, one SSH credential per source (host key pinned by a scan), one rsync PULL task per path."""
+    creds = {k["name"]: k for k in c.call("keychaincredential.query")}
+    if KEY_NAME not in creds:
+        kp = c.call("keychaincredential.generate_ssh_key_pair")
+        creds[KEY_NAME] = c.call("keychaincredential.create", [{"name": KEY_NAME, "type": "SSH_KEY_PAIR",
+                                                                 "attributes": kp}])
+        done.append(f"key pair {KEY_NAME} generated on the NAS (private key never leaves it)")
+    pub = creds[KEY_NAME]["attributes"]["public_key"].strip() + f" {KEY_NAME}@{NAME.lower()}"
+    if not PULL_KEY.exists() or PULL_KEY.read_text(encoding="utf-8").strip() != pub:
+        PULL_KEY.write_text(pub + "\n", encoding="utf-8")
+        done.append(f"public key -> {PULL_KEY.relative_to(NET)}")
+    tasks = {t["desc"]: t for t in c.call("rsynctask.query")}
+    sched = cron(T["pull_schedule"])
+    sched.pop("begin"), sched.pop("end")
+    for src, rp, lp, desc in pull_jobs():
+        ip, cname = INV["servers"][src]["ip"], f"pull-{src}"
+        if cname not in creds:
+            try:
+                hk = c.call("keychaincredential.remote_ssh_host_key_scan", [{"host": ip, "connect_timeout": 10}])
+            except ApiError as e:
+                print(f"   {src} ({ip}) not reachable for the host key scan, skipped: {e}")
+                continue
+            creds[cname] = c.call("keychaincredential.create", [{"name": cname, "type": "SSH_CREDENTIALS", "attributes": {
+                "host": ip, "port": 22, "username": T["pull_user"], "private_key": creds[KEY_NAME]["id"],
+                "remote_host_key": hk, "connect_timeout": 10}}])
+            done.append(f"SSH credential {cname} ({T['pull_user']}@{ip}, host key pinned)")
+        mkdirs(c, lp)
+        want = {"path": lp, "user": "root", "mode": "SSH", "ssh_credentials": creds[cname]["id"], "remotepath": rp,
+                "direction": "PULL", "desc": desc, "schedule": sched, "recursive": True, "times": True,
+                "compress": True, "archive": True, "delete": True, "preserveperm": True, "delayupdates": True,
+                "validate_rpath": False, "enabled": True}
+        cur = tasks.get(desc)
+        if cur is None:
+            c.call("rsynctask.create", [want])
+            done.append(f"rsync task '{desc}' -> {lp}")
+            continue
+        d = {k: v for k, v in want.items() if k not in ("ssh_credentials", "schedule", "validate_rpath") and cur.get(k) != v}
+        if (cur.get("ssh_credentials") or {}).get("id", cur.get("ssh_credentials")) != want["ssh_credentials"]:
+            d["ssh_credentials"] = want["ssh_credentials"]
+        if any(cur["schedule"].get(k) != v for k, v in sched.items()):
+            d["schedule"] = sched
+        if d:
+            c.call("rsynctask.update", [cur["id"], d])
+            done.append(f"rsync task '{desc}': {sorted(d)}")
+    # restores are read by the admin account (group builtin_administrators): the top folders only, the pulled files
+    # keep their source permissions (secrets such as /etc/shadow stay root-only)
+    for d in [SERVERS_DIR] + sorted({f"{SERVERS_DIR}/{src}" for src in T["pull"]}):
+        st = c.call("filesystem.stat", [d])
+        if st["group"] != "builtin_administrators" or st["mode"] & 0o777 != 0o750:
+            c.run("filesystem.setperm", [{"path": d, "user": "root", "group": "builtin_administrators", "mode": "750"}])
+            done.append(f"{d}: root:builtin_administrators 750")
+    st = c.call("filesystem.stat", [CONFIGS_DIR])         # backup_configs.py writes here as the admin account
+    if st["user"] != T["admin_user"]:
+        c.run("filesystem.setperm", [{"path": CONFIGS_DIR, "user": T["admin_user"], "group": "root", "mode": "750"}])
+        done.append(f"{CONFIGS_DIR} owned by {T['admin_user']}")
+
+
+def pull():
+    """Run every rsync task now and wait (NAS.5 test)."""
+    c, rc = connect(), 0
+    for t in c.call("rsynctask.query"):
+        t0 = time.time()
+        try:
+            c.run("rsynctask.run", [t["id"]], timeout=1800)
+            print(f"   {t['desc']}: SUCCESS in {time.time() - t0:.0f} s")
+        except ApiError as e:
+            rc = 1
+            print(f"   {t['desc']}: FAILED {str(e)[:400]}")
+    return rc
+
+
 def apply():
     c, done = connect(), []
     apply_storage(c, done)
+    apply_pull(c, done)
     ui_restarted = apply_settings(c, done)
     print(f"{NAME}: {len(done)} change(s)")
     for x in done:
@@ -318,6 +418,11 @@ def status():
                    f"{s['month']} {s['dow']}' keep {t['lifetime_value']} {t['lifetime_unit']} "
                    f"recursive={t['recursive']} enabled={t['enabled']}")
     out.append(f"snapshots on {POOL}: {c.call('pool.snapshot.query', [[['pool', '=', POOL]], {'count': True}])}")
+    for t in c.call("rsynctask.query"):
+        j = t.get("job") or {}
+        s = t["schedule"]
+        out.append(f"rsync {t['direction']} '{t['desc']}' -> {t['path']} '{s['minute']} {s['hour']} {s['dom']} "
+                   f"{s['month']} {s['dow']}' last={j.get('state', 'never')}")
     out.append("services " + ", ".join(f"{s['service']}={'on' if s['enable'] else 'off'}/{s['state']}"
                                         for s in c.call("service.query")))
     g, a = c.call("system.general.config"), c.call("system.advanced.config")
@@ -342,4 +447,4 @@ def status():
 
 if __name__ == "__main__":
     act = sys.argv[1] if len(sys.argv) > 1 else "status"
-    sys.exit({"check": check, "apply": apply, "status": status}[act]())
+    sys.exit({"check": check, "apply": apply, "status": status, "pull": pull}[act]())

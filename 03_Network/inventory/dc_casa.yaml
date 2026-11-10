@@ -274,8 +274,8 @@ servers:
   SRV-CMP-03:  {kind: vm,     tia: EDA-A, vlan: 20,  ip: 10.20.0.13,  bond: true,  roles: [app-8443, iperf3]}
   SRV-STO-01:  {kind: vm,     tia: EDA-A, vlan: 30,  ip: 10.30.0.11,  bond: true,  roles: [nfs, iscsi]}
   SRV-BCK-01:  {kind: vm,     tia: EDA-B, vlan: 40,  ip: 10.40.0.11,  bond: true,  roles: [nas, backup-pull, snapshots], platform: truenas, ram: 3072, cpus: 2}
-  SRV-INF-01:  {kind: vm,     tia: EDA-B, vlan: 100, ip: 10.100.0.11, bond: true,  roles: [dns, ntp, dhcp]}
-  SRV-MON-01:  {kind: vm,     tia: EDA-B, vlan: 60,  ip: 10.60.0.11,  bond: true,  roles: [zabbix, grafana], ram: 1536}
+  SRV-INF-01:  {kind: vm,     tia: EDA-B, vlan: 100, ip: 10.100.0.11, bond: true,  roles: [dns, ntp, dhcp, backup-source]}
+  SRV-MON-01:  {kind: vm,     tia: EDA-B, vlan: 60,  ip: 10.60.0.11,  bond: true,  roles: [zabbix, grafana, backup-source], ram: 1536}
   SRV-DCIM-01: {kind: docker, tia: EDA-B, vlan: 70,  ip: 10.70.0.11,  bond: true,  roles: [dcim], image: "dc/dcim:1.0"}
   SYSLOG:      {kind: docker, tia: EDA-B, vlan: 60,  ip: 10.60.0.12,  bond: false, roles: [syslog], image: "dc/syslog:1.0"}
   BMS-SIM:     {kind: docker, tia: EDA-B, vlan: 70,  ip: 10.70.0.12,  bond: false, roles: [bms-sim], image: "dc/bms-sim:1.0"}
@@ -285,7 +285,7 @@ servers:
   ADMIN-WS:    {kind: docker, tia: MDA,   vlan: 90,  ip: 10.90.0.12,  bond: false, roles: [admin-desktop, admin-bastion], image: "dc/admin-ws:1.0"}
 
 # SRV-BCK-01 = TrueNAS SCALE backup repository (PLAN_04, decisions D1-D7). Hall B, the other hall than the data.
-# Pull model: the NAS pulls with rsync over SSH from a read-only account `backup` on each source (no rsync daemon in
+# Pull model: the NAS pulls with rsync over SSH from a read-only account `nasbackup` on each source (no rsync daemon in
 # TrueNAS 24.10+); servers hold no credential to the backups. Applied by automation/truenas_setup.py.
 truenas:
   iso: TrueNAS-SCALE-25.10.7.iso                 # E:\ on the PC, /opt/gns3/images/QEMU/ in the GNS3 VM
@@ -302,7 +302,9 @@ truenas:
   snapshots:                                     # periodic snapshot tasks on tank/backups (recursive)
     - {name: hourly, schedule: "0 * * * *", lifetime: 24 HOUR}
     - {name: daily,  schedule: "0 1 * * *", lifetime: 14 DAY}
-  pull:                                          # rsync tasks (pull over SSH, account `backup`, read-only), 02:00
+  pull_user: nasbackup                           # Ubuntu already has a system user `backup` (nologin): own account
+  pull_schedule: "0 2 * * *"                     # nightly, after the 01:30 dumps on SRV-MON-01
+  pull:                                          # rsync tasks: PULL over SSH, forced `sudo rrsync -ro /`, from 10.40.0.11 only
     SRV-MON-01: [/var/backups/dc, /etc]          # /var/backups/dc = nightly Zabbix DB dump + Grafana data
     SRV-INF-01: [/etc]
   ui_session_timeout_min: 15

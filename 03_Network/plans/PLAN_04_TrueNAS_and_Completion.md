@@ -110,16 +110,31 @@ For NAS.5 (backup sources) LEAF-B2 is swapped for SRV-MON-01 (TrueNAS fails over
 | Matrix | `python automation/access_matrix.py` | host | SSH + web to SRV-BCK-01 reachable | 8 tested, **0 failures** |
 | NTP | `chronyc sources` | NAS | 10.100.0.11 | configured; `^?` because SRV-INF-01 is off in profile `nas` |
 
-### NAS.5 — Backups and restore test
-- [ ] `deploy_servers.py --role=backup-source`: account `backup` (rrsync read-only) on SRV-MON-01 and SRV-INF-01,
+### NAS.5 — Backups and restore test — done 10 Nov 2026
+- [x] `deploy_servers.py --role=backup-source`: account `backup` (rrsync read-only) on SRV-MON-01 and SRV-INF-01,
       NAS public key; Zabbix DB dump + Grafana data + /etc pulled nightly (+ once by hand).
-- [ ] `automation/backup_configs.py`: running configs of 8 Cisco devices + 2 pfSense → `tank/backups/configs/<date>/`.
-- [ ] Restore test: delete a file on a server, restore it from a snapshot, compare checksums.
-| Test | Command | From | Expected |
-|---|---|---|---|
-| Pull | rsync task "run now" | TrueNAS | `SUCCESS`, files in the dataset |
-| Server cannot delete | `ssh backup@10.40.0.11` from SRV-MON-01 | SRV-MON-01 | refused (no route/credential) |
-| Restore | `sha256sum` before / after | server | same hash |
+      → account **`nasbackup`** (Ubuntu already has a nologin system user `backup`): password locked, one key =
+      the NAS key, `restrict,from="10.40.0.11",command="sudo -n /usr/bin/rrsync -ro /"` (sudoers limited to that
+      command, SSH_ORIGINAL_COMMAND kept). SRV-MON-01: `/usr/local/sbin/dc-dump.sh` at 01:30 (mysqldump zabbix 6.4 MB,
+      Grafana state 0.13 MB, SHA256SUMS). Grafana `plugins*` (390 MB, shipped by the package) excluded: the first
+      pull of 133 MB ran at ~60 KB/s through CORE-A (IOSv software routing) and was aborted.
+      NAS side in `truenas_setup.py apply`: key pair generated on the NAS (private key never leaves it, public key in
+      `configs/servers/SRV-BCK-01.backup_pull.pub`), one SSH credential per source with the host key pinned by a scan,
+      3 PULL tasks 02:00 (archive, delete, compress) → `tank/backups/servers/<host>/<path>`; `truenas_setup.py pull`
+      runs them now: 110 s / 2 s / 2 s, SUCCESS; sizes equal to the source.
+- [x] `automation/backup_configs.py`: running configs of 8 Cisco devices + 2 pfSense → `tank/backups/configs/<date>/`.
+      → from ADMIN-WS (SSH per device), upload as truenas_admin, SHA256SUMS checked on the NAS. 10 Nov: 4 running
+      devices (CORE-A, LEAF-B1, LEAF-B2, FW-A), the 6 others reported "not running". Configs never go into Git.
+- [x] Restore test: delete a file on a server, restore it from a snapshot, compare checksums.
+      → `report/evidence/nas5_restore.txt`: file on SRV-INF-01 → pull → snapshot `nas5-restore-test` → delete →
+      pull (gone from the live copy) → read from `.zfs/snapshot` → restored: **same SHA-256**.
+| Test | Command | From | Expected | Result 10 Nov |
+|---|---|---|---|---|
+| Pull | `python automation/truenas_setup.py pull` | host | `SUCCESS`, files in the dataset | 3/3 SUCCESS (`nas5_pull.txt`) |
+| Server cannot delete | TCP 22/443/80/873 to 10.40.0.11 | SRV-MON-01 | refused (no route/credential) | all blocked (core ACL) |
+| Pull account read-only | rrsync with a push, `--remove-source-files`, `rm` | SRV-INF-01 | refused | 3/3 refused |
+| Restore | `sha256sum` before / after | server | same hash | same hash |
+| Configs | `python automation/backup_configs.py` | host | one file per running device, checksums OK | 4/4, OK (`nas5_configs.txt`) |
 
 ### NAS.6 — Supervision and documentation
 - [ ] Zabbix host SRV-BCK-01 by SNMPv3 (template "TrueNAS by SNMP" if present in 6.0.48, else "Linux by SNMP"),
