@@ -495,7 +495,11 @@ def gen_leaf(name, d):
             if d["platform"] != "iosvl2":
                 L += [" storm-control broadcast level 10.00", " storm-control action trap"]
         elif p["mode"] == "mgmt":
-            L += [" switchport mode access", " switchport access vlan 10", " switchport nonegotiate", " spanning-tree portfast"]
+            # bpdufilter: every switch's OOB port meets the others on SW-MGMT, so they exchanged BPDUs over VLAN 10 and
+            # the OOB port became a root port; when a core hung, loop guard blocked it and the leaf left management
+            # (LEAF-B1/B2, 10 Nov 2026). VLAN 10 is on this single port per leaf (never trunked): no loop possible.
+            L += [" switchport mode access", " switchport access vlan 10", " switchport nonegotiate", " spanning-tree portfast",
+                  " spanning-tree bpdufilter enable"]
         L += [" no shutdown", "!"]
     L += unused_ports(d, [f"Gi{s}/{i}" for s in range(4) for i in range(4)], l2=True)
     L += ["interface Vlan1", " no ip address", " shutdown", "!",

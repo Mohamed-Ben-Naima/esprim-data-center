@@ -14,6 +14,7 @@ A new RSA key means a new SSH host key: the old one pinned in ADMIN-WS known_hos
 for a key this script made itself over the console, so the next session from ADMIN-WS learns the new key
 (StrictHostKeyChecking accept-new) instead of refusing with "REMOTE HOST IDENTIFICATION HAS CHANGED".
 """
+import re
 import sys
 import threading
 from pathlib import Path
@@ -37,20 +38,32 @@ def heal(api, p, name, fix):
             ios = labctl.Ios(c, u, pw, en)
             ios.login(timeout=300)
             ssh_ok = "SSH Enabled" in ios.cmd("show ip ssh")
-            users = ios.cmd("show snmp user")
             want_user = INV["credentials"]["snmpv3_user"]
-            snmp_ok = f"User name: {want_user}" in users
+            names = set(re.findall(r"User name: (\S+)", ios.cmd("show snmp user")))   # exact names (zbxmon is in zbxmon2)
+            snmp_ok = want_user in names
+            hosts = [l.strip() for l in ios.cmd("show running-config | include ^snmp-server host").splitlines()
+                     if l.startswith("snmp-server host")]
             lines = []
             if not ssh_ok:
                 lines += [l for l in cfg if l.startswith("crypto key generate rsa")]
+            # the user name carries the key version (rotated with the keys): any other user is an old one, removed
+            old = sorted(names - {want_user})
             if not snmp_ok:
                 lines += [l for l in cfg if l.startswith(f"snmp-server user {want_user} ")]
-            state = f"ssh {'ok' if ssh_ok else 'DISABLED'}, snmpv3 user {'ok' if snmp_ok else 'MISSING'}"
+            lines += [f"no snmp-server user {o} G-MONITORING v3" for o in old]
+            # trap destinations name the user too: old ones removed, the configuration's ones put back
+            want_hosts = [l for l in cfg if l.startswith("snmp-server host")]
+            lines += [f"no {h}" for h in hosts if h not in want_hosts]
+            lines += [h for h in want_hosts if h not in hosts]
+            state = (f"ssh {'ok' if ssh_ok else 'DISABLED'}, snmpv3 user {'ok' if snmp_ok else 'MISSING'}"
+                     + (f", old user(s) {', '.join(old)}" if old else "")
+                     + (", trap host updated" if any("snmp-server host" in l for l in lines) else ""))
             if lines and fix:
                 errs = ios.push_config("\n".join(lines))
                 ios.save()
                 ssh_ok = "SSH Enabled" in ios.cmd("show ip ssh")
-                snmp_ok = f"User name: {want_user}" in ios.cmd("show snmp user")
+                names = set(re.findall(r"User name: (\S+)", ios.cmd("show snmp user")))
+                snmp_ok = names == {want_user}
                 state += f" -> repaired ({len(lines)} line(s), {len(errs)} rejected, saved): " \
                          f"ssh {'ok' if ssh_ok else 'STILL DISABLED'}, snmpv3 {'ok' if snmp_ok else 'STILL MISSING'}"
             if fix and any(l.startswith("crypto key") for l in lines):
@@ -58,7 +71,7 @@ def heal(api, p, name, fix):
                 gns3vm.run("a=$(docker ps -q --filter name=ADMIN-WS); [ -n \"$a\" ] && docker exec $a sh -c "
                            f"'ssh-keygen -R {ip} >/dev/null 2>&1; ssh-keygen -R {name.lower()} >/dev/null 2>&1'", sudo=True)
                 state += "; old host key removed from ADMIN-WS known_hosts"
-            OUT[name] = (ssh_ok and snmp_ok, state)
+            OUT[name] = (ssh_ok and snmp_ok and (fix or not old), state)
     except Exception as e:  # noqa: BLE001
         OUT[name] = (False, f"console error: {e}")
 

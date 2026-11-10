@@ -34,10 +34,10 @@ credentials:
   server_admin_password: "Esprim-Srv-2026!"
   bastion_totp_secret: "2N6PYPMNY7M6AUOZ"   # second factor of SRV-BASTION (RFC 6238); code: python automation/totp.py
   enable_secret: "Esprim-Enable-2026!"
-  snmpv3_user: zbxmon
-  snmpv3_auth: "Zbx-Auth-2026!"        # SHA
-  snmpv3_priv: "Zbx-Priv-2026!"        # AES-128
-  snmp_ro_community: "dc-casa-ro"      # pfSense bsnmpd (v2c, restricted to VLAN 60)
+  snmpv3_user: zbxmon2                 # rotated 2026-11-10 (old keys leaked to syslog, FW.4); the name is the key version
+  snmpv3_auth: "Za-0WBG4Gs7FXt8zUry5utR"      # SHA
+  snmpv3_priv: "Zp-D8oG6UAKevWvsMoGHRhY"      # AES-128
+  snmp_ro_community: "ro-t93YUvdMkr4DNx5h"  # pfSense bsnmpd (v2c, restricted to VLAN 60), rotated 2026-11-10
   hsrp_key: "Hsrp-DC-2026"
   ospf_key: "Ospf-DC-2026"
   bgp_password: "Bgp-DC-2026"

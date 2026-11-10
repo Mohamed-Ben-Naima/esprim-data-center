@@ -434,6 +434,10 @@ def main(argv):
             text = (NET / "configs" / f"{name}.cfg").read_text(encoding="utf-8")
             with Console.for_node(api, p, name) as c:
                 ios = Ios(c, u, pw, en); ios.login()
+                # an existing RSA key is kept: regenerating it changed the SSH host key and ADMIN-WS refused the
+                # device ("REMOTE HOST IDENTIFICATION HAS CHANGED", LEAF-B1/B2 10 Nov 2026)
+                if "SSH Enabled" in ios.cmd("show ip ssh"):
+                    text = "\n".join(l for l in text.splitlines() if not l.startswith("crypto key generate rsa"))
                 errs = ios.push_config(text)
                 ios.save()
             print(f"{name}: pushed, {len(errs)} rejected line(s)")

@@ -106,6 +106,16 @@ def post(profile):
     if "ADMIN-WS" in on:
         r = subprocess.run([sys.executable, str(here / "lab_proxy.py"), "start"], capture_output=True, text=True, env=env)
         print("lab proxy:", (r.stdout.strip().splitlines() or ["?"])[-1], flush=True)
+    if "SRV-BCK-01" in on and "ADMIN-WS" in on:
+        # the NAS takes its settings from the inventory at each start (idempotent): a rotated secret (SNMPv3 keys,
+        # 10 Nov 2026) reaches it even when it was off during the rotation. Its API needs a few minutes after boot.
+        end = time.time() + 600
+        while subprocess.run([sys.executable, str(here / "truenas_setup.py"), "check"], capture_output=True,
+                             env=env).returncode != 0 and time.time() < end:
+            time.sleep(20)
+        r = subprocess.run([sys.executable, str(here / "truenas_setup.py"), "apply"], capture_output=True, text=True,
+                           env=env)
+        print("truenas_setup.py apply:", (r.stdout.strip().splitlines() or ["?"])[-1], flush=True)
     if "SRV-MON-01" in on and "ADMIN-WS" in on:
         import zabbix_setup as zs
         end = time.time() + 600

@@ -541,7 +541,7 @@ At nominal load (942 kW of IT shared on two paths) each power path runs at <b>47
 </ul>
 </div><div>
 <ul>
-<li>SNMP version 3 with authentication (SHA) and encryption (AES-128), user <code>zbxmon</code>; traps to 10.60.0.11.</li>
+<li>SNMP version 3 with authentication (SHA) and encryption (AES-128), user <code>zbxmon2</code>; traps to 10.60.0.11.</li>
 <li>Logs with millisecond timestamps to 10.60.0.12; clock from 10.100.0.11.</li>
 <li>Passwords stored encrypted; no source routing, no proxy ARP, no redirects.</li>
 <li>Interface descriptions follow the TIA-606 labelling: <code>MDA-CORE-A:Gi1/0 -&gt; HDA-A-LEAF-A1:Gi0/0</code>.</li>
@@ -1140,8 +1140,8 @@ These accounts exist only inside the GNS3 simulation and are stored in clear tex
 <tr><td>Ubuntu servers, serial console only</td><td><code>ubuntu</code></td><td><code>ubuntu</code> (refused by SSH)</td></tr>
 <tr><td>Ubuntu servers, SSH</td><td><code>sysadmin</code></td><td><code>Esprim-Srv-2026!</code></td></tr>
 <tr><td>SRV-BASTION second factor (TOTP)</td><td><code>sysadmin</code></td><td>secret <code>2N6PYPMNY7M6AUOZ</code>; current code: <code>python automation/totp.py</code></td></tr>
-<tr><td>SNMPv3 (Cisco), SHA + AES-128</td><td><code>zbxmon</code></td><td>auth <code>Zbx-Auth-2026!</code> / priv <code>Zbx-Priv-2026!</code></td></tr>
-<tr><td>SNMP v2c (pfSense, VLAN 60 only)</td><td>community</td><td><code>dc-casa-ro</code></td></tr>
+<tr><td>SNMPv3 (Cisco, TrueNAS), SHA + AES-128</td><td><code>zbxmon2</code></td><td>keys in <code>inventory/dc_casa.yaml</code> (<code>credentials.snmpv3_auth / snmpv3_priv</code>), rotated 10 Nov 2026, not printed here</td></tr>
+<tr><td>SNMP v2c (pfSense, VLAN 60 only)</td><td>community</td><td>in <code>inventory/dc_casa.yaml</code> (<code>credentials.snmp_ro_community</code>), rotated 10 Nov 2026</td></tr>
 <tr><td>HSRP key</td><td>-</td><td><code>Hsrp-DC-2026</code></td></tr>
 <tr><td>OSPF MD5 key</td><td>key 1</td><td><code>Ospf-DC-2026</code></td></tr>
 <tr><td>BGP session password</td><td>-</td><td><code>Bgp-DC-2026</code></td></tr>

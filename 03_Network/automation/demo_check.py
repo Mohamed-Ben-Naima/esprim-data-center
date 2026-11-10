@@ -14,6 +14,7 @@ Checks, in the order of the demo:
   viewer       log viewer login + search over HTTPS
   web          DMZ site https://10.50.0.11/health from ADMIN-WS
   loop guard   no port in loop-inconsistent state now on the cores and leafs (blocks logged in 15 min shown for info)
+  redundancy   HSRP pairs complete on both cores (no "unknown" peer), CARP 5 MASTER on FW-A and 5 BACKUP on FW-B
 Exit code 1 if one check fails.
 """
 import json
@@ -134,6 +135,27 @@ def main(argv):
                                     f"0 inconsistent port on {len(sw)} switches") + f"; {len(loop)} block(s) logged in 15 min",
         "GNS3 VM swapping -> flush swap (resources), stop an unused node; the leafs unblock by themselves")
 
+    # redundancy: both halves of each pair must be alive, not only "started" in GNS3 (CORE-B hung on 10 Nov: started,
+    # silent console, CORE-A carrying everything alone, and the leafs lost management through loop guard)
+    pairs = ssh_batch([("core-a", "show standby brief | include Vl"), ("core-b", "show standby brief | include Vl"),
+                       ("fw-a", "ifconfig | grep -c 'carp: MASTER'"), ("fw-b", "ifconfig | grep -c 'carp: BACKUP'")])
+    bad = []
+    for n, (rc, o) in zip(("CORE-A", "CORE-B"), pairs[:2]):
+        if st.get(n) != "started":
+            bad.append(f"{n} stopped")
+        elif rc != 0 or not o.strip():
+            bad.append(f"{n} no answer")
+        else:
+            groups = [l.split() for l in o.strip().splitlines()]
+            lone = [g[0] for g in groups if "unknown" in g]
+            if lone:
+                bad.append(f"{n}: no peer on {', '.join(lone)}")
+    for n, (rc, o), want in (("FW-A", pairs[2], "MASTER"), ("FW-B", pairs[3], "BACKUP")):
+        if o.strip() != "5":
+            bad.append(f"{n} {o.strip() or 'no answer'} x {want} (expected 5)")
+    row("redundancy", not bad, "HSRP pairs CORE-A/CORE-B complete, CARP FW-A 5 MASTER / FW-B 5 BACKUP" if not bad
+        else "; ".join(bad), "a node 'started' but silent is hung: python automation/labctl.py stop X, then start X, "
+        "then python automation/cisco_heal.py X")
     row("web", res[2][1].strip().startswith("OK"), f"https://10.50.0.11/health -> {res[2][1].strip()[:40] or res[2][0]}",
         "python automation/labctl.py start SRV-WEB-01; FW-A DMZ interface up?")
     bad = sum(1 for ok, _ in ROWS if not ok)

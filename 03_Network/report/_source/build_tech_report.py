@@ -575,7 +575,7 @@ def s12_supervision():
 {h1('supervision')}
 <h2>What Zabbix watches (17 hosts)</h2>
 <table><thead><tr><th style="width:18%">Group</th><th style="width:28%">Hosts</th><th>How</th></tr></thead><tbody>
-<tr><td>DC/Edge, DC/Core, DC/Leaf</td><td>EDGE-A/B, CORE-A/B, LEAF-A1/A2/B1/B2</td><td>SNMPv3 authPriv (user <code>zbxmon</code>, SHA + AES-128), template "Cisco IOS by SNMP" (CPU, memory, interfaces, ICMP)</td></tr>
+<tr><td>DC/Edge, DC/Core, DC/Leaf</td><td>EDGE-A/B, CORE-A/B, LEAF-A1/A2/B1/B2</td><td>SNMPv3 authPriv (user <code>zbxmon2</code>, SHA + AES-128), template "Cisco IOS by SNMP" (CPU, memory, interfaces, ICMP)</td></tr>
 <tr><td>DC/Firewalls</td><td>FW-A, FW-B</td><td>SNMP v2c restricted to VLAN 60, template "PFSense by SNMP"; DHCP/DNS triggers disabled (off by design)</td></tr>
 <tr><td>DC/Servers</td><td>SRV-MON-01, SRV-INF-01, SRV-BASTION</td><td>Zabbix agent (passive, or active for the bastion)</td></tr>
 <tr><td>DC/Services</td><td>BMS-SIM, SRV-DCIM-01, SRV-WEB-01, SYSLOG</td><td>HTTP agent + JSONPath (10 s), web scenario on /health, ICMP</td></tr>
