@@ -202,6 +202,12 @@ sections:
         command: python automation/fw_lan_failover.py --core CORE-A --down 40 --up 200   (then --core CORE-B)
         expected: 'outage about 4.5 s for either core (was >= 150 s with direct cables), 0-1.5 s at the restart'
         verified: 2026-11-10
+      - id: FW-16
+        proves: The backup firewall takes over when the master dies (CARP + pfsync, PLAN_01 T2)
+        from: Windows host, folder 03_Network (evidence report/evidence/fw_lan_failover.txt)
+        command: python automation/fw_lan_failover.py --core FW-A --down 60 --up 300
+        expected: 'FW-B "5 MASTER" during the fault, outage about 3 s; FW-A master again after its reboot (blip 1.5 s)'
+        verified: 2026-11-10
       - id: FW-15
         proves: VLAN 902 is one segment on SW-IN and no longer crosses the core port-channel
         from: ADMIN-WS terminal (ssh core-a / core-b)

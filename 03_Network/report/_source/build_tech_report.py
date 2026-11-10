@@ -691,7 +691,7 @@ WORKSTREAMS = [  # (work, weight, % done, what proves it / what is left)
     ("Log collection (LOG.1-LOG.6)", 8, 75, "Every running source proven (syslog_audit.py), rotation 30 days, files protected, read-only HTTPS viewer, 3 demo events found. Left: sender filter + disk queue (LOG.3), NTP in every profile, LOG.6 write-up."),
     ("Zabbix (ZBX.1-ZBX.7)", 8, 85, "17 hosts, service triggers, power alarm in 6-10 s. Left: BGP/OSPF triggers and alert timing (ZBX.7)."),
     ("Grafana (GRF.1-GRF.5)", 6, 90, "Base, offline plugin, data source; NOC dashboard (28 panels, storage row) provisioned and validated on live data, power cut red in 9.6 s. Left: GRF.5 documentation."),
-    ("Resilience tests (phase 8)", 8, 20, "Power scenario T6 and a core failure through the firewalls (T3 part, 4.5 s, FW.3) measured; T1, T2, T4, T5 and M1 not run."),
+    ("Resilience tests (phase 8)", 8, 35, "Measured: power T6, core failure T3 (4.5 s, FW.3), firewall failover T2 (3.0 s). Not run: T1 edge/ISP, T4 leaf, T5 server NIC, M1; compute HA (keepalived) not deployed."),
     ("Compliance matrix (ISO)", 4, 40, "Mapping written in this report; the automated matrix is not built."),
     ("Documentation (phase 9)", 8, 75, f"Lab guide, Test the Lab ({TESTS_PASSED} dated tests), this report, French demo runbook (cold start rehearsed). French report last rebuilt 12 Oct; screenshots partial."),
 ]
@@ -1153,7 +1153,7 @@ def s_state():
 
 SCENARIOS = [  # (real-life scenario, what the lab does, detected by, verdict)
     ("Provider ISP-A goes down at noon", "BGP hold timer (9 s) expires, routes via ISP-B; inbound traffic follows because our prefix is still announced to ISP-B", "Zabbix interface/ICMP; BGP trigger planned (ZBX.7)", "Handled (target ≤ 10 s, not measured)"),
-    ("FW-A crashes during business hours", "FW-B becomes CARP master with the same connection states: open sessions continue", "Zabbix host unavailable, CARP event in syslog", "Handled (target ≤ 5 s, not measured)"),
+    ("FW-A crashes during business hours", "FW-B becomes CARP master with the same connection states: open sessions continue", "Zabbix host unavailable, CARP event in syslog", "Handled and measured: 3.0 s, 1.5 s when FW-A takes back (T2, 10 Nov 2026)"),
     ("A core switch is replaced (maintenance)", "CORE-B takes every gateway and STP root; LACP and leaf uplinks reroute", "Zabbix", "Handled and measured: 4.5 s through the firewalls (FW.3, SW-IN)"),
     ("Utility power A is lost, UPS A fails", "Path B carries the load; disaster alarm in 6-10 s; the Grafana Énergie row turns red in under 10 s, green 5.5 s after the reset (S4)", "Zabbix triggers on BMS-SIM", "Handled and measured"),
     ("The public web site is hacked", "Attacker is stuck in the DMZ: only port 8443 of the app VIP and DNS/NTP are open; every other try is blocked and logged", "Firewall logs (manual search)", "Contained; detection needs a SIEM"),

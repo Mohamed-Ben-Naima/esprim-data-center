@@ -1,6 +1,7 @@
 """fw_lan_failover – what the firewall LAN side does when a core stops (PLAN_02 FW.3, PLAN_01 T3).
 
   python automation/fw_lan_failover.py [--core CORE-A] [--down 90] [--up 300]
+  python automation/fw_lan_failover.py --core FW-A ...     firewall failover (CARP + pfsync, PLAN_01 T2)
 
 A probe runs in ADMIN-WS (VLAN 90): every 0.5 s an HTTP request to BMS-SIM (10.70.0.12:8080, VLAN 70). The path is
 ADMIN-WS -> FW (ADMIN em6.90) -> FW LAN (lagg0, VLAN 902) -> core HSRP gateway -> leaf -> BMS-SIM, and back.
@@ -70,10 +71,14 @@ def outages(rows, t_from, t_to):
     return out
 
 
-def fw_state(other="CORE-B"):
-    """FW-A lagg members, and the HSRP state seen by the core that stays up."""
-    res = ssh_batch([("fw-a", "ifconfig lagg0 | grep -E 'laggproto|laggport|status'"),
-                     (other.lower(), "show standby brief | include Vl70|Vl902")])
+PAIR = {"CORE-A": "CORE-B", "CORE-B": "CORE-A", "FW-A": "FW-B", "FW-B": "FW-A"}
+CARP = "ifconfig | grep 'carp:' | awk '{print $2}' | sort | uniq -c | tr '\\n' ' '"
+
+
+def fw_state(other="CORE-B", fw="fw-a"):
+    """lagg members of a running firewall, and what the node that stays up reports (HSRP of a core, CARP of a FW)."""
+    res = ssh_batch([(fw, "ifconfig lagg0 | grep -E 'laggproto|laggport|status'"),
+                     (other.lower(), CARP if other.startswith("FW-") else "show standby brief | include Vl70|Vl902")])
     return res[0][1].strip(), res[1][1].strip()
 
 
@@ -83,18 +88,20 @@ def main(argv):
     up = int(argv[argv.index("--up") + 1]) if "--up" in argv else 300
     api = labctl.Gns3()
     p = api.project()
-    say(f"FW.3 - stop {core} for {down} s, probe ADMIN-WS -> {TARGET} every 0.5 s")
+    other = PAIR[core]
+    say(f"stop {core} for {down} s, probe ADMIN-WS -> {TARGET} every 0.5 s")
     lagg, hsrp = fw_state()
     say("before: FW-A " + " | ".join(lagg.splitlines()))
+    if core.startswith("FW-"):
+        say("before: CARP " + " / ".join(f"{f}: " + fw_state(f)[1] for f in ("FW-A", "FW-B")))
     probe("start")
     time.sleep(10)
     t_stop = time.time()
     api.stop(p, api.node(p, core))
     say(f"{core} stopped (GNS3 API)")
     time.sleep(min(30, down))
-    other = "CORE-A" if core == "CORE-B" else "CORE-B"
-    lagg, hsrp = fw_state(other)
-    say(f"+30 s: FW-A " + " | ".join(lagg.splitlines()))
+    lagg, hsrp = fw_state(other, "fw-b" if core == "FW-A" else "fw-a")
+    say(f"+30 s: {'FW-B' if core == 'FW-A' else 'FW-A'} " + " | ".join(lagg.splitlines()))
     say(f"+30 s: {other} " + " | ".join(hsrp.splitlines()))
     time.sleep(max(0, down - 30))
     t_start = time.time()
@@ -113,14 +120,17 @@ def main(argv):
                 + (f"+{e - a:.1f} s = {d:.1f} s" if e else f"end of window (still down, >= {d:.1f} s)"))
             near = [(t, ok) for t, ok in rows if s - 3 <= t <= (e or s) + 2]
             say("   samples: " + " ".join(f"{t - a:+.1f}{'' if ok else 'X'}" for t, ok in near))
-    r = subprocess.run([sys.executable, str(Path(__file__).parent / "cisco_heal.py"), core], capture_output=True,
-                       text=True)
-    say("cisco_heal: " + r.stdout.strip())
+    if core.startswith("FW-"):
+        say("after: CARP " + " / ".join(f"{f}: " + fw_state(f)[1] for f in ("FW-A", "FW-B")))
+    else:
+        r = subprocess.run([sys.executable, str(Path(__file__).parent / "cisco_heal.py"), core], capture_output=True,
+                           text=True)
+        say("cisco_heal: " + r.stdout.strip())
     lagg, hsrp = fw_state()
     say("after: FW-A " + " | ".join(lagg.splitlines()))
     ev = NET / "report" / "evidence" / "fw_lan_failover.txt"
     with open(ev, "a", encoding="utf-8") as f:
-        f.write(f"\n# PLAN_02 FW.3 - fw_lan_failover.py {' '.join(argv)} - {time.strftime('%Y-%m-%d %H:%M')}\n"
+        f.write(f"\n# PLAN_02 FW.3 / PLAN_01 T2-T3 - fw_lan_failover.py {' '.join(argv)} - {time.strftime('%Y-%m-%d %H:%M')}\n"
                 + "\n".join(LOG) + "\n")
     print("->", ev.relative_to(NET))
 
