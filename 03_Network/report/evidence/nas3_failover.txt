@@ -1,0 +1,7 @@
+300 packets transmitted, 300 received, 0% packet loss, time 61461ms
+rtt min/avg/max/mdev = 7.989/14.152/34.175/3.234 ms
+
+250 packets transmitted, 249 received, 0.4% packet loss, time 50491ms
+rtt min/avg/max/mdev = 8.436/14.844/34.897/3.807 ms
+gap after seq 61: 1 lost
+

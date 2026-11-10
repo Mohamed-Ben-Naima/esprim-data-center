@@ -1,27 +1,28 @@
 equipment,access,address,ADMIN-WS,SRV-INF-01,SRV-WEB-01,login,verdict
-EDGE-A,SSH,netadmin@10.10.0.1,reachable,source off,refused,not tested,OK
+EDGE-A,SSH,netadmin@10.10.0.1,–,–,–,–,not running
 EDGE-B,SSH,netadmin@10.10.0.2,–,–,–,–,not running
-FW-A,SSH,admin@10.90.0.2,reachable,source off,refused,not tested,OK
-FW-B,SSH,admin@10.90.0.3,reachable,source off,refused,not tested,OK
-CORE-A,SSH,netadmin@10.10.0.21,reachable,source off,refused,not tested,OK
-CORE-B,SSH,netadmin@10.10.0.22,reachable,source off,refused,not tested,OK
+FW-A,SSH,admin@10.90.0.2,reachable,source off,source off,not tested,OK
+FW-B,SSH,admin@10.90.0.3,–,–,–,–,not running
+CORE-A,SSH,netadmin@10.10.0.21,reachable,source off,source off,not tested,OK
+CORE-B,SSH,netadmin@10.10.0.22,–,–,–,–,not running
 LEAF-A1,SSH,netadmin@10.10.0.31,–,–,–,–,not running
 LEAF-A2,SSH,netadmin@10.10.0.32,–,–,–,–,not running
-LEAF-B1,SSH,netadmin@10.10.0.33,reachable,source off,refused,not tested,OK
-LEAF-B2,SSH,netadmin@10.10.0.34,reachable,source off,refused,not tested,OK
+LEAF-B1,SSH,netadmin@10.10.0.33,reachable,source off,source off,not tested,OK
+LEAF-B2,SSH,netadmin@10.10.0.34,reachable,source off,source off,not tested,OK
 SRV-CMP-01,SSH,sysadmin@10.20.0.11,–,–,–,–,not running
 SRV-CMP-02,SSH,sysadmin@10.20.0.12,–,–,–,–,not running
 SRV-CMP-03,SSH,sysadmin@10.20.0.13,–,–,–,–,not running
 SRV-STO-01,SSH,sysadmin@10.30.0.11,–,–,–,–,not running
-SRV-BCK-01,SSH,sysadmin@10.40.0.11,–,–,–,–,not running
+SRV-BCK-01,SSH,truenas_admin@10.40.0.11,refused (UNEXPECTED),source off,source off,not tested,FAIL
 SRV-INF-01,SSH,sysadmin@10.100.0.11,–,–,–,–,not running
-SRV-MON-01,SSH,sysadmin@10.60.0.11,reachable,source off,refused,not tested,OK
+SRV-MON-01,SSH,sysadmin@10.60.0.11,–,–,–,–,not running
 SRV-BASTION,SSH,sysadmin@10.90.0.11,–,–,–,–,not running
-FW-A,Web – pfSense - cluster,https://10.90.0.1/,reachable,source off,refused,–,OK
-FW-A,Web – pfSense - FW-A,https://10.90.0.2/,reachable,source off,refused,–,OK
-FW-B,Web – pfSense - FW-B,https://10.90.0.3/,reachable,source off,refused,–,OK
-SRV-MON-01,Web – Zabbix,http://10.60.0.11/,reachable,source off,refused,–,OK
-SRV-MON-01,Web – Grafana,http://10.60.0.11:3000/,reachable,source off,refused,–,OK
-BMS-SIM,Web – BMS-SIM,http://10.70.0.12:8080/,reachable,source off,refused,–,OK
-SRV-DCIM-01,Web – DCIM,http://10.70.0.11:8080/,reachable,source off,refused,–,OK
-SRV-WEB-01,Web – Web site (DMZ),https://10.50.0.11/,reachable,source off,itself,–,OK
+FW-A,Web – pfSense - cluster,https://10.90.0.1/,reachable,source off,source off,–,OK
+FW-A,Web – pfSense - FW-A,https://10.90.0.2/,reachable,source off,source off,–,OK
+FW-B,Web – pfSense - FW-B,https://10.90.0.3/,–,–,–,–,not running
+SRV-MON-01,Web – Zabbix,http://10.60.0.11/,–,–,–,–,not running
+SRV-MON-01,Web – Grafana,http://10.60.0.11:3000/,–,–,–,–,not running
+BMS-SIM,Web – BMS-SIM,http://10.70.0.12:8080/,–,–,–,–,not running
+SRV-BCK-01,Web – TrueNAS,https://10.40.0.11/,reachable,source off,source off,–,OK
+SRV-DCIM-01,Web – DCIM,http://10.70.0.11:8080/,–,–,–,–,not running
+SRV-WEB-01,Web – Web site (DMZ),https://10.50.0.11/,–,–,–,–,not running

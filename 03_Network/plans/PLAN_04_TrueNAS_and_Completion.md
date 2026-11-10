@@ -58,13 +58,26 @@ For NAS.5 (backup sources) LEAF-B2 is swapped for SRV-MON-01 (TrueNAS fails over
 | Image | `sha256sum /opt/gns3/images/QEMU/TrueNAS-SCALE-25.10.7.iso` | GNS3 VM | same hash as on `E:` |
 | Node | `python automation/labctl.py status` | host | SRV-BCK-01 qemu, 2 links |
 
-### NAS.3 — Install and network
-- [ ] `lab_up.py --profile nas`; install from the ISO over VNC (`vnc.py`), boot disk = hda; admin `truenas_admin` with
+### NAS.3 — Install and network — done 10 Nov 2026 (SSH and the refusal test move to NAS.4)
+- [x] `lab_up.py --profile nas`; install from the ISO over VNC (`vnc.py`), boot disk = hda; admin `truenas_admin` with
       the inventory password; remove the ISO, boot from disk.
-- [ ] Console: LAGG failover (NIC0 primary, NIC1 backup), 10.40.0.11/24, gateway 10.40.0.1, DNS 10.100.0.11.
+      → profile up in ~8 min, VM 4.2 GB used, host **0.3 GB free** (below the 0.5 GB rule: other host apps; held stable).
+      Install ~10 min, legacy BIOS boot; `nas_node.py --installed`; first boot with **3 GB RAM works**.
+- [x] Console: LAGG failover (NIC0 primary, NIC1 backup), 10.40.0.11/24, gateway 10.40.0.1, DNS 10.100.0.11.
+      → via `midclt` in the Linux shell: bond0 = ens6 (LEAF-B1) + ens7 (LEAF-B2), hostname srv-bck-01.dc.casa.lab.
+      **Finding:** shutting the leaf port does not drop the virtual NIC carrier in GNS3 (no failover, 27 s lost); a GNS3
+      link suspend does. First suspend test: failover lost 1 ping, but the failback left LEAF-B1 with the NAS MAC on its
+      uplink (the single gratuitous ARP was lost). Fix kept as a POSTINIT script: `primary_reselect=failure`,
+      `num_grat_arp=5`, `peer_notif_delay=200` → eth0 suspended 20 s: **0/300 lost**; eth1: **1/250 lost** (0.2 s).
 - [ ] Firewalls: `gen_pfsense.py`, `deploy_pfsense.py` (FW-B first; alias BACKUP_AGENT → BACKUP_PULL), `fw_audit.py` = 0.
-- [ ] Leaf and core configs pushed (descriptions, ACL); access matrix gets the NAS (HTTPS + SSH from ADMIN-WS, refused
+      → generated 10 Nov; **deploy deferred** to the first session where FW-A and FW-B both run (FW-B is off in `nas`).
+      Only difference: the unused alias.
+- [x] Leaf and core configs pushed (descriptions, ACL); access matrix gets the NAS (HTTPS + SSH from ADMIN-WS, refused
       from elsewhere).
+      → new `automation/acl_sync.py` (live ACL vs generated, inserts/removes by sequence number, no open window):
+      CORE-A 6 changes, re-check in line, saved. **CORE-B pending** (off): `acl_sync.py CORE-B` at its next start.
+      Leaf descriptions unchanged. Matrix: TrueNAS web reachable (HTTPS 302 → /ui/ 200, TLS 1.3, port 80 blocked by the
+      firewall); SSH refused = service off until NAS.4; refusal sources (SRV-INF-01, SRV-WEB-01) off in this profile.
 | Test | Command | From | Expected |
 |---|---|---|---|
 | UI | `curl -sk -o /dev/null -w "%{http_code}" https://10.40.0.11/` | ADMIN-WS | `200` |
