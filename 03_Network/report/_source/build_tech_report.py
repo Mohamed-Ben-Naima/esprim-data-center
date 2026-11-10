@@ -677,7 +677,7 @@ WORKSTREAMS = [  # (work, weight, % done, what proves it / what is left)
     ("Firewall cluster (phase 4, FW.1-FW.5)", 12, 70, "Cluster, 33 rules, NAT, CARP, pfsync, audit 0 difference. Left: LAN side when a core stops (FW.3), flow matrix (FW.4), evidence (FW.5)."),
     ("Core and leafs (phase 5)", 10, 100, "VLANs, HSRP, Rapid PVST+, LACP, OSPF, ACLs, VRF MGMT."),
     ("Servers and containers (phase 6)", 12, 71, "10 of 14 deployed. SRV-CMP-01..03, SRV-STO-01: configuration generated, not deployed."),
-    ("TrueNAS backup NAS (plan 04, NAS.1-NAS.6)", 6, 85, "Installed, bond failover tested (0-1 ping lost), configuration as code (truenas_setup.py), mirror pool, snapshots, nightly pull of SRV-MON-01/SRV-INF-01 (read-only rrsync account), network configs saved by backup_configs.py, restore from a snapshot with the same SHA-256. Left: Zabbix supervision."),
+    ("TrueNAS backup NAS (plan 04, NAS.1-NAS.6)", 6, 100, "Installed, bond failover tested (0-1 ping lost), configuration as code (truenas_setup.py), mirror pool, snapshots, nightly pull of SRV-MON-01/SRV-INF-01 (read-only rrsync account), network configs saved by backup_configs.py, restore from a snapshot with the same SHA-256, Zabbix SNMPv3 + trapper items, 3 triggers proven on real faults."),
     ("Administration (ADM.1-ADM.4)", 6, 100, "Webterm, bastion with TOTP, access matrix 16 targets / 0 failure."),
     ("Log collection (LOG.1-LOG.6)", 8, 25, "Collection works (15 sources). Left: clocks, retention, protection, viewer, proof of each security event."),
     ("Zabbix (ZBX.1-ZBX.7)", 8, 85, "17 hosts, service triggers, power alarm in 6-10 s. Left: BGP/OSPF triggers and alert timing (ZBX.7)."),
@@ -790,7 +790,7 @@ in. It is built from one inventory file by scripts, and every claim below has a 
 <table><thead><tr><th style="width:24%">Question</th><th>Answer</th></tr></thead><tbody>
 <tr><td><b>Is it running now?</b></td><td>On {DOC_DATE} the profile <code>nas</code> runs (8 nodes: admin zone, FW-A, CORE-A, hall B leafs, SYSLOG, TrueNAS). The last full run is the demo of 21 October 2026 (20 nodes, cold start in about 10 minutes, 0 running host unavailable in Zabbix).</td></tr>
 <tr><td><b>What is configured?</b></td><td>Every network device, both firewalls, 9 of 14 servers and containers, supervision (Zabbix, Grafana), administration (webterm, bastion).</td></tr>
-<tr><td><b>What is not?</b></td><td>Compute and storage servers (generated, not deployed); TrueNAS supervision in Zabbix (plan 04); log retention and viewer; network triggers (BGP/OSPF); measured failover; SIEM / IDS / EDR (not in the plans).</td></tr>
+<tr><td><b>What is not?</b></td><td>Compute and storage servers (generated, not deployed);  log retention and viewer; network triggers (BGP/OSPF); measured failover; SIEM / IDS / EDR (not in the plans).</td></tr>
 <tr><td><b>How proven?</b></td><td>{TESTS_PASSED} dated tests in "Test the Lab", firewall audit 0 difference, access matrix 0 failure, power test 6-10 s.</td></tr>
 <tr><td><b>Real-world gaps (not met)</b></td><td>{E(", ".join(gaps))}.</td></tr>
 </tbody></table>"""
@@ -1112,7 +1112,7 @@ def s_state():
         ("Active (running in the demo profile)", "ok", "BGP to ISP-A and ISP-B from EDGE-A, NAT and Internet access, firewall cluster with CARP + pfsync, all firewall rules, core HSRP/OSPF/RPVST+/LACP/ACLs, hall B leafs, DMZ web site with TLS, central syslog, Zabbix on 17 hosts, Grafana with read-only data source, BMS/DCIM simulators, admin webterm, lab proxy."),
         ("Configured and verified, off in the demo (memory)", "wip", "EDGE-B (second border router), LEAF-A1/A2 (hall A), SRV-INF-01 (DNS/NTP), SRV-BASTION (TOTP jump host), CCTV-SIM. They are in the Zabbix maintenance demo-off and start with the full profile."),
         ("Configured, not deployed", "todo", "SRV-CMP-01..03 (application + keepalived VIP), SRV-STO-01 (NFS/iSCSI): netplan and role scripts exist; the VMs were never installed (host RAM)."),
-        ("In progress (plan 04)", "wip", "TrueNAS SRV-BCK-01: configured as code; nightly pulled backups and config backups; restore tested. Zabbix supervision to do."),
+        ("Done (plan 04, profile nas)", "ok", "TrueNAS SRV-BCK-01: configured as code; nightly pulled backups and config backups; restore tested; supervised by Zabbix (pool, snapshot age, failed pulls)."),
         ("In progress", "wip", "NOC dashboard (draft of 28 panels), log viewer and retention (plan 03 S5), cold-start runbook (S6)."),
         ("Not configured (planned)", "bad", "Network triggers BGP/OSPF (ZBX.7), firewall LAN test when a core stops (FW.3), flow matrix (FW.4), measured failover T1-T6 and M1, NTP in every profile, HTTPS on Zabbix/Grafana."),
         ("Not in any plan yet", "bad", "SIEM, IDS/IPS, EDR, vulnerability scanning, secrets vault, central AAA, application load balancer, IPv6."),
@@ -1201,7 +1201,7 @@ ROADMAP = [  # (horizon, action, why / control, effort)
     ("3. Detection", "Vulnerability scan (Wazuh or OpenVAS) and a monthly patch window", "Vulnerability 0.5 → 3, A.8.8", "1 day"),
     ("4. Production grade", "Second DNS/NTP server, external heartbeat for monitoring, TACACS+ with MFA", "Remove single points of failure", "2 days"),
     ("4. Production grade", "HAProxy pair (keepalived) in the DMZ, WAF, provider DDoS service", "Load balancing and exposure protection", "2 days"),
-    ("1. Finish the plans", "TrueNAS NAS.6: Zabbix supervision of the NAS and of the backup jobs (plan 04)", "Detect a failed backup, A.8.13", "0.5 day"),
+    ("2. Production grade", "Second backup copy off site (TrueNAS replication to another site or cloud), immutable snapshots", "3-2-1 rule, ransomware, A.8.13", "1 day"),
     ("4. Production grade", "IPv6 dual stack, RPKI origin validation; spine-leaf EVPN-VXLAN if the site grows", "Real-world parity", "weeks"),
 ]
 

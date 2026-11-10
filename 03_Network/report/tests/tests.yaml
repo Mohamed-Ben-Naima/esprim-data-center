@@ -5,7 +5,7 @@
 #  Never set a date for a test that was not actually run. Passwords are not written here: see the inventory.
 #  limit: text  -> the test does not pass and this is accepted and documented as a limit of the lab.
 # =====================================================================================================
-updated: 2026-10-12
+updated: 2026-11-10
 
 sections:
   - id: PLT
@@ -585,3 +585,62 @@ sections:
         command: curl --socks5 192.168.75.128:1080 -s -m 8 -o NUL -w "%{http_code}" http://10.80.0.11:8080/
         expected: "000 (no answer): port 8080 is opened to VLAN 70 only"
         verified: 2026-10-12
+
+  - id: NAS
+    title: Backup NAS (SRV-BCK-01, TrueNAS SCALE)
+    needs: "profile nas (python automation/lab_up.py --profile nas) + SRV-MON-01 and SRV-INF-01; lab proxy started"
+    tests:
+      - id: NAS-01
+        proves: The NAS configuration matches the inventory (pool, snapshots, pull tasks, services, UI)
+        from: Windows host, folder 03_Network
+        command: python automation/truenas_setup.py apply
+        expected: '"0 change(s)", then pool tank ONLINE MIRROR(2 disks), 2 snapshot tasks, 3 rsync PULL tasks, only ssh and snmp running'
+        verified: 2026-11-10
+      - id: NAS-02
+        proves: The bond fails over without cutting the service (one leaf link lost)
+        from: Windows host (GNS3 link suspend LEAF-B1 Gi0/2) + ping from ADMIN-WS
+        command: ping -i 0.1 10.40.0.11 while the link SRV-BCK-01 eth0 - LEAF-B1 Gi0/2 is suspended for 20 s
+        expected: "0 to 2 pings lost (a switchport shutdown does NOT drop the virtual NIC carrier in GNS3)"
+        verified: 2026-11-10
+      - id: NAS-03
+        proves: Settings and bond tuning survive a reboot
+        from: Windows host
+        command: python automation/truenas_setup.py status   (after a reboot of the NAS)
+        expected: 'same status as before; init script 1 POSTINIT enabled; primary_reselect=failure on bond0'
+        verified: 2026-11-10
+      - id: NAS-04
+        proves: The NAS pulls the backups from the servers
+        from: Windows host, folder 03_Network
+        command: python automation/truenas_setup.py pull
+        expected: 3 lines "SUCCESS" (SRV-MON-01 dumps and /etc, SRV-INF-01 /etc)
+        verified: 2026-11-10
+      - id: NAS-05
+        proves: A server cannot reach the NAS (no way to delete the backups)
+        from: SRV-MON-01 console
+        command: timeout 5 bash -c '</dev/tcp/10.40.0.11/22' || echo blocked    (also 443, 80, 873)
+        expected: blocked for each port (core ACL)
+        verified: 2026-11-10
+      - id: NAS-06
+        proves: The pull account can only read
+        from: SRV-INF-01 console (root)
+        command: sudo -u nasbackup env SSH_ORIGINAL_COMMAND='rsync --server -logDtpre.iLsfxC . /etc/' sudo -n /usr/bin/rrsync -ro /
+        expected: '"sending to read-only server not allowed"'
+        verified: 2026-11-10
+      - id: NAS-07
+        proves: A deleted file comes back from a snapshot, identical
+        from: Windows host (scripted test, evidence report/evidence/nas5_restore.txt)
+        command: create a file on SRV-INF-01, pull, snapshot, delete, pull, copy back from .zfs/snapshot, sha256sum
+        expected: same SHA-256 before and after
+        verified: 2026-11-10
+      - id: NAS-08
+        proves: The network configurations are saved on the NAS
+        from: Windows host, folder 03_Network
+        command: python automation/backup_configs.py
+        expected: 'one file per running Cisco device / firewall, "check on the NAS: OK"'
+        verified: 2026-11-10
+      - id: NAS-09
+        proves: Zabbix raises an alarm when the pool degrades, a pull fails or snapshots stop
+        from: Windows host (scripted faults, evidence report/evidence/nas6_triggers.txt)
+        command: offline one mirror disk; stop sshd on SRV-INF-01 and run its pull; send an old snapshot age
+        expected: 'problems "Pool tank pas ONLINE" (disaster), "Tâche de sauvegarde en échec", "Dernier snapshot plus vieux que 2 h" (high) raised, then resolved'
+        verified: 2026-11-10

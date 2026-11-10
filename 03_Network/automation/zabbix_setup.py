@@ -31,7 +31,7 @@ PROXY = ("192.168.75.128", 1080)
 DEFAULT_PASSWORD = "zabbix"            # Zabbix package default, replaced by `apply`
 IF_AGENT, IF_SNMP = 1, 2
 AVAIL = {"0": "unknown", "1": "available", "2": "UNAVAILABLE"}
-SIMPLE, HTTP_AGENT, DEPENDENT = 3, 19, 18                 # item types
+SIMPLE, HTTP_AGENT, DEPENDENT, TRAPPER = 3, 19, 18, 2     # item types
 VTYPE = {"float": 0, "char": 1, "uint": 3, "text": 4}
 SEVERITY = {"info": 1, "warning": 2, "average": 3, "high": 4, "disaster": 5}
 JSONPATH, ON_FAIL_SET = 12, 2                              # preprocessing step type, error handler "set value to"
@@ -113,6 +113,13 @@ def wanted_hosts():
                      "details": {"version": "2", "bulk": "1", "community": cred["snmp_ro_community"]}}
         out.append({"name": name, "group": g[d["role"]], "templates": how["templates"], "interface": iface,
                     "off_triggers": how.get("off_triggers", [])})
+    for name, d in MON.get("snmp_servers", {}).items():           # PLAN_04 NAS.6: SNMPv3 instead of an agent
+        iface = {"type": IF_SNMP, "ip": INV["servers"][name]["ip"], "port": "161",
+                 "details": {"version": "3", "bulk": "1", "securityname": cred["snmpv3_user"], "securitylevel": "2",
+                             "authprotocol": "1", "authpassphrase": cred["snmpv3_auth"],
+                             "privprotocol": "1", "privpassphrase": cred["snmpv3_priv"], "contextname": ""}}
+        out.append({"name": name, "group": g[d.get("group", "server")], "templates": d["templates"],
+                    "fallback": d.get("fallback", []), "interface": iface})
     for name, a in MON["agents"].items():
         active = a["mode"] == "active"
         out.append({"name": name, "group": g["server"],
@@ -135,6 +142,10 @@ def wanted_items(name, svc, interfaceid, master_itemid=None):
             out[i["key"]] = {"name": i["name"], "key_": i["key"], "type": DEPENDENT, "value_type": VTYPE[i["type"]],
                              "master_itemid": master_itemid, "delay": "0", "units": i.get("units", ""),
                              "preprocessing": [step]}
+    if svc.get("trapper"):                             # values pushed by the host itself (Zabbix sender)
+        for i in svc["items"]:
+            out[i["key"]] = {"name": i["name"], "key_": i["key"], "type": TRAPPER, "value_type": VTYPE[i["type"]],
+                             "trapper_hosts": svc["trapper"]["allowed"], "units": i.get("units", "")}
     if svc.get("icmp"):
         out["icmpping"] = {"name": "ICMP ping", "key_": "icmpping", "type": SIMPLE, "value_type": VTYPE["uint"],
                            "delay": "30s", "interfaceid": interfaceid}
@@ -157,8 +168,8 @@ def differs(have, want):
 
 def apply_services(z, group_ids):
     """ZBX.6: service hosts in DC/Services with HTTP-agent + dependent items, web scenario, ICMP, triggers."""
-    gid = group_ids[MON["groups"]["service"]]
     for name, svc in MON["services"].items():
+        gid = group_ids[MON["groups"][svc.get("group", "service")]]
         notes = []
         ip = INV["servers"][name]["ip"]
         h = z.call("host.get", {"output": ["hostid"], "filter": {"host": name}, "selectInterfaces": ["interfaceid", "ip"]})
@@ -306,8 +317,13 @@ def apply():
             print("group created:", name)
     # 4. hosts
     want = wanted_hosts()
-    names = sorted({t for h in want for t in h["templates"]})
+    names = sorted({t for h in want for t in h["templates"] + h.get("fallback", [])})
     tpl = {t["host"]: t["templateid"] for t in z.call("template.get", {"output": ["host"], "filter": {"host": names}})}
+    for h in want:                                     # a template absent from this Zabbix version: its fallback
+        if h.get("fallback") and any(t not in tpl for t in h["templates"]):
+            print(f"host {h['name']}: {h['templates']} not found, fallback {h['fallback']}")
+            h["templates"] = h["fallback"]
+    names = sorted({t for h in want for t in h["templates"]})
     missing = set(names) - set(tpl)
     if missing:
         raise ZabbixError(f"templates not found: {', '.join(sorted(missing))}")

@@ -11,6 +11,7 @@ administrator. Standard library only: a minimal websocket client (RFC 6455, clie
 Login with `truenas_admin` / `credentials.truenas_admin_password`. Every `apply` step reads first, then changes only
 what differs from the inventory (`truenas:` section).
 """
+import ast
 import base64
 import json
 import os
@@ -19,6 +20,7 @@ import ssl
 import struct
 import sys
 import time
+import zlib
 from pathlib import Path
 
 import yaml
@@ -378,6 +380,36 @@ def apply_pull(c, done):
         done.append(f"{CONFIGS_DIR} owned by {T['admin_user']}")
 
 
+SENDER = Path(__file__).with_name("truenas_zbx_sender.py")
+SENDER_DESC = "Zabbix trapper: pool health, snapshot age, failed pulls (PLAN_04 NAS.6)"
+
+
+def apply_monitoring(c, done):
+    """Cron job every 5 min (root): truenas_zbx_sender.py embedded in the command (nothing to copy on the NAS);
+    TrueNAS limits a command to 1024 characters: docstring dropped, zlib + base64."""
+    tree = ast.parse(SENDER.read_text(encoding="utf-8"))
+    tree.body = tree.body[1:]
+    b64 = base64.b64encode(zlib.compress(ast.unparse(tree).encode(), 9)).decode()
+    cmd = (f"python3 -c \"import zlib,base64;exec(zlib.decompress(base64.b64decode('{b64}')))\" "
+           f"{SVC['monitoring']} {NAME}")
+    if len(cmd) > 1024:
+        raise SystemExit(f"{SENDER.name}: cron command {len(cmd)} > 1024 characters, shorten the script")
+    want = {"user": "root", "description": SENDER_DESC, "enabled": True, "stdout": True, "stderr": False,
+            "command": cmd,
+            "schedule": {"minute": "*/5", "hour": "*", "dom": "*", "month": "*", "dow": "*"}}
+    cur = next((j for j in c.call("cronjob.query") if j["description"] == SENDER_DESC), None)
+    if cur is None:
+        c.call("cronjob.create", [want])
+        done.append("cron job Zabbix sender (every 5 min)")
+        return
+    d = {k: v for k, v in want.items() if k != "schedule" and cur.get(k) != v}
+    if any(cur["schedule"].get(k) != v for k, v in want["schedule"].items()):
+        d["schedule"] = want["schedule"]
+    if d:
+        c.call("cronjob.update", [cur["id"], d])
+        done.append(f"cron job Zabbix sender: {sorted(d)}")
+
+
 def pull():
     """Run every rsync task now and wait (NAS.5 test)."""
     c, rc = connect(), 0
@@ -396,6 +428,7 @@ def apply():
     c, done = connect(), []
     apply_storage(c, done)
     apply_pull(c, done)
+    apply_monitoring(c, done)
     ui_restarted = apply_settings(c, done)
     print(f"{NAME}: {len(done)} change(s)")
     for x in done:

@@ -355,7 +355,8 @@ monitoring:
     SRV-INF-01:  {mode: passive}   # TCP 10050 from VLAN 60 (core ACL T18-7)
     SRV-BASTION: {mode: active}    # VLAN 90 reaches the server on TCP 10051 (rule EXT-8)
   snmp_servers:                    # servers polled by SNMPv3 (zbxmon) instead of an agent (PLAN_04 NAS.6)
-    SRV-BCK-01: {templates: ["TrueNAS by SNMP"], fallback: ["Linux by SNMP"]}
+    # Zabbix 6.0 ships "TrueNAS CORE by SNMP": same enterprise MIB 50536 (zpool table) as the SCALE agent (NAS.6)
+    SRV-BCK-01: {group: storage, templates: ["TrueNAS CORE by SNMP"], fallback: ["Linux by SNMP"]}
   # ZBX.6 services (group DC/Services), polled from SRV-MON-01: one HTTP-agent item reads the JSON (`source`), dependent
   # items pick values with JSONPath (`default` = value when the key is absent), `web` = web scenario, `icmp` = ping.
   # Thresholds: design Table 22 (path load > 45 % warning, > 50 % high: N+N redundancy no longer assured).
@@ -402,6 +403,18 @@ monitoring:
       web: {name: "Site web DMZ", url: "https://10.50.0.11/health", required: "OK SRV-WEB-01", delay: 30s}
       triggers:
         - {name: "Site web DMZ en échec", expr: "last(/SRV-WEB-01/web.test.fail[Site web DMZ])<>0", severity: high}
+    SRV-BCK-01:                    # what SNMP does not expose, pushed every 5 min by the NAS (truenas_zbx_sender.py)
+      group: storage
+      trapper: {allowed: 10.40.0.11}
+      items:
+        - {key: "nas.pool.health[tank]", name: "Pool tank - état ZFS",          type: char}
+        - {key: nas.snapshot.age,        name: "Âge du dernier snapshot",       type: uint, units: s}
+        - {key: nas.rsync.failed,        name: "Tâches de sauvegarde en échec", type: uint}
+      triggers:
+        - {name: "Pool tank pas ONLINE", expr: 'last(/SRV-BCK-01/nas.pool.health[tank])<>"ONLINE"', severity: disaster}
+        - {name: "Dernier snapshot plus vieux que 2 h", expr: "last(/SRV-BCK-01/nas.snapshot.age)>7200", severity: high}
+        - {name: "Tâche de sauvegarde en échec", expr: "last(/SRV-BCK-01/nas.rsync.failed)>0", severity: high}
+        - {name: "NAS : plus de données de supervision (15 min)", expr: "nodata(/SRV-BCK-01/nas.snapshot.age,15m)=1", severity: average}
     SYSLOG:
       icmp: true
       triggers:

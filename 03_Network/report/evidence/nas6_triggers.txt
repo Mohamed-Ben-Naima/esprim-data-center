@@ -1,0 +1,14 @@
+# NAS.6 trigger tests (real faults except 3), 10 Nov 2026
+06:51:26 start: problems on SRV-BCK-01 = ['TrueNAS CORE: High ICMP ping loss']
+06:51:27 1. disk sdc offline -> pool DEGRADED
+06:51:35    Zabbix problem 'Pool tank pas ONLINE' (disaster): RAISED
+06:51:38    disk online, pool ONLINE; problem RESOLVED
+06:51:50 2. sshd stopped on SRV-INF-01
+06:51:52    pull SRV-INF-01:/etc: FAILED (rsynctask.run: job 250 FAILED: [EFAULT] rsync command returned 255 - UNKNOWN. Check logs for further information.)
+06:51:55    Zabbix problem 'Tâche de sauvegarde en échec' (high): RAISED
+06:52:00    sshd started again
+06:52:10    pull again: SUCCESS; problem RESOLVED
+06:52:17 3. forged nas.snapshot.age=9000 from the NAS: {"response":"success","info":"processed: 1; failed: 0; total: 1; seconds spent: 0.000406"}
+06:52:18    Zabbix problem 'Dernier snapshot plus vieux que 2 h' (high): RAISED
+06:52:20    real value sent again: problem RESOLVED
+06:52:21 end: problems on SRV-BCK-01 = ['TrueNAS CORE: High ICMP ping loss']

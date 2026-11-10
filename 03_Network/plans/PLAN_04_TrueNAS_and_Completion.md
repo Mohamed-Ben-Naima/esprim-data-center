@@ -136,10 +136,21 @@ For NAS.5 (backup sources) LEAF-B2 is swapped for SRV-MON-01 (TrueNAS fails over
 | Restore | `sha256sum` before / after | server | same hash | same hash |
 | Configs | `python automation/backup_configs.py` | host | one file per running device, checksums OK | 4/4, OK (`nas5_configs.txt`) |
 
-### NAS.6 — Supervision and documentation
-- [ ] Zabbix host SRV-BCK-01 by SNMPv3 (template "TrueNAS by SNMP" if present in 6.0.48, else "Linux by SNMP"),
+### NAS.6 — Supervision and documentation — done 10 Nov 2026
+- [x] Zabbix host SRV-BCK-01 by SNMPv3 (template "TrueNAS by SNMP" if present in 6.0.48, else "Linux by SNMP"),
       triggers: pool not ONLINE (disaster), last snapshot older than 2 h (high), backup task failed (high).
-- [ ] Reports: technical report data lists, lab guide section 10, Test the Lab entries; commit.
+      → 6.0.48 has **"TrueNAS CORE by SNMP"** (same enterprise MIB 50536: the SCALE agent answers the zpool table;
+      a few CORE-only OIDs are "not supported"); host in DC/Storage, SNMPv3 interface available. Snapshot age and
+      task state are not in any MIB: **trapper items** fed every 5 min by a TrueNAS cron job
+      (`automation/truenas_zbx_sender.py`, embedded zlib+base64 in the command — TrueNAS limit 1024 characters —,
+      Zabbix sender protocol to 10.60.0.11:10051, allowed host 10.40.0.11 only). `zabbix_setup.py` now handles
+      `monitoring.snmp_servers` (with template fallback) and `trapper` service items; 4 triggers incl. nodata 15 min.
+      **Tests on real faults** (`nas6_triggers.txt`): disk sdc offline → pool DEGRADED → disaster raised in 8 s,
+      cleared after `pool.online`; sshd stopped on SRV-INF-01 → pull FAILED → high raised in 3 s, cleared after a good
+      pull; forged snapshot age 9000 s sent from the NAS → high raised in 1 s, cleared. ICMP loss 33-67 % seen in the
+      first two checks (VM busy with the pulls), 0 % since.
+- [x] Reports: technical report data lists, lab guide section 10, Test the Lab entries; commit.
+      → lab guide 5.7 (SRV-BCK-01 row), scripts table, section 10; Test the Lab section NAS (9 tests, dated).
 
 ## Then — finish the open work (each one session)
 

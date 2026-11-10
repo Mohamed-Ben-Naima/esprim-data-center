@@ -1,0 +1,23 @@
+Admin password: already the inventory one
+timezone: Africa/Casablanca (unchanged)
+host EDGE-A: up to date
+host EDGE-B: up to date
+host FW-A: up to date
+host FW-B: up to date
+host CORE-A: up to date
+host CORE-B: up to date
+host LEAF-A1: up to date
+host LEAF-A2: up to date
+host LEAF-B1: up to date
+host LEAF-B2: up to date
+host created: SRV-BCK-01
+host SRV-MON-01: up to date
+host SRV-INF-01: up to date
+host SRV-BASTION: up to date
+service BMS-SIM: up to date
+service SRV-DCIM-01: up to date
+service SRV-WEB-01: up to date
+service SRV-BCK-01: item nas.pool.health[tank] created; item nas.snapshot.age created; item nas.rsync.failed created; trigger created: Pool tank pas ONLINE; trigger created: Dernier snapshot plus vieux que 2 h; trigger created: Tâche de sauvegarde en échec; trigger created: NAS : plus de données de supervision (15 min)
+service SYSLOG: up to date
+user grafana: up to date
+maintenance demo-off: BMS-SIM, CORE-B, EDGE-A, EDGE-B, FW-B, LEAF-A1, LEAF-A2, SRV-BASTION, SRV-DCIM-01, SRV-WEB-01
