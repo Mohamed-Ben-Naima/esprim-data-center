@@ -1,0 +1,27 @@
+source,flux,attendu,observé,verdict,réf,trace du refus
+SRV-CMP-01,Serveurs -> stockage NFS 2049,autorisé,"ignoré (SRV-CMP-01, SRV-STO-01 arrêté)",—,T18-3,
+SRV-CMP-01,Serveurs -> stockage iSCSI 3260,autorisé,"ignoré (SRV-CMP-01, SRV-STO-01 arrêté)",—,T18-3,
+SRV-CMP-01,"Serveurs -> NAS 873 (push fermé, sauvegarde tirée)",refusé,"ignoré (SRV-CMP-01, SRV-BCK-01 arrêté)",—,T18-4/NAS,
+SRV-CMP-01,Serveurs -> SSH du stockage (non autorisé),refusé,"ignoré (SRV-CMP-01, SRV-STO-01 arrêté)",—,T18 défaut,
+SRV-CMP-01,Serveurs -> DNS interne,autorisé,"ignoré (SRV-CMP-01, SRV-INF-01 arrêté)",—,commun,
+SRV-CMP-01,Serveurs -> Internet HTTPS (SNAT),autorisé,ignoré (SRV-CMP-01 arrêté),—,T18-5,
+SRV-CMP-01,Serveurs -> management OOB (interdit),refusé,ignoré (SRV-CMP-01 arrêté),—,deny MGMT,
+SRV-CMP-01,Serveurs -> site web DMZ,autorisé,ignoré (SRV-CMP-01 arrêté),—,EXT-3,
+SRV-MON-01,Supervision -> SNMP équipements (UDP 161),autorisé,ouvert,OK,T18-7,
+SRV-MON-01,Supervision -> SNMP pare-feu (adresse LAN de FW-A),autorisé,ouvert,OK,T18-7,
+SRV-MON-01,"Supervision -> SSH équipements (interdit, SNMP/ICMP seulement)",refusé,bloqué,OK,deny MGMT,ACL cœur 10.10.0.21
+SRV-MON-01,Supervision -> agent Zabbix 10050,autorisé,ignoré (SRV-CMP-01 arrêté),—,T18-7,
+SRV-STO-01,Stockage -> Internet HTTPS,autorisé,ignoré (SRV-STO-01 arrêté),—,T18-5,
+SRV-STO-01,Stockage -> serveurs SSH (non autorisé),refusé,"ignoré (SRV-STO-01, SRV-CMP-01 arrêté)",—,T18 défaut,
+SRV-INF-01,Services internes -> management OOB (interdit),refusé,ignoré (SRV-INF-01 arrêté),—,deny MGMT,
+SRV-BASTION,Administration -> SSH serveurs,autorisé,"ignoré (SRV-BASTION, SRV-CMP-01 arrêté)",—,T18-6,
+SRV-BASTION,Administration -> SSH équipements,autorisé,ignoré (SRV-BASTION arrêté),—,T18-6,
+SRV-BASTION,Administration -> webGUI pare-feu,autorisé,ignoré (SRV-BASTION arrêté),—,T18-6,
+ADMIN-WS,Administration -> SSH équipements,autorisé,ouvert,OK,T18-6,
+ADMIN-WS,Administration -> Grafana,autorisé,ouvert,OK,T18-6,
+ADMIN-WS,Administration -> base Zabbix 3306 (interdit),refusé,bloqué,OK,T18 défaut ADMIN,pare-feu 10.10.0.11
+SRV-WEB-01,DMZ -> management (interdit),refusé,bloqué,OK,T18-9,pare-feu 10.10.0.11
+SRV-WEB-01,DMZ -> administration (interdit),refusé,bloqué,OK,T18-9,pare-feu 10.10.0.11
+SRV-WEB-01,"DMZ -> supervision (interdit, refus par défaut)",refusé,bloqué,OK,T18 défaut DMZ,pare-feu 10.10.0.11
+ISP-A,Internet -> site web public 192.0.2.80 (DNAT 80 -> 301 -> 443),autorisé,ouvert,OK,T18-1,
+ISP-A,Internet -> SSH de l'adresse SNAT 192.0.2.10 (interdit),refusé,bloqué,OK,WAN défaut,pare-feu 10.10.0.11

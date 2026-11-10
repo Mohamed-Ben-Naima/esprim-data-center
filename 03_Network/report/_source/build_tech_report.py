@@ -648,7 +648,7 @@ def s14_iso():
         ("A.8.17", "Clock synchronisation", "Every device points to SRV-INF-01 (NTP).", "SRV-INF-01 off in the demo profile; IOSvL2 clocks run slow", "Gap"),
         ("A.8.20", "Network security", "Hardening, anti-spoofing, routing protocol authentication (MD5).", "Configurations", "Met"),
         ("A.8.21", "Security of network services", "SNMPv3 authPriv on Cisco devices.", "pfSense uses SNMP v2c (community restricted to VLAN 60)", "Partial"),
-        ("A.8.22", "Segregation of networks", "Ten VLANs in five zones; DMZ blocked toward MGMT/ADMIN/storage/backup.", "Flow matrix (FW.4) not run yet", "Met"),
+        ("A.8.22", "Segregation of networks", "Ten VLANs in five zones; DMZ blocked toward MGMT/ADMIN/storage/backup.", "Flow matrix measured on the running set only (hall A off)", "Met"),
         ("A.8.24", "Use of cryptography", "SSH, SNMPv3 AES, TLS 1.2/1.3 on the web site, MD5 on BGP/OSPF/HSRP.", "Zabbix and Grafana not in HTTPS", "Partial"),
         ("A.8.8", "Technical vulnerabilities", "-", "No vulnerability scan or patch process in the lab", "Gap"),
         ("A.8.32", "Change management", "Plans, one commit per change, deploy with rollback (pfSense).", "Git history", "Met"),
@@ -667,7 +667,7 @@ as deviations, never left silent.</p>
 <li>HTTPS on Zabbix and Grafana (certificate from an internal CA), and SNMPv3 on pfSense (A.8.24, A.8.21).</li>
 <li>Run NTP in every profile and check <code>show ntp status</code> (A.8.17).</li>
 <li>Log retention, permissions and a read-only viewer (A.8.15); scheduled configuration backups with a restore test (A.8.13).</li>
-<li>Measure the failover scenarios T1-T6 (A.8.14); run the flow matrix (A.8.22).</li>
+<li>Measure the failover scenarios T1-T6 (A.8.14); run the full flow matrix with hall A started (A.8.22).</li>
 <li>Secrets out of the repository (vault or encrypted file) before any real use (A.5.17).</li>
 </ol>"""
 
@@ -683,7 +683,7 @@ TESTS_PASSED = 78        # dated tests in report/tests/tests.yaml (2 more writte
 WORKSTREAMS = [  # (work, weight, % done, what proves it / what is left)
     ("Design, inventory, generators, lab driver (plan 01 phases 0-2)", 10, 100, "Inventory checked (98 links, 92 IPs); generators for Cisco, pfSense, servers and tables."),
     ("Providers and border routers (phase 3)", 8, 100, "BGP 3/3 sessions on both edges, OSPF FULL, HSRP, Internet reachable."),
-    ("Firewall cluster (phase 4, FW.1-FW.5)", 12, 80, "Cluster, 33 rules, NAT, CARP, pfsync, audit 0 difference; LAN side survives a core failure in 4.5 s (SW-IN, FW.3). Left: flow matrix (FW.4), evidence (FW.5)."),
+    ("Firewall cluster (phase 4, FW.1-FW.5)", 12, 90, "Cluster, 33 rules, NAT, CARP, pfsync, audit 0 difference; LAN side survives a core failure in 4.5 s (SW-IN, FW.3); flow matrix 11/11 on the running set, every denied flow found in the log (FW.4). Left: screenshots and French chapter (FW.5)."),
     ("Core and leafs (phase 5)", 10, 100, "VLANs, HSRP, Rapid PVST+, LACP, OSPF, ACLs, VRF MGMT."),
     ("Servers and containers (phase 6)", 12, 71, "10 of 14 deployed. SRV-CMP-01..03, SRV-STO-01: configuration generated, not deployed."),
     ("TrueNAS backup NAS (plan 04, NAS.1-NAS.6)", 6, 100, "Installed, bond failover tested (0-1 ping lost), configuration as code (truenas_setup.py), mirror pool, snapshots, nightly pull of SRV-MON-01/SRV-INF-01 (read-only rrsync account), network configs saved by backup_configs.py, restore from a snapshot with the same SHA-256, Zabbix SNMPv3 + trapper items, 3 triggers proven on real faults."),
@@ -697,7 +697,7 @@ WORKSTREAMS = [  # (work, weight, % done, what proves it / what is left)
 ]
 
 SEC_DOMAINS = [  # (domain, weight %, score now /5, target /5 after the roadmap, strengths, weaknesses)
-    ("Network segmentation and filtering", 15, 4.5, 5.0, "10 VLANs in 5 zones, default deny + log, core ACL per VLAN, DMZ isolated", "Policy not measured end to end (FW.4); core ACLs are stateless"),
+    ("Network segmentation and filtering", 15, 4.5, 5.0, "10 VLANs in 5 zones, default deny + log, core ACL per VLAN, DMZ isolated", "Flow matrix measured on the running set only (11 of 26 probes); core ACLs are stateless"),
     ("Perimeter protection", 10, 3.5, 4.5, "Anti-spoofing, one exposed service, BGP filters, MD5, max-prefix", "No IDS/IPS, no WAF, no DDoS mitigation, no RPKI"),
     ("Identity and privileged access", 15, 4.0, 4.5, "OOB + jump host, TOTP on the bastion, named accounts, lockout, SSH only", "Local accounts only (no TACACS+/RADIUS), shared netadmin, no MFA on Zabbix/Grafana/pfSense, console without timeout"),
     ("Cryptography in transit", 10, 2.5, 4.0, "SSH v2, SNMPv3 AES-128, TLS 1.2/1.3 on the web site, HTTPS on pfSense", "Zabbix/Grafana over HTTP, syslog in clear, SNMP v2c on pfSense, MD5 for routing auth, self-signed certificates"),
@@ -1124,7 +1124,7 @@ def s_state():
         ("Done (plan 04, profile nas)", "ok", "TrueNAS SRV-BCK-01: configured as code; nightly pulled backups and config backups; restore tested; supervised by Zabbix (pool, snapshot age, failed pulls)."),
         ("Done (plan 03 S5)", "ok", "Log server: every running source proven, 30-day rotation, protected files, read-only HTTPS viewer with login lock and audit trail, demo events found."),
         ("Done (plan 03 S6)", "ok", "Cold start rehearsed: clean stop 1 min, one-command start about 12 min with self-repair of the Cisco devices, readiness check 11/11, French demo runbook."),
-        ("Not configured (planned)", "bad", "Network triggers BGP/OSPF (ZBX.7), flow matrix (FW.4), measured failover T1-T6 and M1, NTP in every profile, HTTPS on Zabbix/Grafana."),
+        ("Not configured (planned)", "bad", "Network triggers BGP/OSPF (ZBX.7), full flow matrix with hall A (FW.4 done on the running set), measured failover T1-T6 and M1, NTP in every profile, HTTPS on Zabbix/Grafana."),
         ("Not in any plan yet", "bad", "SIEM, IDS/IPS, EDR, vulnerability scanning, secrets vault, central AAA, application load balancer, IPv6."),
     ]
     dev = []
@@ -1196,7 +1196,7 @@ auditor asks about first.</p>
 
 
 ROADMAP = [  # (horizon, action, why / control, effort)
-    ("1. Finish the plans", "FW.4 flow matrix, FW.5 evidence, LOG.3/LOG.6", "Policy proven end to end, A.8.22", "1 day"),
+    ("1. Finish the plans", "FW.5 evidence, LOG.3/LOG.6; rotate the SNMP secrets logged by the first FW.4 runs", "Policy evidence, A.8.15/A.8.22", "1 day"),
     ("1. Finish the plans", "ZBX.7 BGP/OSPF triggers and alert timing", "Network faults alarmed, A.8.16", "0.5 day"),
     ("1. Finish the plans", "Resilience campaign T1-T6 and M1, measured (resilience_tests.py)", "Rated-3 claim proven, A.8.14", "1 day"),
     ("1. Finish the plans", "Deploy SRV-CMP-01..03, SRV-STO-01 (needs RAM or a bigger host)", "Complete service chain, backups real", "1 day"),

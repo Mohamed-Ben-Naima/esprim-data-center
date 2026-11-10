@@ -298,11 +298,27 @@ Files: `report/evidence/fw_lan_failover.txt`; then, depending on the gate, inven
 ### FW.4 Policy measured end to end on the running set
 Files: `automation/flow_matrix.py` (option `--running-only`, new probes), `report/evidence/flow_matrix.csv`,
 `report/content/generated/flow_matrix.md`.
-- [ ] `--running-only` skips a probe whose source or target node is stopped and says so in the output.
-- [ ] Add probes that need no hall A server: DMZ → management (denied, from SRV-WEB-01 aux console),
+- [x] `--running-only` skips a probe whose source or target node is stopped and says so in the output.
+      → every probe now lists the nodes its flow needs; "ignoré (X arrêté)". VM sources run over SSH from ADMIN-WS
+      (one round trip, real exit codes since S6), containers by `docker exec` - no slow serial console any more.
+- [x] Add probes that need no hall A server: DMZ → management (denied, from SRV-WEB-01 aux console),
       ISP-A → `192.0.2.80:80` (allowed), ISP-A → `192.0.2.10:22` (denied), SRV-MON-01 → SNMP of FW-A LAN address
       (allowed), SRV-INF-01 → `10.10.0.21` (denied).
-- [ ] Every denied probe must be found in the firewall log or in the core ACL counters.
+      → all added (SRV-INF-01 one skipped: off in the demo profile) + DMZ → admin, DMZ → supervision, admin → SSH /
+      Grafana (allowed), admin → MariaDB 3306 (denied), supervision → SSH of the devices (denied, core ACL),
+      supervision → SNMPv3 CORE-A. The DNAT probe follows 80 → 301 → 443 (first version failed on the
+      self-signed certificate, not on the policy). **11 executed, 0 deviation** (15 skipped: hall A, bastion, NAS,
+      SRV-INF-01 off). 26 probes in total.
+- [x] Every denied probe must be found in the firewall log or in the core ACL counters.
+      → checked automatically in the central log after the run (log viewer): **6/6 denied flows traced**, 5 pfSense
+      `filterlog ... block` lines (T18-9, ADMIN and DMZ default deny, WAN default) and 1 core
+      `%SEC-6-IPACCESSLOGP ... ACL-VLAN60-IN denied` (counter "deny 10.10.0.0/24" 6 matches on CORE-A).
+      **Incident found and fixed:** the first runs put the SNMP secrets on the SSH command line, which the ADMIN-WS
+      wrapper logs → 8 lines with the SNMPv3 keys / v2c community on the collector. The probes now read them from a
+      0600 temp file sent through stdin (`adminws.put`), deleted after. Redacting the collector was refused by the
+      Claude Code safety classifier (audit-log tampering) → **user decision pending: rotate the SNMP secrets or
+      allow the redaction.** Also seen: 90 packets dropped once by CORE-B's VLAN 60 inbound ACL while it rebooted
+      in the FW.3 test (counter static afterwards) - transient, noted.
 
 | Test | Command | From | Expected |
 |---|---|---|---|

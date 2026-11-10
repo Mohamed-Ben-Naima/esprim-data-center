@@ -727,3 +727,9 @@ sections:
         command: python automation/cisco_heal.py
         expected: '"ssh ok, snmpv3 user ok" for every running Cisco device, or "repaired ... saved" then ok'
         verified: 2026-11-10
+      - id: DEMO-05
+        proves: The security policy holds end to end on the running set and every refusal is logged (plan 02 FW.4)
+        from: Windows host, folder 03_Network (evidence report/evidence/flow_matrix.csv)
+        command: python automation/flow_matrix.py --running-only
+        expected: '"11 executed, 0 deviation(s), 6 denied of which 0 without a log trace" in the demo profile'
+        verified: 2026-11-10
