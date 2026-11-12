@@ -207,3 +207,30 @@ Table: Vérification – FW.2, déploiement et règle de supervision (12 octobre
 Le serveur de supervision étant arrêté pendant ces travaux (capacité de l'hôte), la preuve finale – le port 10051
 réellement ouvert de bout en bout – sera apportée avec la mise en service des agents Zabbix (ZBX.5).
 
+
+## Bilan de la phase pare-feux et vues de l'interface d'administration
+
+Table: Résultats des sous-tâches FW.1 à FW.4 et du scénario T2
+| Sous-tâche | Méthode | Résultat mesuré |
+|---|---|---|
+| FW.1 Audit | `fw_audit.py` compare la configuration en service à l'inventaire | 0 différence sur FW-A et FW-B |
+| FW.2 Déploiement | `gen_pfsense.py` puis `deploy_pfsense.py` (FW-B d'abord, sans redémarrage, retour arrière possible) | Règle EXT-8 et délai de session web de 15 min en service |
+| FW.3 Côté LAN | Arrêt de CORE-A puis de CORE-B, sonde ADMIN-WS → BMS-SIM | Coupure 4,5 s (au lieu de ≥ 150 s avant la correction) ; retour du cœur 0 à 1,5 s |
+| Décision FW.3 | Commutateur SW-IN dédié au VLAN 902 (em3/em4 des pare-feux, Gi0/0 des cœurs), VLAN 902 retiré du lien inter-cœurs, BPDU filter sur les ports de transit | Un cœur bloqué avec son lien actif (panne « grise ») est désormais contourné |
+| FW.4 Matrice de flux | `flow_matrix.py --running-only` : 26 sondes, exécutées selon les nœuds démarrés | 11 sondes exécutées, 0 écart ; 6/6 flux refusés retrouvés dans le journal central |
+| T2 Bascule pare-feu | Arrêt de FW-A, FW-B devient maître CARP | Coupure 3,0 s ; 1,5 s au retour de FW-A |
+| Incident FW.4 | Secrets SNMP passés en ligne de commande SSH, donc journalisés | Secrets transmis par l'entrée standard, puis renouvelés (rotation SNMPv3) |
+
+Les captures suivantes sont prises depuis le poste d'administration ADMIN-WS (VLAN 90), dans le navigateur, par le seul
+chemin autorisé : règle [T18-6] de l'interface ADMIN vers l'interface web du pare-feu
+(`python automation/vnc.py ADMIN-WS shot <fichier>`).
+
+![FW-A, Status > CARP : maître sur les cinq VIP (WAN, LAN, DMZ, MGMT, ADMIN) ; pfsync voit les deux identifiants d'hôte](../screenshots/21_fw-a_carp_master_gui.png){width=440}
+
+![FW-B, Status > CARP : secours (BACKUP) sur les cinq VIP, mêmes identifiants pfsync : la table d'états est partagée](../screenshots/25_fw-b_carp_backup_gui.png){width=440}
+
+![Firewall > Rules > ADMIN : flux autorisés depuis le VLAN d'administration (webGUI/SSH, DNS/NTP, syslog, SSH/HTTPS, SNMP, Zabbix), chaque règle référencée](../screenshots/22_fw-a_rules_admin.png){width=440}
+
+![Firewall > NAT > Port Forward : publication de SRV-WEB-01 (10.50.0.11) sur l'adresse publique 192.0.2.80, ports 80 et 443](../screenshots/23_fw-a_nat_port_forward.png){width=440}
+
+![Status > System Logs > Firewall : refus par défaut journalisés sur le WAN (règle T18), source et destination visibles pour l'audit](../screenshots/24_fw-a_firewall_logs.png){width=440}

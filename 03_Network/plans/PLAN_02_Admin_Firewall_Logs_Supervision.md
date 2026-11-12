@@ -328,9 +328,9 @@ Files: `automation/flow_matrix.py` (option `--running-only`, new probes), `repor
 
 ### FW.5 Firewall evidence and documentation
 Files: `screenshots/2x_*.png`, `report/content/06_securite.md`, lab guide.
-- [ ] Screenshots through ADMIN-WS (`vnc.py ADMIN-WS shot`): Status > CARP on both firewalls, Firewall > Rules > ADMIN,
+- [x] Screenshots through ADMIN-WS (`vnc.py ADMIN-WS shot`): Status > CARP on both firewalls, Firewall > Rules > ADMIN,
       Firewall > NAT, Status > System Logs > Firewall.
-- [ ] `06_securite.md`: results of FW.1–FW.4, the LAN-side decision, updated rule table.
+- [x] `06_securite.md`: results of FW.1–FW.4, the LAN-side decision, updated rule table.
 
 | Test | Command | From | Expected |
 |---|---|---|---|
