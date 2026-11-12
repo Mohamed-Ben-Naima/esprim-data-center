@@ -147,3 +147,22 @@
 16:25:55    samples: +32.202 +32.802 +33.402 +34.002 +35.0X +36.5X +38.0X +39.602 +40.402 +41.102
 16:25:55 restart: VIP served by srv-cmp-01 from +74.5 s (was srv-cmp-02)
 16:26:01 after: SRV-CMP-01: ens3 up ens4 up ens3 up 10.20.0.11/24 10.20.0.10/24
+
+# PLAN_02 FW.3 / PLAN_01 T2-T5 - fw_lan_failover.py --core LEAF-A1 - 2026-11-12 21:07
+20:59:49 stop LEAF-A1 for 90 s, probe SRV-WEB-01 -> https://10.20.0.10:8443/ every 0.5 s
+21:00:02 before: SRV-CMP-01 bond: ens3 up ens4 up ens3 up 10.20.0.11/24 10.20.0.10/24
+21:00:02 before: SRV-CMP-02 bond: ens3 up ens4 up ens3 up 10.20.0.12/24
+21:00:08 before: SRV-CMP-01 bond: ens3 up ens4 up ens3 up 10.20.0.11/24 10.20.0.10/24
+21:00:08 before: SRV-CMP-02 bond: ens3 up ens4 up ens3 up 10.20.0.12/24
+21:00:23 LEAF-A1 stopped (GNS3 API)
+21:00:59 +30 s: SRV-CMP-01 bond: ens4 up ens4 up ens3 down 10.20.0.11/24 10.20.0.10/24
+21:00:59 +30 s: SRV-CMP-02 bond: ens4 up ens4 up ens3 down 10.20.0.12/24
+21:02:00 LEAF-A1 started again
+21:07:05 704 probes, 3 failed
+21:07:05 fault: 1 outage(s), answered by srv-cmp-01
+21:07:05 fault: outage from +0.5 s to +3.5 s = 3.0 s
+21:07:05    samples: -2.401 -1.801 -1.201 -0.601 -0.101 +0.5X +2.0X +3.501 +4.101 +4.601 +5.201
+21:07:05 restart: no outage, answered by srv-cmp-01
+21:07:46 cisco_heal: OK   LEAF-A1  ssh ok, snmpv3 user ok
+21:07:54 after: SRV-CMP-01 bond: ens3 up ens4 up ens3 up 10.20.0.11/24 10.20.0.10/24
+21:07:54 after: SRV-CMP-02 bond: ens3 up ens4 up ens3 up 10.20.0.12/24

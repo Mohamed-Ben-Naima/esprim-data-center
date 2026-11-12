@@ -290,6 +290,12 @@ sections:
         command: python automation/labctl.py stop SRV-CMP-02 ; python automation/labctl.py start SRV-CMP-02
         expected: 0 failed probe, every answer from srv-cmp-01 (keepalived waits to hear the master before it starts)
         verified: 2026-11-10
+      - id: CMP-05
+        proves: When a leaf dies, the dual-homed servers move to the other leaf and the service survives (PLAN_01 T4)
+        from: Windows host, folder 03_Network (evidence report/evidence/fw_lan_failover.txt)
+        command: python automation/fw_lan_failover.py --core LEAF-A1
+        expected: 'one outage about 3 s (ARP monitor 1 s), bonds active on ens4, VIP stays on srv-cmp-01; no loss when LEAF-A1 comes back'
+        verified: 2026-11-12
 
   - id: INF
     title: DNS and NTP server (SRV-INF-01)

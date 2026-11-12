@@ -155,3 +155,18 @@ Table: Synthèse de la vérification du cœur et de la distribution
 | CARP sur le LAN des pare-feux | FW-B BACKUP sur les 5 VIP, lagg0 actif sur em3 | FW-A maître |
 
 ![FW-B après démarrage du cœur : BACKUP sur les cinq VIP, lagg0 en basculement em3 (actif) / em4 (secours)](../screenshots/16_fw-b_carp_backup_all.png){width=440}
+
+### Panne d'un Leaf (scénario T4, mesuré le 12/11/2026)
+
+Les serveurs de calcul SRV-CMP-01/02 sont raccordés aux deux Leaf du hall A (bond active-backup, surveillance ARP
+toutes les 1 s). Le test arrête LEAF-A1 pendant 90 s par l'API GNS3 et interroge en continu l'adresse applicative
+partagée `https://10.20.0.10:8443/` depuis SRV-WEB-01 (DMZ), toutes les 0,5 s
+(`python automation/fw_lan_failover.py --core LEAF-A1`, trace `report/evidence/fw_lan_failover.txt`).
+
+Table: Résultat du scénario T4 (panne de LEAF-A1)
+| Mesure | Résultat | Attendu |
+|---|---|---|
+| Coupure à l'arrêt de LEAF-A1 | 1 coupure de 3,0 s (3 sondes perdues sur 704) | ≈ 1 s (limite du labo : détection ARP 1 s + reconvergence RPVST+ sur IOSvL2 émulé) |
+| Bond des serveurs | ens3 down, ens4 actif sur SRV-CMP-01 et SRV-CMP-02 | Bascule vers LEAF-A2 |
+| Adresse applicative | Toujours servie par srv-cmp-01 (pas de bascule keepalived) | Pas de bascule |
+| Retour de LEAF-A1 | 0 sonde perdue ; bonds revenus sur ens3 | Sans coupure |
