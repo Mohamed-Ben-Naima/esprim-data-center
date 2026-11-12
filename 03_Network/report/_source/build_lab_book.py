@@ -5,6 +5,7 @@ report/tests/tests.yaml (every step-by-step test), report/content/*.md (French d
 hand-written story, design decisions and disaster scenarios below.
   python report/_source/build_lab_book.py   ->  report/DC_Casablanca_Field_Book.html
 """
+import base64
 import html
 import json
 import re
@@ -21,6 +22,45 @@ from label_topology import notes  # noqa: E402
 INV = yaml.safe_load((NET / "inventory/dc_casa.yaml").read_text(encoding="utf-8"))
 TESTS = yaml.safe_load((NET / "report/tests/tests.yaml").read_text(encoding="utf-8"))["sections"]
 E = html.escape
+PROJ = json.loads((NET / "DC_Casablanca_TIA942_R3.gns3").read_text(encoding="utf-8"))["topology"]
+OUTAGE = {"T2": 3.0, "T3": 4.5, "T4": 3.0, "T5": 3.1}
+ICONS = {
+    "edge": '<circle cx="8" cy="8" r="6.5"/><path d="M4 8h8M9 5l3 3-3 3"/>',
+    "firewall": '<rect x="1.5" y="2.5" width="13" height="11"/><path d="M1.5 6.2h13M1.5 9.8h13M6 2.5v3.7M10 6.2v3.6M6 9.8v3.7"/>',
+    "core": '<rect x="1.5" y="4" width="13" height="8" rx="1.5"/><path d="M4 8h8M10 6l2 2-2 2M6 6L4 8l2 2"/>',
+    "leaf": '<rect x="1.5" y="5" width="13" height="6" rx="1.5"/><path d="M4 8h1M7 8h1M10 8h1"/>',
+    "server": '<rect x="3" y="1.5" width="10" height="4"/><rect x="3" y="6" width="10" height="4"/><rect x="3" y="10.5" width="10" height="4"/>',
+    "lab switch": '<rect x="1.5" y="5" width="13" height="6" rx="1.5"/><path d="M4 8h8"/>',
+    "isp": '<path d="M4 12h8a3 3 0 0 0 0-6 4 4 0 0 0-7.7-1A3.5 3.5 0 0 0 4 12z"/>',
+    "cloud": '<path d="M4 12h8a3 3 0 0 0 0-6 4 4 0 0 0-7.7-1A3.5 3.5 0 0 0 4 12z"/>',
+    "admin": '<rect x="2" y="2.5" width="12" height="8" rx="1"/><path d="M5 13.5h6M8 10.5v3"/>',
+}
+
+
+def icon(kind):
+    return (f'<svg class="ico" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" '
+            f'stroke-width="1.3">{ICONS.get(kind, ICONS["admin"])}</svg>')
+
+
+def img(path, caption, cls="fig"):
+    f = Path(path)
+    if not f.exists():
+        return ""
+    b = base64.b64encode(f.read_bytes()).decode()
+    return (f'<figure class="{cls}"><img src="data:image/png;base64,{b}" alt="{E(caption)}" loading="lazy">'
+            f'<figcaption>{E(caption)}</figcaption></figure>')
+
+
+def damage(t):
+    sec = OUTAGE.get(t)
+    if sec is None:
+        return '<div class="hp"><span class="hpl">outage</span><span class="hpt">see target below</span></div>'
+    w = sec / 10 * 100
+    return (f'<div class="hp" title="{sec} s"><span class="hpl">outage</span>'
+            f'<svg viewBox="0 0 100 10" preserveAspectRatio="none">'
+            f'<rect width="100" height="10" rx="2" fill="var(--code)"/>'
+            f'<rect width="{w:.1f}" height="10" rx="2" fill="var(--warn)"/></svg>'
+            f'<span class="hpt">{sec} s out of 10</span></div>')
 
 TIERS = [
     ("Internet", "The outside world. Two simulated providers, each with a real Internet exit through a GNS3 NAT cloud.",
@@ -135,7 +175,7 @@ def card(name, lines):
     links = " ".join(f'<a class="tid" href="#t-{slug(t)}">{E(t)}</a>' for t in tid[:14]) or "<em>no dedicated test</em>"
     body = "".join(f"<li>{E(l)}</li>" for l in lines)
     return (f'<article class="card entry" id="n-{slug(name)}" data-title="{E(name)}">'
-            f'<header><span class="tag">{E(kind_of(name))}</span><h4>{E(name)}</h4></header>'
+            f'<header>{icon(kind_of(name))}<span class="tag">{E(kind_of(name))}</span><h4>{E(name)}</h4></header>'
             f'<ul>{body}</ul><p class="explore"><b>Explore it:</b> {links}</p></article>')
 
 
@@ -178,6 +218,7 @@ to the tests that let you poke it yourself.</p></div>
     chapter("map", "The map, tier by tier", f"""
 <p class="lead">A packet from the Internet travels top to bottom: provider, edge router, firewall, core, leaf, server.
 Each tier has an A and a B twin. That symmetry is the whole HA story.</p>
+{img(NET / "report/_source/topology_book.png", "The live GNS3 canvas: zones from Internet (top) to the halls (bottom)", "fig wide")}
 <pre class="flow">Internet ─ ISP-A / ISP-B ─ EDGE-A / EDGE-B ─[VLAN 901 SW-OUT]─ FW-A / FW-B ─[VLAN 902 SW-IN]─ CORE-A / CORE-B
                                                          │                                  │
                                                  SW-DMZ (VLAN 50)              LEAF-A1/A2 (hall A)  LEAF-B1/B2 (hall B)
@@ -196,22 +237,82 @@ filtered.</p>
 <div class="tablewrap"><table><thead><tr><th>VLAN</th><th>Name</th><th>Subnet</th><th>Gateway VIP</th><th>Gateway</th>
 <th>Zone</th><th>Purpose</th></tr></thead><tbody>{rows}</tbody></table></div>""", "Chapter 2")
 
+    PW = {"admin": "admin_password", "Admin": "zabbix_admin_password", "truenas_admin": "truenas_admin_password",
+          "netadmin": "admin_password"}
+
+    def pw_for(w):
+        if not w.get("login"):
+            return ""
+        return "grafana_admin_password" if "Grafana" in w["name"] else PW.get(w["login"], "")
+    wrows = "".join(
+        f'<tr class="entry" data-title="{E(w["name"])} {E(w["url"])}"><td><b>{E(w["name"])}</b><br><span class="muted">'
+        f'{E(w["node"])}</span></td><td class="mono">{E(w["url"])}</td><td class="mono">{E(w.get("login") or "none")}</td>'
+        f'<td class="mono">{E(pw_for(w) or "-")}</td><td>{E(w["descr"])}</td></tr>' for w in INV["web_interfaces"])
+    crow = "".join(
+        f'<tr class="entry" data-title="console {E(n["name"])}"><td><b>{E(n["name"])}</b></td>'
+        f'<td>{E(str(n.get("console_type") or "-"))}</td><td class="num">{E(str(n.get("console") or "-"))}</td>'
+        f'<td class="num">{E(str((n.get("properties") or {}).get("aux") or "-"))}</td></tr>'
+        for n in sorted(PROJ["nodes"], key=lambda n: n["name"]) if n.get("console"))
+    C = INV["credentials"]
+    chapter("access", "How to get in: the access cheat sheet", f"""
+<p class="lead">All administration goes through <b>ADMIN-WS</b>, the admin workstation in VLAN 90. Open its desktop
+(VNC console of ADMIN-WS in GNS3), then use its Firefox (start page = portal with every link) or its terminal.
+From the Windows host you can also browse through the lab proxy: run <code>python automation/lab_proxy.py start</code>
+and set the SOCKS5 proxy <code>192.168.75.128:1080</code> in the browser.</p>
+<div class="callout entry" data-title="where are the passwords"><b>Passwords are never printed in this book.</b>
+Each one sits in <code>inventory/dc_casa.yaml</code>, section <code>credentials</code>, under the key shown in the
+table. The bastion also asks for a TOTP code: <code>python automation/totp.py</code>.</div>
+<h3>Web interfaces</h3>
+<div class="tablewrap"><table><thead><tr><th>Service</th><th>URL (from ADMIN-WS)</th><th>Login</th>
+<th>Password key</th><th>What you see</th></tr></thead><tbody>{wrows}</tbody></table></div>
+{img(NET / "screenshots/20_admin-ws_portal.png", "The ADMIN-WS portal: one click per web interface")}
+<h3>SSH to any equipment</h3>
+<div class="entry" data-title="ssh accounts aliases"><p>In the ADMIN-WS terminal type <code>ssh &lt;name&gt;</code>
+with the device name in lower case (for example <code>ssh core-a</code>, <code>ssh fw-b</code>,
+<code>ssh srv-cmp-01</code>). Every session start and end is logged on SYSLOG with the tag <code>admin-ssh</code>.</p>
+<div class="tablewrap"><table><thead><tr><th>Equipment</th><th>Account</th><th>Password key</th></tr></thead><tbody>
+<tr><td>Cisco routers and switches</td><td class="mono">{E(C["admin_user"])}</td><td class="mono">admin_password (enable: enable_secret)</td></tr>
+<tr><td>pfSense FW-A / FW-B</td><td class="mono">admin</td><td class="mono">admin_password</td></tr>
+<tr><td>Ubuntu servers</td><td class="mono">{E(C["server_admin_user"])}</td><td class="mono">server_admin_password (ubuntu works on the console only)</td></tr>
+<tr><td>SRV-BASTION</td><td class="mono">{E(C["server_admin_user"])}</td><td class="mono">server_admin_password + TOTP code</td></tr>
+<tr><td>TrueNAS SRV-BCK-01</td><td class="mono">truenas_admin</td><td class="mono">truenas_admin_password</td></tr>
+</tbody></table></div>
+<p>From the Windows host, without opening the desktop:
+<code>python automation/adminws.py core-a "show standby brief"</code>.</p></div>
+<h3>Console ports (GNS3 VM 192.168.75.128)</h3>
+<p>The console works even when the network is down: <code>telnet 192.168.75.128 &lt;port&gt;</code> or a double-click
+in GNS3. On Docker nodes use the aux port: on the main console, Ctrl-C stops the service.</p>
+<div class="tablewrap"><table><thead><tr><th>Node</th><th>Type</th><th>Console</th><th>Aux</th></tr></thead>
+<tbody>{crow}</tbody></table></div>
+""", "Chapter 3")
+
     boss = "".join(f"""<article class="boss entry" id="b-{t.lower()}" data-title="{t} {E(n)}">
-<div class="bhead"><span class="bid">{t}</span><h3>{E(n)}</h3></div>
+<div class="bhead"><span class="bid">{t}</span><h3>{E(n)}</h3></div>{damage(t)}
 <p><b>The attack:</b> {E(a)}</p><p><b>The defence:</b> {E(d)}</p>
 <p class="score">{E(r)}</p><p class="explore">Replay it: section <a href="#s-{slug(sec)}">{E(sec)}</a></p></article>"""
                    for t, n, a, d, r, sec in BOSSES)
     chapter("bosses", "Boss fights: what we survive", f"""
 <p class="lead">High availability means planning how things fail. Each scenario below was actually triggered in the
 lab: a node is killed through the GNS3 API while a probe hits the service every 0.5 s, and the outage is
-measured.</p><div class="bosses">{boss}</div>""", "Chapter 3: Resilience scenarios")
+measured.</p><div class="bosses">{boss}</div>""", "Chapter 4: Resilience scenarios")
 
     why = "".join(f"""<article class="why entry" data-title="{E(d)}"><h4>{E(d)}</h4>
 <p class="vs">instead of <s>{E(alt)}</s></p><p>{E(r)}</p></article>""" for d, alt, r in WHY)
     lim = "".join(f'<li class="entry" data-title="lab limit">{E(l)}</li>' for l in LIMITS)
     chapter("why", "Why it is built this way", f"""
 <p class="lead">For each choice, the option we rejected and the reason.</p><div class="whys">{why}</div>
-<h3>Known lab limits (no secrets kept)</h3><ul class="limits">{lim}</ul>""", "Chapter 4: Design decisions")
+<h3>Known lab limits (no secrets kept)</h3><ul class="limits">{lim}</ul>""", "Chapter 5: Design decisions")
+
+    seen, gal = set(), ""
+    for f in sorted((NET / "report/content").glob("[0-9]*.md")):
+        for alt, path in re.findall(r"!\[([^\]]*)\]\(\.\./([^)]*)\)", f.read_text(encoding="utf-8")):
+            if path in seen or "boot_hang" in path:
+                continue
+            seen.add(path)
+            gal += img(NET / path, alt, "fig entry")
+    chapter("gallery", "The lab in pictures", f"""
+<p class="lead">Real screenshots taken in the running lab: consoles, the firewall web interface, the admin portal.</p>
+<div class="gallery">{gal}</div>""", "Chapter 6")
 
     tsec = ""
     for sec in TESTS:
@@ -230,12 +331,13 @@ measured.</p><div class="bosses">{boss}</div>""", "Chapter 3: Resilience scenari
 <p class="lead">Every test says where to stand, what to type and what you should see. Start the lab with
 <code>python automation/lab_up.py --profile demo</code>, check it with <code>python automation/demo_check.py</code>,
 then explore. Run everything at once with <code>python automation/verify_lab.py</code>.</p>{tsec}""",
-            "Chapter 5: Step-by-step guide")
+            "Chapter 7: Step-by-step guide")
 
     deep = ""
     for f in sorted((NET / "report/content").glob("[0-9]*.md")):
         txt = f.read_text(encoding="utf-8")
-        txt = re.sub(r"!\[([^\]]*)\]\([^)]*\)(\{[^}]*\})?", r"*[Figure: \1]*", txt)
+        txt = re.sub(r"!\[([^\]]*)\]\(\.\./([^)]*)\)(\{[^}]*\})?",
+                     lambda m: "\n\n" + img(NET / m.group(2), m.group(1)) + "\n\n", txt)
         txt = re.sub(r"^Table: (.*)$", r"**\1**\n", txt, flags=re.M)
         txt = re.sub(r"```(\w+)[^\n]*\n", "```\n", txt)
         h = markdown.markdown(txt, extensions=["tables", "fenced_code"])
@@ -248,13 +350,30 @@ then explore. Run everything at once with <code>python automation/verify_lab.py<
                  f'<summary>{E(title)}</summary><div class="md" lang="fr">{h}</div></details>')
     chapter("deep", "Deep dive: the full technical report (French)", f"""
 <p class="lead">The full network report, chapter by chapter. Click a chapter to open it. The search covers these
-too.</p>{deep}""", "Chapter 6")
+too.</p>{deep}""", "Chapter 8")
 
     nav = "".join(f'<a href="#{c}">{E(t)}</a>' for c, t in toc)
     page = TEMPLATE.replace("%NAV%", nav).replace("%BODY%", "".join(parts))
     out = NET / "report/DC_Casablanca_Field_Book.html"
     out.write_text(page, encoding="utf-8")
     print(f"{out} ({out.stat().st_size // 1024} KB)")
+    toc_print = "".join(f'<li><a href="#{c}">{E(t)}</a></li>' for c, t in toc)
+    cover = (f'<section class="cover"><p class="kicker">GNS3 lab - TIA-942 - ISO/IEC 27001</p>'
+             f'<h1>DC Casablanca<br><span>Field Book</span></h1>'
+             f'{img(NET / "report/_source/topology_book.png", "The lab on one page", "fig")}<p class="lead">Everything about the lab: equipment, '
+             f'VLANs, resilience scenarios, design decisions and every step-by-step test.</p>'
+             f'<h3>Contents</h3><ol class="ptoc">{toc_print}</ol></section>')
+    pp = ('<!doctype html><html lang="en" data-theme="light"><head><meta charset="utf-8">'
+          + page.replace('<details class="deep entry"', '<details open class="deep entry"')
+          .replace("<main>", "<main>" + cover) + PRINT_CSS + "</html>")
+    pout = NET / "report/_source/field_book_print.html"
+    pout.write_text(pp, encoding="utf-8")
+    import subprocess
+    pdf = NET / "report/DC_Casablanca_Field_Book.pdf"
+    edge = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
+    subprocess.run([edge, "--headless=new", "--disable-gpu", "--no-pdf-header-footer", "--virtual-time-budget=15000",
+                    f"--print-to-pdf={pdf}", pout.as_uri()], check=True, capture_output=True)
+    print(f"{pdf} ({pdf.stat().st_size // 1024} KB)")
 
 
 TEMPLATE = r"""<title>DC Casablanca Field Book</title>
@@ -344,6 +463,18 @@ color:var(--fg);border-radius:4px;padding:2px 8px;cursor:pointer}
 .deep summary{cursor:pointer;padding:12px 16px;font:700 16px var(--display)}
 .md{padding:0 16px 16px;min-width:0}
 .md pre{background:var(--code);padding:10px;border-radius:6px;overflow-x:auto;font-size:12.5px}
+.ico{width:18px;height:18px;color:var(--accent);flex:none}
+.muted{color:var(--muted);font-size:12px}
+.fig{margin:14px 0;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px}
+.fig img{display:block;width:100%;height:auto;border-radius:6px}
+.fig figcaption{font-size:12.5px;color:var(--muted);padding:6px 4px 0}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+.gallery .fig{margin:0}
+.hp{display:flex;align-items:center;gap:8px;margin:8px 0}
+.hp svg{flex:1;height:12px;min-width:60px}
+.hpl{font:600 10.5px var(--mono);text-transform:uppercase;color:var(--muted)}
+.hpt{font:600 12px var(--mono);color:var(--warn);white-space:nowrap}
+.callout{border-left:4px solid var(--accent);background:var(--tag);padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0}
 .entry.hit{outline:3px solid var(--hl);outline-offset:2px}
 mark{background:var(--hl);color:inherit}
 @media (max-width:860px){.wrap{grid-template-columns:minmax(0,1fr)}aside{position:static;max-height:none}
@@ -386,6 +517,26 @@ document.querySelectorAll('.copy').forEach(b=>b.addEventListener('click',()=>{co
 })();
 </script>
 """
+
+PRINT_CSS = r"""<style>
+@page{size:A4;margin:14mm 13mm}
+body{font-size:10.5pt;background:#fff}
+aside{display:none}.wrap{display:block;max-width:none;padding:0}
+.copy,#results{display:none}
+.cover{min-height:250mm;display:flex;flex-direction:column;justify-content:center}
+.cover h1{font:800 48pt/1 var(--display);letter-spacing:-.02em;margin:8px 0 16px}.cover h1 span{color:var(--accent)}
+.ptoc{font-size:13pt;line-height:2}.ptoc a{color:var(--fg);text-decoration:none}
+.chapter{break-before:page;border:0}
+.card,.boss,.step,.why,.stat,tr{break-inside:avoid}
+h2,h3,h4{break-after:avoid}
+.cards,.bosses,.whys{grid-template-columns:repeat(2,minmax(0,1fr))}
+.cmd{white-space:pre-wrap}
+.deep{border:0}.deep summary{font-size:15pt;padding:12px 0;list-style:none}.md{padding:0}
+.flow{white-space:pre;font-size:8pt}
+.fig,.boss,.callout{break-inside:avoid}.gallery{grid-template-columns:repeat(2,minmax(0,1fr))}
+.cover{min-height:auto}.cover .fig{max-width:150mm}
+</style>"""
+
 
 if __name__ == "__main__":
     build()
