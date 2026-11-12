@@ -18,40 +18,445 @@
         "computes": [],
         "drawings": [
             {
-                "drawing_id": "1a79b1ff-615f-4758-84e8-900dfca77617",
+                "drawing_id": "e01d61c0-d7d5-4315-8de0-b0d175b4c6d9",
                 "locked": false,
                 "rotation": 0,
-                "svg": "<svg width=\"1180\" height=\"440\"><rect width=\"1180\" height=\"440\" rx=\"14\" ry=\"14\" fill=\"#8a877c\" fill-opacity=\"0.0800030529499054\" stroke-width=\"2\" stroke=\"#8a877c\" /></svg>",
-                "x": -550,
-                "y": -950,
+                "svg": "<svg width=\"1120\" height=\"360\"><rect width=\"1120\" height=\"360\" rx=\"18\" ry=\"18\" fill=\"#4a90d9\" fill-opacity=\"0.07\" stroke=\"#4a90d9\" stroke-width=\"2\" stroke-opacity=\"0.6\" /></svg>",
+                "x": -560,
+                "y": -1300,
                 "z": 0
             },
             {
-                "drawing_id": "8cdda7e9-6c57-4086-9554-feb526405d30",
+                "drawing_id": "dffa45bc-d01d-4857-a250-c02dc55eea53",
                 "locked": false,
                 "rotation": 0,
-                "svg": "<svg width=\"2400\" height=\"285\"><rect width=\"2400\" height=\"285\" rx=\"14\" ry=\"14\" fill=\"#3b6ea8\" fill-opacity=\"0.0800030529499054\" stroke-width=\"2\" stroke=\"#3b6ea8\" /></svg>",
-                "x": -1150,
+                "svg": "<svg width=\"464\" height=\"22\"><text font-family=\"Verdana\" font-size=\"11.0\" font-weight=\"bold\" fill=\"#4a90d9\" fill-opacity=\"1.0\">INTERNET - ISP simulators (AS64500 / AS64501) + NAT clouds</text></svg>",
+                "x": -546,
+                "y": -1292,
+                "z": 1
+            },
+            {
+                "drawing_id": "38e1332b-f0a3-456e-8bf6-4d042b2778da",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"1120\" height=\"360\"><rect width=\"1120\" height=\"360\" rx=\"18\" ry=\"18\" fill=\"#7b8794\" fill-opacity=\"0.07\" stroke=\"#7b8794\" stroke-width=\"2\" stroke-opacity=\"0.6\" /></svg>",
+                "x": -560,
+                "y": -900,
+                "z": 0
+            },
+            {
+                "drawing_id": "16dc4e83-b9b7-46f4-be72-9bae6aca9126",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"456\" height=\"22\"><text font-family=\"Verdana\" font-size=\"11.0\" font-weight=\"bold\" fill=\"#7b8794\" fill-opacity=\"1.0\">ENTRANCE ROOM (ER) - edge routers, eBGP, transit VLAN 901</text></svg>",
+                "x": -546,
+                "y": -892,
+                "z": 1
+            },
+            {
+                "drawing_id": "ab2c7491-83bf-4cd9-8b7c-5f9d53078280",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"1120\" height=\"380\"><rect width=\"1120\" height=\"380\" rx=\"18\" ry=\"18\" fill=\"#d9534f\" fill-opacity=\"0.07\" stroke=\"#d9534f\" stroke-width=\"2\" stroke-opacity=\"0.6\" /></svg>",
+                "x": -560,
                 "y": -500,
                 "z": 0
             },
             {
-                "drawing_id": "2808b6cc-005a-4275-be8e-10175c45016b",
+                "drawing_id": "f8f04798-c737-4442-9e8f-9a3d75674bb6",
                 "locked": false,
                 "rotation": 0,
-                "svg": "<svg width=\"860\" height=\"300\"><rect width=\"860\" height=\"300\" rx=\"14\" ry=\"14\" fill=\"#4e8f3a\" fill-opacity=\"0.0800030529499054\" stroke-width=\"2\" stroke=\"#4e8f3a\" /></svg>",
-                "x": -1250,
-                "y": -175,
+                "svg": "<svg width=\"456\" height=\"22\"><text font-family=\"Verdana\" font-size=\"11.0\" font-weight=\"bold\" fill=\"#d9534f\" fill-opacity=\"1.0\">MDA SECURITY - pfSense HA (CARP/pfsync), transit VLAN 902</text></svg>",
+                "x": -546,
+                "y": -492,
+                "z": 1
+            },
+            {
+                "drawing_id": "1f89b21e-b627-42d2-85b7-8d1c9f6b0266",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"680\" height=\"240\"><rect width=\"680\" height=\"240\" rx=\"18\" ry=\"18\" fill=\"#f0ad4e\" fill-opacity=\"0.07\" stroke=\"#f0ad4e\" stroke-width=\"2\" stroke-opacity=\"0.6\" /></svg>",
+                "x": 620,
+                "y": -500,
                 "z": 0
             },
             {
-                "drawing_id": "60ebc482-5741-45a8-baaf-43c56a4b2be8",
+                "drawing_id": "87f51f01-bdc0-434a-b87a-59cb6053a6b4",
                 "locked": false,
                 "rotation": 0,
-                "svg": "<svg width=\"1250\" height=\"300\"><rect width=\"1250\" height=\"300\" rx=\"14\" ry=\"14\" fill=\"#7d5ba6\" fill-opacity=\"0.0800030529499054\" stroke-width=\"2\" stroke=\"#7d5ba6\" /></svg>",
-                "x": 149,
-                "y": -175,
+                "svg": "<svg width=\"104\" height=\"22\"><text font-family=\"Verdana\" font-size=\"11.0\" font-weight=\"bold\" fill=\"#f0ad4e\" fill-opacity=\"1.0\">DMZ - VLAN 50</text></svg>",
+                "x": 634,
+                "y": -492,
+                "z": 1
+            },
+            {
+                "drawing_id": "21c2df0f-2133-4d15-9d01-ef466d6e42f6",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"680\" height=\"580\"><rect width=\"680\" height=\"580\" rx=\"18\" ry=\"18\" fill=\"#8e6bbf\" fill-opacity=\"0.07\" stroke=\"#8e6bbf\" stroke-width=\"2\" stroke-opacity=\"0.6\" /></svg>",
+                "x": -1300,
+                "y": -700,
                 "z": 0
+            },
+            {
+                "drawing_id": "0c295df1-ef25-4388-9aae-2bb08a6814cd",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"320\" height=\"22\"><text font-family=\"Verdana\" font-size=\"11.0\" font-weight=\"bold\" fill=\"#8e6bbf\" fill-opacity=\"1.0\">MANAGEMENT OOB - VLAN 10 + ADMIN VLAN 90</text></svg>",
+                "x": -1286,
+                "y": -692,
+                "z": 1
+            },
+            {
+                "drawing_id": "e3870412-f818-4576-b367-639887b0daab",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"1120\" height=\"200\"><rect width=\"1120\" height=\"200\" rx=\"18\" ry=\"18\" fill=\"#2a9d8f\" fill-opacity=\"0.07\" stroke=\"#2a9d8f\" stroke-width=\"2\" stroke-opacity=\"0.6\" /></svg>",
+                "x": -560,
+                "y": -100,
+                "z": 0
+            },
+            {
+                "drawing_id": "45fa2872-8f56-401a-82d1-8e9e61da6fbe",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"328\" height=\"22\"><text font-family=\"Verdana\" font-size=\"11.0\" font-weight=\"bold\" fill=\"#2a9d8f\" fill-opacity=\"1.0\">MDA CORE - L3 gateways (HSRP), OSPF, LACP</text></svg>",
+                "x": -546,
+                "y": -92,
+                "z": 1
+            },
+            {
+                "drawing_id": "6dc78a1a-7833-4aa1-b31b-8bcbdecab951",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"1140\" height=\"500\"><rect width=\"1140\" height=\"500\" rx=\"18\" ry=\"18\" fill=\"#5cb85c\" fill-opacity=\"0.07\" stroke=\"#5cb85c\" stroke-width=\"2\" stroke-opacity=\"0.6\" /></svg>",
+                "x": -1300,
+                "y": 130,
+                "z": 0
+            },
+            {
+                "drawing_id": "ea287a0d-8e50-4864-bbc3-0e1c99825a28",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"336\" height=\"22\"><text font-family=\"Verdana\" font-size=\"11.0\" font-weight=\"bold\" fill=\"#5cb85c\" fill-opacity=\"1.0\">HALL A (HDA-A / EDA-A) - compute + storage</text></svg>",
+                "x": -1286,
+                "y": 138,
+                "z": 1
+            },
+            {
+                "drawing_id": "b75e9c99-139d-4fe6-bd6e-5b461e2345cf",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"1960\" height=\"500\"><rect width=\"1960\" height=\"500\" rx=\"18\" ry=\"18\" fill=\"#3c9d5d\" fill-opacity=\"0.07\" stroke=\"#3c9d5d\" stroke-width=\"2\" stroke-opacity=\"0.6\" /></svg>",
+                "x": 40,
+                "y": 130,
+                "z": 0
+            },
+            {
+                "drawing_id": "411979a5-7422-421b-ab3e-d7b4b6a0924e",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"512\" height=\"22\"><text font-family=\"Verdana\" font-size=\"11.0\" font-weight=\"bold\" fill=\"#3c9d5d\" fill-opacity=\"1.0\">HALL B (HDA-B / EDA-B) - backup, services, supervision, BMS/CCTV</text></svg>",
+                "x": 54,
+                "y": 138,
+                "z": 1
+            },
+            {
+                "drawing_id": "f82d1d62-1d66-4c24-b28f-9a85058e9631",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"236\" height=\"75\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">Edge router (Internet border) | TIA ER\nmgmt 10.10.0.1 (VLAN 10) | lo 10.255.0.1\ntransit: ext 10.254.1.2, edge_isl 10.254.0.1\neBGP AS65100 to ISP, OSPF, HSRP VIP 10.254.1.6\n  on VLAN 901, ACL-WAN-IN\nmgmt plane: SSHv2, SNMPv3, syslog, NTP</text></svg>",
+                "x": -280,
+                "y": -783,
+                "z": 2
+            },
+            {
+                "drawing_id": "5261405f-d65c-4000-854d-b333f3d548a7",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"236\" height=\"75\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">Edge router (Internet border) | TIA ER\nmgmt 10.10.0.2 (VLAN 10) | lo 10.255.0.2\ntransit: ext 10.254.1.3, edge_isl 10.254.0.2\neBGP AS65100 to ISP, OSPF, HSRP VIP 10.254.1.6\n  on VLAN 901, ACL-WAN-IN\nmgmt plane: SSHv2, SNMPv3, syslog, NTP</text></svg>",
+                "x": 240,
+                "y": -783,
+                "z": 2
+            },
+            {
+                "drawing_id": "2cf2d351-6d3d-4c76-9cd8-40c6f0aada9d",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"231\" height=\"87\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">pfSense firewall (HA pair) | TIA MDA\nmgmt 10.10.0.11 (VLAN 10) | lo 10.255.0.11\ntransit: ext 10.254.1.4, int 10.254.2.4, sync\n  10.254.3.1\nCARP VIPs, pfsync on 10.254.3.0/30, NAT/SNAT,\n  zone rules WAN/DMZ/LAN/MGMT/ADMIN\nmgmt plane: SSHv2, SNMPv3, syslog, NTP</text></svg>",
+                "x": -280,
+                "y": -383,
+                "z": 2
+            },
+            {
+                "drawing_id": "fb64526e-b235-47aa-ad2a-3ab241de4e52",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"231\" height=\"87\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">pfSense firewall (HA pair) | TIA MDA\nmgmt 10.10.0.12 (VLAN 10) | lo 10.255.0.12\ntransit: ext 10.254.1.5, int 10.254.2.5, sync\n  10.254.3.2\nCARP VIPs, pfsync on 10.254.3.0/30, NAT/SNAT,\n  zone rules WAN/DMZ/LAN/MGMT/ADMIN\nmgmt plane: SSHv2, SNMPv3, syslog, NTP</text></svg>",
+                "x": 240,
+                "y": -383,
+                "z": 2
+            },
+            {
+                "drawing_id": "65373014-026c-460a-a3a8-4492bcd9fbb5",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"236\" height=\"98\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">Core L3 switch (inter-VLAN routing) | TIA MDA\nmgmt 10.10.0.21 (VLAN 10) | lo 10.255.0.21\ntransit: int 10.254.2.2, ospf_core 10.254.4.1\nHSRP active VLAN 20,40,60,100 (standby others)\nSVI/trunk VLANs: 20,30,40,60,70,80,100,902,998\nHSRP gateways per VLAN, OSPF, LACP Po1 to peer\n  core, per-VLAN ACLs, Rapid-PVST\nmgmt plane: SSHv2, SNMPv3, syslog, NTP</text></svg>",
+                "x": -280,
+                "y": 20,
+                "z": 2
+            },
+            {
+                "drawing_id": "46af0466-f1f2-40b7-a2e9-67a510b19f77",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"236\" height=\"98\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">Core L3 switch (inter-VLAN routing) | TIA MDA\nmgmt 10.10.0.22 (VLAN 10) | lo 10.255.0.22\ntransit: int 10.254.2.3, ospf_core 10.254.4.2\nHSRP active VLAN 30,70,80 (standby others)\nSVI/trunk VLANs: 20,30,40,60,70,80,100,902,998\nHSRP gateways per VLAN, OSPF, LACP Po1 to peer\n  core, per-VLAN ACLs, Rapid-PVST\nmgmt plane: SSHv2, SNMPv3, syslog, NTP</text></svg>",
+                "x": 240,
+                "y": 20,
+                "z": 2
+            },
+            {
+                "drawing_id": "ed50ad2c-fad1-4a4a-800e-6cdc197b63a7",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"226\" height=\"75\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">Leaf / access switch hall A | TIA HDA-A\nmgmt 10.10.0.31 (VLAN 10) | lo 10.255.0.31\naccess VLANs: 20,30\n802.1Q trunks to both cores, Rapid-PVST, VTP\n  transparent\nmgmt plane: SSHv2, SNMPv3, syslog, NTP</text></svg>",
+                "x": -870,
+                "y": 224,
+                "z": 2
+            },
+            {
+                "drawing_id": "71119df3-9884-4634-9196-7c7e006e9486",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"226\" height=\"75\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">Leaf / access switch hall A | TIA HDA-A\nmgmt 10.10.0.32 (VLAN 10) | lo 10.255.0.32\naccess VLANs: 20,30\n802.1Q trunks to both cores, Rapid-PVST, VTP\n  transparent\nmgmt plane: SSHv2, SNMPv3, syslog, NTP</text></svg>",
+                "x": -570,
+                "y": 224,
+                "z": 2
+            },
+            {
+                "drawing_id": "8c2ec446-70be-44dd-b2ca-b0b72a322231",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"226\" height=\"75\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">Leaf / access switch hall B | TIA HDA-B\nmgmt 10.10.0.33 (VLAN 10) | lo 10.255.0.33\naccess VLANs: 40,60,70,100\n802.1Q trunks to both cores, Rapid-PVST, VTP\n  transparent\nmgmt plane: SSHv2, SNMPv3, syslog, NTP</text></svg>",
+                "x": 730,
+                "y": 224,
+                "z": 2
+            },
+            {
+                "drawing_id": "0f182716-57a2-4b66-a31d-b284eb767491",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"226\" height=\"75\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">Leaf / access switch hall B | TIA HDA-B\nmgmt 10.10.0.34 (VLAN 10) | lo 10.255.0.34\naccess VLANs: 40,60,70,80,100\n802.1Q trunks to both cores, Rapid-PVST, VTP\n  transparent\nmgmt plane: SSHv2, SNMPv3, syslog, NTP</text></svg>",
+                "x": 1030,
+                "y": 224,
+                "z": 2
+            },
+            {
+                "drawing_id": "7c8c1c24-befe-460e-b1f3-c58b95a60791",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"211\" height=\"64\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">vm server | TIA EDA-A | VLAN 20 SERVEURS\nIP 10.20.0.11 | VIP 10.20.0.10 | bond (2\n  leafs)\napp HTTPS 8443, keepalived MASTER (VRRP),\n  iperf3</text></svg>",
+                "x": -1125,
+                "y": 481,
+                "z": 2
+            },
+            {
+                "drawing_id": "ecaad94f-c910-4b20-afdb-030066373dee",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"211\" height=\"64\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">vm server | TIA EDA-A | VLAN 20 SERVEURS\nIP 10.20.0.12 | VIP 10.20.0.10 | bond (2\n  leafs)\napp HTTPS 8443, keepalived BACKUP (VRRP),\n  iperf3</text></svg>",
+                "x": -855,
+                "y": 481,
+                "z": 2
+            },
+            {
+                "drawing_id": "0e8a12ee-9f40-44af-b892-1f2a109c335e",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"206\" height=\"40\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">vm server | TIA EDA-A | VLAN 20 SERVEURS\nIP 10.20.0.13 | bond (2 leafs)\napp HTTPS 8443, iperf3</text></svg>",
+                "x": -585,
+                "y": 481,
+                "z": 2
+            },
+            {
+                "drawing_id": "fa2460d8-1b84-490c-aba8-ba6e1206b532",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"206\" height=\"40\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">vm server | TIA EDA-A | VLAN 30 STOCKAGE\nIP 10.30.0.11 | bond (2 leafs)\nNFS, iSCSI</text></svg>",
+                "x": -315,
+                "y": 481,
+                "z": 2
+            },
+            {
+                "drawing_id": "abd0cb30-90e2-4b7d-95d6-69bd08b7eb70",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"231\" height=\"40\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">vm server | TIA EDA-B | VLAN 100 SERVICES-INT\nIP 10.100.0.11 | bond (2 leafs)\nDNS, NTP, DHCP, backup source</text></svg>",
+                "x": 340,
+                "y": 481,
+                "z": 2
+            },
+            {
+                "drawing_id": "6132520a-e520-4512-b83e-7eb261633478",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"216\" height=\"40\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">vm server | TIA EDA-B | VLAN 60 MONITORING\nIP 10.60.0.11 | bond (2 leafs)\nZabbix, Grafana, backup source</text></svg>",
+                "x": 610,
+                "y": 481,
+                "z": 2
+            },
+            {
+                "drawing_id": "cd134214-cf05-4f58-a926-1568cc28aa03",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"181\" height=\"40\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">vm server | TIA MDA | VLAN 90 ADMIN\nIP 10.90.0.11\nSSH bastion, password+TOTP</text></svg>",
+                "x": -1240,
+                "y": -249,
+                "z": 2
+            },
+            {
+                "drawing_id": "6071408a-03af-434d-afbc-5a48eef203f7",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"146\" height=\"29\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">GNS3 lab switch: DMZ segment\nVLANs: 50 DMZ</text></svg>",
+                "x": 680,
+                "y": -396,
+                "z": 2
+            },
+            {
+                "drawing_id": "323e9d10-2039-4127-b984-e51118c15796",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"211\" height=\"40\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">GNS3 lab switch: out-of-band management +\n  admin\nVLANs: 10 MGMT, 90 ADMIN</text></svg>",
+                "x": -820,
+                "y": -476,
+                "z": 2
+            },
+            {
+                "drawing_id": "dbdb5c85-cec9-4774-b428-bf0501d49ad6",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"216\" height=\"29\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">GNS3 lab switch: edge &lt;-&gt; firewall transit\nVLANs: 901 TRANSIT-EXT</text></svg>",
+                "x": -20,
+                "y": -596,
+                "z": 2
+            },
+            {
+                "drawing_id": "b9bb9eb8-0b06-4018-8ea7-ab3b54e3b267",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"206\" height=\"17\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">GNS3 NAT cloud = real Internet for ISP-A</text></svg>",
+                "x": -280,
+                "y": -1157,
+                "z": 2
+            },
+            {
+                "drawing_id": "723226df-45c6-47ce-a6c5-a381c552859a",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"206\" height=\"17\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">GNS3 NAT cloud = real Internet for ISP-B</text></svg>",
+                "x": 240,
+                "y": -1157,
+                "z": 2
+            },
+            {
+                "drawing_id": "03ebe009-de4d-4cfd-ba31-549cdc2a5ac9",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"161\" height=\"52\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">ISP simulator AS64500 (eBGP)\neth0 198.51.100.1-&gt;EDGE-A, eth1\n  198.51.100.5-&gt;EDGE-B\nInternet via eth2</text></svg>",
+                "x": -280,
+                "y": -969,
+                "z": 2
+            },
+            {
+                "drawing_id": "3fc70da8-8d82-4be0-8c72-16dd2ffac20b",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"156\" height=\"52\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">ISP simulator AS64501 (eBGP)\neth0 203.0.113.5-&gt;EDGE-A, eth1\n  203.0.113.1-&gt;EDGE-B\nInternet via eth2</text></svg>",
+                "x": 240,
+                "y": -969,
+                "z": 2
+            },
+            {
+                "drawing_id": "0e26197f-d39b-46d7-ac7d-802f78afea1d",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"226\" height=\"40\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">docker server | TIA EDA-B | VLAN 70 BMS-DCIM\nIP 10.70.0.12\nBMS simulator (GTB)</text></svg>",
+                "x": 1420,
+                "y": 481,
+                "z": 2
+            },
+            {
+                "drawing_id": "d6cdb458-494b-475a-94f3-cf3ab918b907",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"231\" height=\"52\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">docker server | TIA EDA-B | VLAN 80 SECURITE-\n  CCTV\nIP 10.80.0.11\nCCTV simulator</text></svg>",
+                "x": 1690,
+                "y": 481,
+                "z": 2
+            },
+            {
+                "drawing_id": "1694cb5f-89f2-4e30-814a-179b29972640",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"226\" height=\"40\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">docker server | TIA EDA-B | VLAN 70 BMS-DCIM\nIP 10.70.0.11 | bond (2 leafs)\nDCIM</text></svg>",
+                "x": 1150,
+                "y": 481,
+                "z": 2
+            },
+            {
+                "drawing_id": "5a39946b-2a3c-47b0-a937-25d850bb9ce8",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"191\" height=\"40\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">docker server | TIA DMZ | VLAN 50 DMZ\nIP 10.50.0.11\npublic web (DMZ)</text></svg>",
+                "x": 980,
+                "y": -369,
+                "z": 2
+            },
+            {
+                "drawing_id": "280a1e2f-bf89-49e5-9a02-0f5eb389996d",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"196\" height=\"40\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">vm server | TIA EDA-B | VLAN 40 BACKUP\nIP 10.40.0.11 | bond (2 leafs)\nTrueNAS, pull backups, ZFS snapshots</text></svg>",
+                "x": 70,
+                "y": 481,
+                "z": 2
+            },
+            {
+                "drawing_id": "2138c771-1e45-41c6-81b5-303fba6503cc",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"236\" height=\"40\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">docker server | TIA EDA-B | VLAN 60 MONITORING\nIP 10.60.0.12\nrsyslog collector, log viewer</text></svg>",
+                "x": 880,
+                "y": 481,
+                "z": 2
+            },
+            {
+                "drawing_id": "d7c6efd4-ca3f-419a-bd1a-a73d559baf55",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"231\" height=\"40\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">docker server | TIA MDA | VLAN 90 ADMIN\nIP 10.90.0.12\nadmin desktop (VNC), SSH/web to all equipment</text></svg>",
+                "x": -1240,
+                "y": -539,
+                "z": 2
+            },
+            {
+                "drawing_id": "c42ad80f-e2ef-47ba-b386-e8a77a51751a",
+                "locked": false,
+                "rotation": 0,
+                "svg": "<svg width=\"216\" height=\"29\"><text font-family=\"Consolas\" font-size=\"8.0\" fill=\"#1f3a5f\" fill-opacity=\"1.0\">GNS3 lab switch: firewall &lt;-&gt; core transit\nVLANs: 902 TRANSIT-INT</text></svg>",
+                "x": -20,
+                "y": -196,
+                "z": 2
+            },
+            {
+                "drawing_id": "c4bfbf5a-0adc-4738-a3a1-c22971089ad5",
+                "locked": false,
+                "rotation": 0,
+                "svg": "5dde8bf3fbf97d45d2d641cdc49b6b40.svg",
+                "x": -1780,
+                "y": -1250,
+                "z": 2
             }
         ],
         "links": [
@@ -2107,8 +2512,8 @@
                 "symbol": ":/symbols/classic/router.svg",
                 "template_id": null,
                 "width": 66,
-                "x": -300,
-                "y": -640,
+                "x": -260,
+                "y": -850,
                 "z": 1
             },
             {
@@ -2177,8 +2582,8 @@
                 "symbol": ":/symbols/classic/router.svg",
                 "template_id": null,
                 "width": 66,
-                "x": 300,
-                "y": -640,
+                "x": 260,
+                "y": -850,
                 "z": 1
             },
             {
@@ -2247,8 +2652,8 @@
                 "symbol": ":/symbols/classic/firewall.svg",
                 "template_id": null,
                 "width": 66,
-                "x": -300,
-                "y": -440,
+                "x": -260,
+                "y": -450,
                 "z": 1
             },
             {
@@ -2317,8 +2722,8 @@
                 "symbol": ":/symbols/classic/firewall.svg",
                 "template_id": null,
                 "width": 66,
-                "x": 300,
-                "y": -440,
+                "x": 260,
+                "y": -450,
                 "z": 1
             },
             {
@@ -2387,8 +2792,8 @@
                 "symbol": ":/symbols/classic/multilayer_switch.svg",
                 "template_id": null,
                 "width": 51,
-                "x": -300,
-                "y": -300,
+                "x": -260,
+                "y": -50,
                 "z": 1
             },
             {
@@ -2457,8 +2862,8 @@
                 "symbol": ":/symbols/classic/multilayer_switch.svg",
                 "template_id": null,
                 "width": 51,
-                "x": 300,
-                "y": -300,
+                "x": 260,
+                "y": -50,
                 "z": 1
             },
             {
@@ -2527,8 +2932,8 @@
                 "symbol": ":/symbols/classic/ethernet_switch.svg",
                 "template_id": null,
                 "width": 72,
-                "x": -950,
-                "y": -120,
+                "x": -850,
+                "y": 170,
                 "z": 1
             },
             {
@@ -2598,7 +3003,7 @@
                 "template_id": null,
                 "width": 72,
                 "x": -550,
-                "y": -120,
+                "y": 170,
                 "z": 1
             },
             {
@@ -2667,8 +3072,8 @@
                 "symbol": ":/symbols/classic/ethernet_switch.svg",
                 "template_id": null,
                 "width": 72,
-                "x": 450,
-                "y": -120,
+                "x": 750,
+                "y": 170,
                 "z": 1
             },
             {
@@ -2737,8 +3142,8 @@
                 "symbol": ":/symbols/classic/ethernet_switch.svg",
                 "template_id": null,
                 "width": 72,
-                "x": 950,
-                "y": -120,
+                "x": 1050,
+                "y": 170,
                 "z": 1
             },
             {
@@ -2807,8 +3212,8 @@
                 "symbol": ":/symbols/classic/qemu_guest.svg",
                 "template_id": null,
                 "width": 65,
-                "x": -1200,
-                "y": 60,
+                "x": -1105,
+                "y": 400,
                 "z": 1
             },
             {
@@ -2877,8 +3282,8 @@
                 "symbol": ":/symbols/classic/qemu_guest.svg",
                 "template_id": null,
                 "width": 65,
-                "x": -1000,
-                "y": 60,
+                "x": -835,
+                "y": 400,
                 "z": 1
             },
             {
@@ -2947,8 +3352,8 @@
                 "symbol": ":/symbols/classic/qemu_guest.svg",
                 "template_id": null,
                 "width": 65,
-                "x": -800,
-                "y": 60,
+                "x": -565,
+                "y": 400,
                 "z": 1
             },
             {
@@ -3017,8 +3422,8 @@
                 "symbol": ":/symbols/classic/qemu_guest.svg",
                 "template_id": null,
                 "width": 65,
-                "x": -600,
-                "y": 60,
+                "x": -295,
+                "y": 400,
                 "z": 1
             },
             {
@@ -3087,8 +3492,8 @@
                 "symbol": ":/symbols/classic/qemu_guest.svg",
                 "template_id": null,
                 "width": 65,
-                "x": 380,
-                "y": 60,
+                "x": 360,
+                "y": 400,
                 "z": 1
             },
             {
@@ -3157,8 +3562,8 @@
                 "symbol": ":/symbols/classic/qemu_guest.svg",
                 "template_id": null,
                 "width": 65,
-                "x": 560,
-                "y": 60,
+                "x": 630,
+                "y": 400,
                 "z": 1
             },
             {
@@ -3227,8 +3632,8 @@
                 "symbol": ":/symbols/classic/qemu_guest.svg",
                 "template_id": null,
                 "width": 65,
-                "x": 1050,
-                "y": -470,
+                "x": -1220,
+                "y": -330,
                 "z": 1
             },
             {
@@ -3307,8 +3712,8 @@
                 "symbol": ":/symbols/classic/ethernet_switch.svg",
                 "template_id": null,
                 "width": 72,
-                "x": -760,
-                "y": -425,
+                "x": 700,
+                "y": -450,
                 "z": 1
             },
             {
@@ -3437,8 +3842,8 @@
                 "symbol": ":/symbols/classic/ethernet_switch.svg",
                 "template_id": null,
                 "width": 72,
-                "x": 760,
-                "y": -440,
+                "x": -800,
+                "y": -530,
                 "z": 1
             },
             {
@@ -3494,7 +3899,7 @@
                 "template_id": null,
                 "width": 72,
                 "x": 0,
-                "y": -565,
+                "y": -650,
                 "z": 1
             },
             {
@@ -3531,8 +3936,8 @@
                 "symbol": ":/symbols/classic/cloud.svg",
                 "template_id": null,
                 "width": 159,
-                "x": -300,
-                "y": -900,
+                "x": -260,
+                "y": -1250,
                 "z": 1
             },
             {
@@ -3569,8 +3974,8 @@
                 "symbol": ":/symbols/classic/cloud.svg",
                 "template_id": null,
                 "width": 159,
-                "x": 300,
-                "y": -900,
+                "x": 260,
+                "y": -1250,
                 "z": 1
             },
             {
@@ -3600,7 +4005,7 @@
                     "console_http_path": "/",
                     "console_http_port": 80,
                     "console_resolution": "1024x768",
-                    "container_id": "dde0f5de5f645fc815c46257b663f39d34c3a14eac26e2df883e5fa05102de54",
+                    "container_id": "297472b0fc93c97acd5c6f069e03bcc3fc59696ce2d6f9896b2c6873ae5ad0fb",
                     "environment": "TZ=Africa/Casablanca\nISP_NAME=ISP-A",
                     "extra_hosts": "",
                     "extra_volumes": [],
@@ -3612,8 +4017,8 @@
                 "symbol": ":/symbols/classic/docker_guest.svg",
                 "template_id": null,
                 "width": 65,
-                "x": -300,
-                "y": -770,
+                "x": -260,
+                "y": -1050,
                 "z": 1
             },
             {
@@ -3643,7 +4048,7 @@
                     "console_http_path": "/",
                     "console_http_port": 80,
                     "console_resolution": "1024x768",
-                    "container_id": "e5bec6a0d7c7be2f400f23c4761403d2c493bd9cd04d59cda1f5a1080eb9dfcd",
+                    "container_id": "01f5c2e22cb992316be660576b35355e638b2efe5d82912b073a7ea7e73e1690",
                     "environment": "TZ=Africa/Casablanca\nISP_NAME=ISP-B",
                     "extra_hosts": "",
                     "extra_volumes": [],
@@ -3655,8 +4060,8 @@
                 "symbol": ":/symbols/classic/docker_guest.svg",
                 "template_id": null,
                 "width": 65,
-                "x": 300,
-                "y": -770,
+                "x": 260,
+                "y": -1050,
                 "z": 1
             },
             {
@@ -3686,7 +4091,7 @@
                     "console_http_path": "/",
                     "console_http_port": 80,
                     "console_resolution": "1024x768",
-                    "container_id": "8c457b853c3430891fc7ce134e4b8a7cd9a2ce759e4d57d79a4574c3978c218c",
+                    "container_id": "64dfdb5578bb9d46a9618aebcb3239d5192b0710a8d811ac2ee85a04c0721ae4",
                     "environment": "TZ=Africa/Casablanca\nSYSLOG_HOST=10.60.0.12",
                     "extra_hosts": "",
                     "extra_volumes": [],
@@ -3698,8 +4103,8 @@
                 "symbol": ":/symbols/classic/docker_guest.svg",
                 "template_id": null,
                 "width": 65,
-                "x": 1100,
-                "y": 60,
+                "x": 1440,
+                "y": 400,
                 "z": 1
             },
             {
@@ -3729,7 +4134,7 @@
                     "console_http_path": "/",
                     "console_http_port": 80,
                     "console_resolution": "1024x768",
-                    "container_id": "07e46f0ba1e2b9d1aa99e470d892ddfdeff4693aa5247717b9c2c8836753e15b",
+                    "container_id": "d18da9eb7e469e658a31f6af51c70ba071f0d30b9fdb0bfbc6ae3c21539b2c45",
                     "environment": "TZ=Africa/Casablanca\nSYSLOG_HOST=10.60.0.12",
                     "extra_hosts": "",
                     "extra_volumes": [],
@@ -3741,8 +4146,8 @@
                 "symbol": ":/symbols/classic/docker_guest.svg",
                 "template_id": null,
                 "width": 65,
-                "x": 1280,
-                "y": 60,
+                "x": 1710,
+                "y": 400,
                 "z": 1
             },
             {
@@ -3772,7 +4177,7 @@
                     "console_http_path": "/",
                     "console_http_port": 80,
                     "console_resolution": "1024x768",
-                    "container_id": "84807b3107add1c99c8e0ae70f0229928ff110bd478a136691bfa6e36d2a53f7",
+                    "container_id": "6a6bae2c905b4aaaf33d27752f3db8dde1225d1e4d77555e40157ccb0560f797",
                     "environment": "TZ=Africa/Casablanca\nSYSLOG_HOST=10.60.0.12\nBMS_URL=http://10.70.0.12:8080/api/state",
                     "extra_hosts": "",
                     "extra_volumes": [],
@@ -3784,8 +4189,8 @@
                 "symbol": ":/symbols/classic/docker_guest.svg",
                 "template_id": null,
                 "width": 65,
-                "x": 740,
-                "y": 60,
+                "x": 1170,
+                "y": 400,
                 "z": 1
             },
             {
@@ -3815,7 +4220,7 @@
                     "console_http_path": "/",
                     "console_http_port": 80,
                     "console_resolution": "1024x768",
-                    "container_id": "005ca7acce7ac82c96f657b0c6155f530775f095aff2332b7a3928731b21ae62",
+                    "container_id": "068d2d9f9ec691821fd9b3ffb9ca68787f755be6e605516f0e1abfea88fb7e1e",
                     "environment": "TZ=Africa/Casablanca",
                     "extra_hosts": "",
                     "extra_volumes": [],
@@ -3827,8 +4232,8 @@
                 "symbol": ":/symbols/classic/docker_guest.svg",
                 "template_id": null,
                 "width": 65,
-                "x": -1050,
-                "y": -425,
+                "x": 1000,
+                "y": -450,
                 "z": 1
             },
             {
@@ -3897,8 +4302,8 @@
                 "symbol": ":/symbols/classic/qemu_guest.svg",
                 "template_id": null,
                 "width": 65,
-                "x": 200,
-                "y": 60,
+                "x": 90,
+                "y": 400,
                 "z": 1
             },
             {
@@ -3928,7 +4333,7 @@
                     "console_http_path": "/",
                     "console_http_port": 80,
                     "console_resolution": "1024x768",
-                    "container_id": "ff67bf95cd80140a94456032605d07670d39e47a3bd02921e3e6d3d75f1a302a",
+                    "container_id": "53f49d3b7d3171be14a0795b5ed4ebc0a3471676d6cf626a77c181ded40bf1f4",
                     "environment": "TZ=Africa/Casablanca\nVIEWER_AUTH=netadmin:pbkdf2_sha256$200000$06bbdd4647a3ba923627ea742bce7ed0$1355f5d06cbeb6af28918d09398712d60bc7406018a8e2ffab10318d4b3d5cb3\nVIEWER_NAMES=10.10.0.1=EDGE-A,10.10.0.2=EDGE-B,10.10.0.11=FW-A,10.10.0.12=FW-B,10.10.0.21=CORE-A,10.10.0.22=CORE-B,10.10.0.31=LEAF-A1,10.10.0.32=LEAF-A2,10.10.0.33=LEAF-B1,10.10.0.34=LEAF-B2,10.20.0.11=SRV-CMP-01,10.20.0.12=SRV-CMP-02,10.20.0.13=SRV-CMP-03,10.30.0.11=SRV-STO-01,10.40.0.11=SRV-BCK-01,10.100.0.11=SRV-INF-01,10.60.0.11=SRV-MON-01,10.70.0.11=SRV-DCIM-01,10.60.0.12=SYSLOG,10.70.0.12=BMS-SIM,10.80.0.11=CCTV-SIM,10.50.0.11=SRV-WEB-01,10.90.0.11=SRV-BASTION,10.90.0.12=ADMIN-WS,127.0.0.1=SYSLOG-viewer\nVIEWER_IP=10.60.0.12\nLOG_RETENTION_DAYS=30",
                     "extra_hosts": "",
                     "extra_volumes": [
@@ -3942,8 +4347,8 @@
                 "symbol": ":/symbols/classic/docker_guest.svg",
                 "template_id": null,
                 "width": 65,
-                "x": 920,
-                "y": 60,
+                "x": 900,
+                "y": 400,
                 "z": 1
             },
             {
@@ -3973,7 +4378,7 @@
                     "console_http_path": "/",
                     "console_http_port": 80,
                     "console_resolution": "1280x800",
-                    "container_id": "dc0bbb02bd577cf486f3d6dad5d430bda0f5c8d257c72b7f38dc7fc52077ac83",
+                    "container_id": "bcf59ec6d624e73e10bdda80a9348f07cef3424fff43e8a13500c2d2e8b62397",
                     "environment": "TZ=Africa/Casablanca\nSYSLOG_HOST=10.60.0.12",
                     "extra_hosts": "",
                     "extra_volumes": [
@@ -3987,13 +4392,13 @@
                 "symbol": ":/symbols/classic/computer.svg",
                 "template_id": null,
                 "width": 65,
-                "x": 1050,
-                "y": -370,
+                "x": -1220,
+                "y": -620,
                 "z": 1
             },
             {
                 "compute_id": "vm",
-                "console": 5030,
+                "console": 5033,
                 "console_auto_start": false,
                 "console_type": "none",
                 "custom_adapters": [],
@@ -4068,7 +4473,7 @@
                 "template_id": null,
                 "width": 72,
                 "x": 0,
-                "y": -370,
+                "y": -250,
                 "z": 1
             }
         ]
@@ -4076,5 +4481,5 @@
     "type": "topology",
     "variables": null,
     "version": "2.2.56.1",
-    "zoom": 25
+    "zoom": 42
 }

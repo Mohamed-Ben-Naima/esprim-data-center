@@ -1,0 +1,7 @@
+stage,nodes,vm_total_mb,vm_used_mb,vm_avail_mb,swap_used_mb,ksm_shared_mb,load1,qemu_vms,containers,host_free_gb
+0 Avant démarrage,—,7901,419,7229,0,0,0.09,0,0,4.8
+1 WAN / bordure,5,7901,488,7159,0,0,0.11,0,2,4.6
+2 Sécurité / management,6,7901,2930,4708,0,35,1.67,2,4,2.4
+3 Cœur / distribution,6,7901,5672,1965,0,62,5.43,8,4,0.2
+4 Services,4,7901,6995,638,520,77,9.49,9,7,0.4
+5 Charges,2,7901,7240,392,1720,64,7.32,11,7,0.3
