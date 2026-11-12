@@ -1,4 +1,4 @@
-# verify_lab.py 2026-11-10 21:05-21:15, profile demo after a cold start (lab_down, stages, lab_up --from 9), demo_check 12/12
+# verify_lab.py 2026-11-12 22:37:58 --save
 PASS PLT-01   2 replies
 PASS PLT-02   32 nodes listed
 PASS PLT-03   images with problems: 0
@@ -61,5 +61,4 @@ N/A  WEB-05   needs CCTV-SIM started
 PASS DEMO-03  every check OK
 PASS DEMO-04  ssh ok, snmpv3 ok
 PASS DEMO-05  0 deviation, every denied flow traced
-# disruptive pair run at 17:39 the same day: PASS PRV-02 SSH refused after 6 wrong passwords; PASS PRV-03 LOGIN_FAILED then QUIET_MODE_ON
-59 PASS, 0 FAIL, 1 known limit (WT-07), 2 N/A (EDGE-05 needs EDGE-B, WEB-05 needs CCTV-SIM); + PRV-02/03 PASS
+59 PASS, 0 FAIL, 1 known limit, 2 N/A (node off in this profile) in 528 s

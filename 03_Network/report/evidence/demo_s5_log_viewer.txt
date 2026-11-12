@@ -1,22 +1,22 @@
-# PLAN_03 S5 - demo events found in the log viewer https://10.60.0.12/ (10 Nov 2026)
+# PLAN_03 S5 - demo events found in the log viewer https://10.60.0.12/ (12 Nov 2026)
 # FW-A = 10.10.0.11, CORE-A = 10.10.0.21; lines: collector time, source ip, hostname, message
-21:08:56 viewer https://10.60.0.12/ login netadmin from ADMIN-WS: OK, 23 sources listed
-21:08:56 1. failed SSH login on CORE-A (wrong password, from ADMIN-WS)
-21:09:04    action: ['netadmin@10.10.0.21: Permission denied (publickey,keyboard-interactive,password).', '@@rc 0']
-21:09:04    found in the viewer after 0.3 s (source CORE-A, search 'LOGIN_FAILED'):
-21:09:04      2026-11-10T21:09:02.801325+01:00 10.10.0.21 10.10.0.21 135: *Nov 10 21:06:28.172 MAR: %SEC_LOGIN-4-LOGIN_FAILED: Login failed [user: ] [Source: 10.90.0.12] [localport: 22] [Reason: Login Authentication Failed] at 21:06:28 MAR Tue 
-21:09:04      2026-11-10T21:09:02.789972+01:00 10.10.0.21 10.10.0.21 134: *Nov 10 21:06:27.142 MAR: %SEC_LOGIN-4-LOGIN_FAILED: Login failed [user: ] [Source: 10.90.0.12] [localport: 22] [Reason: Login Authentication Failed] at 21:06:27 MAR Tue 
-21:09:05 2. configure terminal / end on CORE-A (from ADMIN-WS)
-21:09:18    action: ['CORE-A(config)#end', 'CORE-A#', 'CORE-A#exit']
-21:09:19    found in the viewer after 0.3 s (source CORE-A, search 'CONFIG_I'):
-21:09:19      2026-11-10T21:09:15.127891+01:00 10.10.0.21 10.10.0.21 137: *Nov 10 21:06:37.358 MAR: %SYS-5-CONFIG_I: Configured from console by netadmin on vty0 (10.90.0.12)
-21:09:19 3. DMZ SRV-WEB-01 -> CORE-A 10.10.0.21:22 (management network)
-21:09:27    action: ('10.10.0.21', '@@rc 1')
-21:09:27    found in the viewer after 0.4 s (source FW-A, search '10.50.0.11,10.10.0.21'):
-21:09:27      2026-11-10T21:09:24.105005+01:00 10.10.0.11 10.10.0.11 filterlog[33894]: 119,,,1700000021,em5,match,block,in,4,0x0,,64,39523,0,DF,6,tcp,60,10.50.0.11,10.10.0.21,36353,22,0,S,3011575765,,64240,,mss;sackOK;TS;nop;wscale
-21:09:27      2026-11-10T21:09:22.079927+01:00 10.10.0.11 10.10.0.11 filterlog[33894]: 119,,,1700000021,em5,match,block,in,4,0x0,,64,39522,0,DF,6,tcp,60,10.50.0.11,10.10.0.21,36353,22,0,S,3011575765,,64240,,mss;sackOK;TS;nop;wscale
-21:09:27 viewer's own audit trail (127.0.0.1 syslog logviewer):
-21:09:27      2026-11-10T21:09:28.603186+01:00 127.0.0.1 syslog logviewer: search user=netadmin from=10.90.0.12 src=10.10.0.11_10.10.0.11.log q='10.50.0.11,10.10.0.21' lines=20
-21:09:27      2026-11-10T21:09:28.378391+01:00 127.0.0.1 syslog logviewer: search user=netadmin from=10.90.0.12 src=all.log q='' lines=200
-21:09:27      2026-11-10T21:09:20.684767+01:00 127.0.0.1 syslog logviewer: search user=netadmin from=10.90.0.12 src=10.10.0.11_10.10.0.11.log q='10.50.0.11,10.10.0.21' lines=18
-21:09:27      2026-11-10T21:09:20.475399+01:00 127.0.0.1 syslog logviewer: search user=netadmin from=10.90.0.12 src=all.log q='' lines=200
+22:32:35 viewer https://10.60.0.12/ login netadmin from ADMIN-WS: OK, 23 sources listed
+22:32:35 1. failed SSH login on CORE-A (wrong password, from ADMIN-WS)
+22:32:42    action: ['netadmin@10.10.0.21: Permission denied (publickey,keyboard-interactive,password).', '@@rc 0']
+22:32:42    found in the viewer after 0.4 s (source CORE-A, search 'LOGIN_FAILED'):
+22:32:42      2026-11-12T22:32:40.832912+01:00 10.10.0.21 10.10.0.21 129: *Nov 12 22:30:55.513 MAR: %SEC_LOGIN-4-LOGIN_FAILED: Login failed [user: ] [Source: 10.90.0.12] [localport: 22] [Reason: Login Authentication Failed] at 22:30:55 MAR Thu 
+22:32:42      2026-11-12T22:32:39.580888+01:00 10.10.0.21 10.10.0.21 128: *Nov 12 22:30:54.497 MAR: %SEC_LOGIN-4-LOGIN_FAILED: Login failed [user: ] [Source: 10.90.0.12] [localport: 22] [Reason: Login Authentication Failed] at 22:30:54 MAR Thu 
+22:32:42 2. configure terminal / end on CORE-A (from ADMIN-WS)
+22:32:55    action: ['CORE-A(config)#end', 'CORE-A#', 'CORE-A#exit']
+22:32:56    found in the viewer after 0.3 s (source CORE-A, search 'CONFIG_I'):
+22:32:56      2026-11-12T22:32:51.124468+01:00 10.10.0.21 10.10.0.21 131: *Nov 12 22:31:03.977 MAR: %SYS-5-CONFIG_I: Configured from console by netadmin on vty0 (10.90.0.12)
+22:32:56 3. DMZ SRV-WEB-01 -> CORE-A 10.10.0.21:22 (management network)
+22:33:04    action: ('10.10.0.21', '@@rc 1')
+22:33:04    found in the viewer after 0.3 s (source FW-A, search '10.50.0.11,10.10.0.21'):
+22:33:04      2026-11-12T22:32:59.078141+01:00 10.10.0.11 10.10.0.11 filterlog[19511]: 119,,,1700000021,em5,match,block,in,4,0x0,,64,9009,0,DF,6,tcp,60,10.50.0.11,10.10.0.21,37397,22,0,S,2056362690,,64240,,mss;sackOK;TS;nop;wscale
+22:33:04      2026-11-12T22:32:58.071663+01:00 10.10.0.11 10.10.0.11 filterlog[19511]: 119,,,1700000021,em5,match,block,in,4,0x0,,64,9008,0,DF,6,tcp,60,10.50.0.11,10.10.0.21,37397,22,0,S,2056362690,,64240,,mss;sackOK;TS;nop;wscale
+22:33:04 viewer's own audit trail (127.0.0.1 syslog logviewer):
+22:33:04      2026-11-12T22:33:04.278798+01:00 127.0.0.1 syslog logviewer: search user=netadmin from=10.90.0.12 src=10.10.0.11_10.10.0.11.log q='10.50.0.11,10.10.0.21' lines=20
+22:33:04      2026-11-12T22:33:04.117077+01:00 127.0.0.1 syslog logviewer: search user=netadmin from=10.90.0.12 src=all.log q='' lines=200
+22:33:04      2026-11-12T22:32:56.518382+01:00 127.0.0.1 syslog logviewer: search user=netadmin from=10.90.0.12 src=10.10.0.11_10.10.0.11.log q='10.50.0.11,10.10.0.21' lines=22
+22:33:04      2026-11-12T22:32:56.354289+01:00 127.0.0.1 syslog logviewer: search user=netadmin from=10.90.0.12 src=all.log q='' lines=200

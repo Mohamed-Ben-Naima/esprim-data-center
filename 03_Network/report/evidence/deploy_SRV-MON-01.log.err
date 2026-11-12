@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "C:\Users\ASUS\Documents\ESPRIM\Data Center\03_Network\automation\deploy_servers.py", line 268, in <module>
+    deploy(api, p, n, base_only)
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASUS\Documents\ESPRIM\Data Center\03_Network\automation\deploy_servers.py", line 207, in deploy
+    lx.run(line)
+    ~~~~~~^^^^^^
+  File "C:\Users\ASUS\Documents\ESPRIM\Data Center\03_Network\automation\labctl.py", line 379, in run
+    _, m, before = self.c.expect(re.escape(tag) + r"(\d+)__", timeout)
+                   ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ASUS\Documents\ESPRIM\Data Center\03_Network\automation\labctl.py", line 226, in expect
+    self.read(0.5)
+    ~~~~~~~~~^^^^^
+  File "C:\Users\ASUS\Documents\ESPRIM\Data Center\03_Network\automation\labctl.py", line 194, in read
+    chunk = self.sock.recv(65536)
+ConnectionResetError: [WinError 10054] Une connexion existante a dû être fermée par l’hôte distant
