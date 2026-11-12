@@ -7,6 +7,7 @@ when the inventory changes. Idempotent: notes written by this script (font Conso
   python automation/label_topology.py --remove   # delete them
 """
 import html
+import textwrap
 import re
 import sys
 from pathlib import Path
@@ -124,7 +125,9 @@ def legend():
     return rows
 
 
-def svg(lines, size=8, color="#1f3a5f"):
+def svg(lines, size=8, color="#1f3a5f", wrap=46):
+    if wrap:
+        lines = [w for s in lines for w in textwrap.wrap(s, wrap, subsequent_indent="  ")]
     w = max(len(s) for s in lines) * size * 0.62 + 8
     h = len(lines) * size * 1.45 + 6
     txt = html.escape("\n".join(lines))
@@ -157,7 +160,7 @@ def main(argv):
         api.req("POST", f"/projects/{pid}/drawings",
                 dict(svg=svg(lines), x=node["x"] - 20, y=node["y"] + node.get("height", 60) + 22, z=2))
         done += 1
-    api.req("POST", f"/projects/{pid}/drawings", dict(svg=svg(legend(), 9, "#000000"), x=minx - 560, y=miny, z=2))
+    api.req("POST", f"/projects/{pid}/drawings", dict(svg=svg(legend(), 9, "#000000", wrap=0), x=minx - 560, y=miny, z=2))
     print(f"{done} node notes + VLAN legend written")
     return 0
 
