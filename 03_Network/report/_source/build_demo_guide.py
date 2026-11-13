@@ -44,6 +44,11 @@ def build():
             for t in sec["tests"] if usable(t))
         if rows:
             tests += f"<h3>{E(sec['id'])}: {E(sec['title'])}</h3><ol>{rows}</ol>"
+    ns = [x for x in TESTS if x["id"] == "NAS"][0]
+    nas = f"<p><b>Needs:</b> {E(ns['needs'])}</p><ol>" + "".join(
+        f"<li><b>{E(t['id'])}</b>: {E(str(t.get('proves', '')))}<br><span class=l>Where</span>{E(str(t.get('from', '')))}"
+        f"<pre>{E(str(t.get('command', '')))}</pre><span class=l>Expect</span>{E(str(t.get('expected', '')))}</li>"
+        for t in ns["tests"]) + "</ol>"
     page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Demo day guide</title><style>
 @page{{size:A4;margin:13mm}} body{{font:10.5pt/1.5 "Segoe UI",system-ui,sans-serif;color:#17201d;max-width:900px;margin:auto;padding:0 16px}}
 h1{{font-size:24pt;margin:0 0 4px;color:#0f7b6c}} h2{{border-bottom:2px solid #0f7b6c;padding-bottom:3px;margin-top:22px;break-after:avoid}}
@@ -101,7 +106,28 @@ Grafana panel empty right after boot? Wait 5 min and rerun <code>demo_check.py</
 <p>Run them all at once (about 10 min, PowerShell): <code>python automation/verify_lab.py</code>
 (last result: 59 PASS, 0 FAIL). Never use <code>--disruptive</code> just before the demo.</p>
 {tests}
-<h2>6. When finished</h2><pre>python automation/lab_down.py</pre><p>Then close the project in GNS3 and stop the GNS3 VM.</p>
+<h2>6. TrueNAS backup NAS (SRV-BCK-01)</h2>
+<p><b>Where:</b> hall B, VLAN 40 BACKUP, IP <code>10.40.0.11</code>, bonded to LEAF-B1 and LEAF-B2. It <b>pulls</b>
+backups every night at 02:00 (read-only rsync) and keeps ZFS snapshots hourly (24 h) and daily (14 days).</p>
+<div class="box warn"><b>Off in the demo profile on purpose:</b> it needs 3-4 GB of RAM. Never start it while the demo
+lab is up: the GNS3 VM would swap and HSRP would flap.</div>
+<h3>During the demo: show the proof instead</h3>
+<ul><li><code>report/evidence/nas5_restore.txt</code>: file deleted, restored from a snapshot, same SHA-256.</li>
+<li><code>report/evidence/nas6_triggers.txt</code>: Zabbix alerts for lost disk, failed backup, old snapshot.</li>
+<li>Line to say: backups live in another hall and are pulled, so a hacked server cannot delete them.</li></ul>
+<h3>Open it live (after the demo, PowerShell in 03_Network)</h3>
+<pre>python automation/lab_down.py
+python automation/lab_up.py --profile nas
+python automation/lab_proxy.py open</pre>
+<p>In Edge: <code>https://10.40.0.11/</code>, login <code>truenas_admin</code> (password key
+<code>truenas_admin_password</code>). Look at <b>Storage</b> (pool <code>tank</code>, mirror of 2 disks),
+<b>Data Protection</b> (snapshot and rsync tasks) and the snapshot list.</p>
+<h3>Verification commands</h3>
+{nas}
+<p>Back to the demo afterwards: <code>python automation/lab_down.py</code> then
+<code>python automation/lab_up.py --profile demo</code>.</p>
+
+<h2>7. When finished</h2><pre>python automation/lab_down.py</pre><p>Then close the project in GNS3 and stop the GNS3 VM.</p>
 </body></html>"""
     h = NET / "report/DEMO_GUIDE.html"
     h.write_text(page, encoding="utf-8")
