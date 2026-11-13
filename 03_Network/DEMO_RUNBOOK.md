@@ -81,7 +81,7 @@ Certificats auto-signés : accepter l'avertissement du navigateur.
     pas dans ce profil faute de RAM) ;
   - chaque serveur a deux cartes vers deux leafs (bond actif/secours surveillé par ARP) ; LACP (Po1) relie les deux cœurs.
   - Non redondants (assumé, lab sur un PC) : le nœud de stockage SRV-STO-01 (non déployé), Zabbix/Grafana, le collecteur
-    syslog, DNS/NTP. Non mesurés : perte d'un leaf (T4) et d'un fournisseur Internet (T1).
+    syslog, DNS/NTP. Perte d'un leaf (T4, 12 nov.) : coupure 3,0 s, aucune perte au retour. Non mesuré : perte d'un fournisseur Internet (T1).
 - TrueNAS = **NAS de sauvegarde SRV-BCK-01** (salle B, autre salle que les données), pas le stockage de production :
   il **tire** chaque nuit à 02:00 (rsync en lecture seule, les serveurs n'ont aucun accès aux sauvegardes) la base Zabbix,
   Grafana et /etc de SRV-MON-01, /etc de SRV-INF-01 ; instantanés ZFS horaires (24 h) et quotidiens (14 j) sur un miroir
