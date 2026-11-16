@@ -40,8 +40,25 @@ image, cloud-init seed, offline apt repository ISO, blank disks). They are kept 
 | `iso` | pfSense CE 2.7.2 (FW-A/B) and TrueNAS SCALE 25.10.7 (SRV-BCK-01) installers |
 | `qemu` | Ubuntu 20.04 cloud image, cloud-init seed, offline apt repository ISO, blank disks 100G/20G/10G |
 
-On the lab PC the archives are **not checked out**, to save disk space: git keeps small LFS pointer files in
-`images/archives/` (`git config lfs.fetchexclude "03_Network/images/archives/*"`). The images live on H: and GitHub.
+On the lab PC the archives are **not checked out**, to save disk space: git keeps small LFS pointer files
+(about 130 bytes each) in `images/archives/`. The images live on H: and GitHub.
+
+### Clone or pull without the images
+
+The setting `lfs.fetchexclude` tells Git LFS to skip the 3.9 GB of archives. All other LFS files (PDFs,
+screenshots, renders, Office files) still download normally.
+
+| Situation | What to do (PowerShell) |
+|---|---|
+| Lab PC (already set) | nothing: a plain `git pull` skips the archives |
+| New computer, fresh clone | `git lfs install` (once per computer), then<br>`git -c lfs.fetchexclude="03_Network/images/archives/*" clone <repo-url>`<br>`cd <repo-folder>`<br>`git config lfs.fetchexclude "03_Network/images/archives/*"` (keeps future pulls light) |
+| Existing clone that already has the archives | `git config lfs.fetchexclude "03_Network/images/archives/*"`, delete the files in `images/archives/` except `archives.json`, run `$env:GIT_LFS_SKIP_SMUDGE=1; git checkout -- 03_Network/images/archives; Remove-Item Env:GIT_LFS_SKIP_SMUDGE`, then `git lfs prune` to free the space in `.git/lfs` |
+| Check the setting | `git config lfs.fetchexclude` (prints the path when it is set) |
+| Get the images back later | `git lfs pull --include "03_Network/images/archives/*"` then `python automation/pack_images.py --unpack` |
+| Stop excluding them | `git config --unset lfs.fetchexclude` then `git lfs pull` |
+
+Avoid `GIT_LFS_SKIP_SMUDGE=1` for a whole clone: it skips **every** LFS file, so the PDFs and screenshots
+would be pointer files too.
 
 | Task | Command (PowerShell, repo root or `03_Network`) |
 |---|---|

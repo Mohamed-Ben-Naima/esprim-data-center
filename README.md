@@ -33,4 +33,12 @@ See `06_Documentation/` for the full technical documentation and `05_Report/` fo
 - Binary files (`.blend`, images, video, Office files, GNS3 archives) are stored with **Git LFS**.
 - Lab VM images (Cisco, pfSense, TrueNAS, Ubuntu): zipped in `03_Network/images/archives/` (Git LFS, not checked out on the lab PC), originals on the external disk `H:\DC-Casablanca-images\`. See [`03_Network/README.md`](03_Network/README.md#lab-images-images) and [`03_Network/images/README.md`](03_Network/images/README.md).
   Run `git lfs install` once on every computer before cloning.
+- Clone **without** the 3.9 GB of lab images (everything else, PDFs included, still downloads):
+  ```powershell
+  git -c lfs.fetchexclude="03_Network/images/archives/*" clone <repo-url>
+  cd <repo-folder>
+  git config lfs.fetchexclude "03_Network/images/archives/*"   # future pulls skip them too
+  ```
+  Get them later with `git lfs pull --include "03_Network/images/archives/*"`. Details:
+  [Clone or pull without the images](03_Network/README.md#clone-or-pull-without-the-images).
 - Commit at the end of each work session with a clear message, e.g. `blender: add IT hall racks`.
