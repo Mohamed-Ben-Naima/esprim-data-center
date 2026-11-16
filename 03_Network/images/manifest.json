@@ -1,0 +1,124 @@
+{
+ "images": [
+  {
+   "file": "cisco/vios-adventerprisek9-m.spa.159-3.m6.qcow2",
+   "used_by": "EDGE-A, EDGE-B",
+   "what": "Cisco IOSv 15.9(3)M6 router",
+   "licence": "Cisco licence (CML): private copy, never publish",
+   "source": "GNS3 VM data disk (read offline, /opt/gns3/images/QEMU)",
+   "size": 57309696,
+   "sha256": "3a1aac6ea18d641206a8ccb511122b3ae25b71f139c90b2a9a3d02350ff8d857"
+  },
+  {
+   "file": "cisco/vios_l2-adventerprisek9-m.03.2017.qcow2",
+   "used_by": "CORE-A/B, LEAF-A1/A2/B1/B2",
+   "what": "Cisco IOSvL2 switch (2017)",
+   "licence": "Cisco licence (CML): private copy, never publish",
+   "source": "GNS3 VM data disk (read offline, /opt/gns3/images/QEMU)",
+   "size": 41157632,
+   "sha256": "6f98da74fefa2a5232802fae72907ede62833c0b7bec491b6e0594cf4fb84389"
+  },
+  {
+   "file": "iso/pfSense-CE-2.7.2-RELEASE-amd64.iso",
+   "used_by": "FW-A, FW-B",
+   "what": "pfSense CE 2.7.2 installer",
+   "licence": "Apache 2.0",
+   "source": "H:\\gns3 images\\pfSense-CE-2.7.2-RELEASE-amd64.iso",
+   "size": 874672128,
+   "sha256": "441005f79ea0c155bc4b830a2b4207f8c0804cf7b075d2a6489c0a136cbc5d51"
+  },
+  {
+   "file": "iso/TrueNAS-SCALE-25.10.7.iso",
+   "used_by": "SRV-BCK-01",
+   "what": "TrueNAS SCALE 25.10.7 installer",
+   "licence": "GPL / free",
+   "source": "E:\\TrueNAS-SCALE-25.10.7.iso",
+   "size": 2339317760,
+   "sha256": "54ce9441ce66966a392e28f63604ca3c2c083d0bec4db7bb5af2f74f7a007c8e"
+  },
+  {
+   "file": "qemu/ubuntu-20.04-server-cloudimg-amd64.img",
+   "used_by": "SRV-CMP-01/02/03, SRV-STO-01, SRV-INF-01, SRV-MON-01, SRV-BASTION",
+   "what": "Ubuntu 20.04 cloud image (base disk of the servers)",
+   "licence": "free",
+   "source": "H:\\gns3 images\\ubuntu-20.04-server-cloudimg-amd64.img",
+   "size": 627310592,
+   "sha256": "500a4be0e6dda27d911a3b658ceaad09595b81f10b602b58afb630904a8b04f4"
+  },
+  {
+   "file": "qemu/ubuntu-cloud-init-data.iso",
+   "used_by": "Ubuntu servers",
+   "what": "cloud-init seed (first boot settings)",
+   "licence": "lab-generated",
+   "source": "H:\\gns3 images\\ubuntu-cloud-init-data.iso",
+   "size": 374784,
+   "sha256": "612cec78d76d933909e4d784d1424a1192fe48c19363cb21b07b6c4bd3b6b7c2"
+  },
+  {
+   "file": "qemu/dc-lab-repo-focal-v2.iso",
+   "used_by": "SRV-CMP-01/02, SRV-MON-01, SRV-BASTION",
+   "what": "offline apt repository (built by automation/build_repo.sh)",
+   "licence": "lab-generated",
+   "source": "GNS3 VM data disk (read offline, /opt/gns3/images/QEMU)",
+   "size": 499709952,
+   "sha256": "7a161472b0ba230df962f768209011d63afccca4ce43767aa0967cbc4e2c6c01"
+  },
+  {
+   "file": "qemu/empty100G.qcow2",
+   "used_by": "FW-A, FW-B",
+   "what": "blank disk (pfSense install target)",
+   "licence": "GNS3",
+   "source": "H:\\gns3 images\\empty100G.qcow2",
+   "size": 198656,
+   "sha256": "b333b43b2548e1f9581d4fb52f5c2d603c7d43a14b70a689ddd3e3bc913e6bb4"
+  },
+  {
+   "file": "qemu/empty20G.qcow2",
+   "used_by": "SRV-BCK-01",
+   "what": "blank disk (TrueNAS boot)",
+   "licence": "GNS3",
+   "source": "C:\\Users\\ASUS\\GNS3\\images\\QEMU\\empty20G.qcow2",
+   "size": 196928,
+   "sha256": "693313d3d5af9d7c4b7f145b141bb3342d439bfa1a445b5ffd1f1cdef5716476"
+  },
+  {
+   "file": "qemu/empty10G.qcow2",
+   "used_by": "SRV-BCK-01",
+   "what": "blank disks (ZFS mirror of pool tank)",
+   "licence": "GNS3",
+   "source": "C:\\Users\\ASUS\\GNS3\\images\\QEMU\\empty10G.qcow2",
+   "size": 196768,
+   "sha256": "23a1edeac969b498874484637169fd08de4a7f18f438594fee7103236ba000db"
+  }
+ ],
+ "docker": [
+  {
+   "image": "dc/admin-ws:1.0",
+   "used_by": "ADMIN-WS"
+  },
+  {
+   "image": "dc/frr-isp:1.0",
+   "used_by": "ISP-A, ISP-B"
+  },
+  {
+   "image": "dc/syslog:1.1",
+   "used_by": "SYSLOG"
+  },
+  {
+   "image": "dc/bms-sim:1.0",
+   "used_by": "BMS-SIM"
+  },
+  {
+   "image": "dc/cctv-sim:1.0",
+   "used_by": "CCTV-SIM"
+  },
+  {
+   "image": "dc/dcim:1.0",
+   "used_by": "SRV-DCIM-01"
+  },
+  {
+   "image": "dc/web:1.0",
+   "used_by": "SRV-WEB-01"
+  }
+ ]
+}

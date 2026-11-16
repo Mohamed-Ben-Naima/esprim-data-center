@@ -352,6 +352,23 @@ then explore. Run everything at once with <code>python automation/verify_lab.py<
 <p class="lead">The full network report, chapter by chapter. Click a chapter to open it. The search covers these
 too.</p>{deep}""", "Chapter 8")
 
+    man = json.loads((NET / "images/manifest.json").read_text(encoding="utf-8"))
+    irows = "".join(
+        f'<tr class="entry" data-title="image {E(r["file"])}"><td class="mono">images/{E(r["file"])}</td>'
+        f'<td class="num">{(r["size"] or 0) / 1048576:,.0f} MB</td><td>{E(r["used_by"])}</td><td>{E(r["what"])}</td>'
+        f'<td>{E(r["licence"])}</td></tr>' for r in man["images"])
+    drows = "".join(f'<tr class="entry" data-title="docker {E(d["image"])}"><td class="mono">{E(d["image"])}</td>'
+                    f'<td>{E(d["used_by"])}</td></tr>' for d in man["docker"])
+    chapter("images", "The images behind every node", f"""
+<p class="lead">Each node boots from an image. They are all kept in <code>03_Network/images/</code> on the lab PC,
+with size and SHA-256 in <code>images/manifest.json</code>. They are not in git: too big, and the Cisco licence forbids
+publishing them. <code>python automation/collect_images.py --verify</code> checks them.</p>
+<div class="tablewrap"><table><thead><tr><th>File</th><th>Size</th><th>Used by</th><th>What</th><th>Licence</th></tr>
+</thead><tbody>{irows}</tbody></table></div>
+<h3>Container images (rebuilt from <code>docker/</code>)</h3>
+<div class="tablewrap"><table><thead><tr><th>Image</th><th>Used by</th></tr></thead><tbody>{drows}</tbody></table></div>
+""", "Appendix")
+
     nav = "".join(f'<a href="#{c}">{E(t)}</a>' for c, t in toc)
     page = TEMPLATE.replace("%NAV%", nav).replace("%BODY%", "".join(parts))
     out = NET / "report/DC_Casablanca_Field_Book.html"

@@ -22,3 +22,18 @@ Lab GNS3 du Data Center TIA-942 Rated-3 : configuration complète, tests de rés
 powershell -ExecutionPolicy Bypass -File 03_Network\report\build.ps1
 ```
 Needs Node.js (installs `docx` on first run) and Microsoft Word (TOC refresh + PDF export).
+
+## Lab images (`images/`)
+
+Every disk image, ISO and container image the lab uses is gathered in [`images/`](images/README.md), sorted by kind:
+
+| Folder | Content |
+|---|---|
+| `images/cisco/` | Cisco IOSv (EDGE-A/B) and IOSvL2 (cores, leafs) — licensed, never pushed |
+| `images/iso/` | pfSense CE 2.7.2 and TrueNAS SCALE 25.10.7 installers |
+| `images/qemu/` | Ubuntu 20.04 cloud image, cloud-init seed, offline apt repository ISO, blank disks |
+
+The files stay out of git (size, licences); [`images/README.md`](images/README.md) and `images/manifest.json` list each
+file with its size, SHA-256, source and the nodes that use it. `python automation/collect_images.py` gathers them
+again (PC drives, then the GNS3 VM, or its disk read offline when the VM cannot boot); `--verify` re-checks the
+checksums. Container images (`dc/*`) are rebuilt from `docker/` with `python automation/build_images.py`.
