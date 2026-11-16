@@ -1,0 +1,66 @@
+[
+ {
+  "archive": "cisco.zip",
+  "parts": [
+   "cisco.zip"
+  ],
+  "files": [
+   "cisco/vios-adventerprisek9-m.spa.159-3.m6.qcow2",
+   "cisco/vios_l2-adventerprisek9-m.03.2017.qcow2"
+  ],
+  "original_bytes": 98467328,
+  "packed_bytes": 97546407,
+  "sha256": {
+   "cisco.zip": "055d36703335ebcf578aad53261c01946f59c269dc9556c59883697124cae17c"
+  }
+ },
+ {
+  "archive": "qemu.zip",
+  "parts": [
+   "qemu.zip"
+  ],
+  "files": [
+   "qemu/dc-lab-repo-focal-v2.iso",
+   "qemu/empty100G.qcow2",
+   "qemu/empty10G.qcow2",
+   "qemu/empty20G.qcow2",
+   "qemu/ubuntu-20.04-server-cloudimg-amd64.img",
+   "qemu/ubuntu-cloud-init-data.iso"
+  ],
+  "original_bytes": 1127987680,
+  "packed_bytes": 1119178685,
+  "sha256": {
+   "qemu.zip": "64595eb54b78ff61716b7dd79d73cd02a058e216b8a7c06363c6efb60fa18943"
+  }
+ },
+ {
+  "archive": "iso-pfsense.zip",
+  "parts": [
+   "iso-pfsense.zip"
+  ],
+  "files": [
+   "iso/pfSense-CE-2.7.2-RELEASE-amd64.iso"
+  ],
+  "original_bytes": 874672128,
+  "packed_bytes": 573115085,
+  "sha256": {
+   "iso-pfsense.zip": "d242e5f938159865a80bdc78e87efa78b68cde447ba599eec0502332288721ad"
+  }
+ },
+ {
+  "archive": "iso-truenas.zip",
+  "parts": [
+   "iso-truenas.zip.001",
+   "iso-truenas.zip.002"
+  ],
+  "files": [
+   "iso/TrueNAS-SCALE-25.10.7.iso"
+  ],
+  "original_bytes": 2339317760,
+  "packed_bytes": 2305483701,
+  "sha256": {
+   "iso-truenas.zip.001": "f2caad84062a5039cd595d854ad70a1bbee5ae101b100b576ef4e94f96be7087",
+   "iso-truenas.zip.002": "190c254e730fcbc5efc81092a8067061f1a823e1698ae4d4ded73f6064921f98"
+  }
+ }
+]

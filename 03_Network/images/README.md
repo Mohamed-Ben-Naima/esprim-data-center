@@ -39,6 +39,19 @@ All QEMU images and ISOs live in `/opt/gns3/images/QEMU/` in the GNS3 VM. To res
 Rebuild them in the GNS3 VM with `python automation/build_images.py`, then re-create a node with
 `python automation/deploy_containers.py <NODE>`.
 
+## Copy on GitHub (Git LFS, zipped)
+
+The same images are in the repo as zip archives in `images/archives/` (Git LFS; the TrueNAS ISO is split into
+`.001`/`.002` parts because GitHub refuses LFS files over 2 GB). `archives.json` lists each part with its SHA-256.
+
+```powershell
+git lfs pull --include "03_Network/images/archives/*"      # download the archives (about 3.9 GB)
+python automation/pack_images.py --unpack                  # join, unzip to H:\DC-Casablanca-images, verify SHA-256
+python automation/pack_images.py                           # re-pack after an image changes
+```
+
+On the lab PC the archives are not kept checked out (pointer files only, `lfs.fetchexclude`), to save disk space.
+
 ## SHA-256
 
 ```
