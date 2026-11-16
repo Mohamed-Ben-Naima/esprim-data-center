@@ -1,6 +1,6 @@
 stage,nodes,vm_total_mb,vm_used_mb,vm_avail_mb,swap_used_mb,ksm_shared_mb,load1,qemu_vms,containers,host_free_gb
-0 Avant démarrage,—,7901,503,7145,3,0,0.00,0,0,0.7
-1 WAN / bordure,6,7901,774,6873,3,162,1.09,1,2,0.9
-2 Sécurité / management,6,7901,3188,4455,3,166,2.27,3,4,0.7
-3 Cœur / distribution,4,7901,5047,2596,3,167,4.32,7,4,1.2
-4 Services,4,7901,6285,1356,42,560,5.10,8,7,1
+0 Avant démarrage,—,7901,429,7216,0,0,0.18,0,0,1.5
+1 WAN / bordure,6,7901,712,6932,0,163,1.53,1,2,0.9
+2 Sécurité / management,6,7901,3159,4478,0,167,1.52,3,4,0.5
+3 Cœur / distribution,4,7901,5018,2618,0,168,4.36,7,4,0.6
+4 Services,4,7901,6328,1304,19,519,6.58,8,7,0.7

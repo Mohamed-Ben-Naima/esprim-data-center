@@ -1,4 +1,4 @@
-Table: Matrice de flux mesurée de bout en bout le 10/11/2026 (automation/flow_matrix.py --running-only)
+Table: Matrice de flux mesurée de bout en bout le 12/11/2026 (automation/flow_matrix.py --running-only)
 | Source | Flux | Attendu | Observé | Verdict | Réf. | Trace du refus |
 |---|---|---|---|---|---|---|
 | SRV-CMP-01 | Serveurs -> stockage NFS 2049 | autorisé | ignoré (SRV-CMP-01, SRV-STO-01 arrêté) | **—** | T18-3 |  |
