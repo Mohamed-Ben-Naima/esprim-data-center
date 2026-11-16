@@ -25,15 +25,32 @@ Needs Node.js (installs `docx` on first run) and Microsoft Word (TOC refresh + P
 
 ## Lab images (`images/`)
 
-Every disk image, ISO and container image the lab uses is stored on the external USB disk in **`H:\DC-Casablanca-images\`**, sorted by kind (`images/README.md` in the repo lists them):
+The lab boots from 10 images: 2 Cisco images, 2 installers (pfSense, TrueNAS) and 6 QEMU files (Ubuntu cloud
+image, cloud-init seed, offline apt repository ISO, blank disks). They are kept in **three places**:
+
+| Where | What | Size |
+|---|---|---|
+| **External disk** `H:\DC-Casablanca-images\` | the original files in `cisco\`, `iso\`, `qemu\`, plus a copy of `README.md` and `manifest.json` | 4.2 GB |
+| **GitHub** (Git LFS) `03_Network/images/archives/` | the same files zipped: `cisco.zip`, `qemu.zip`, `iso-pfsense.zip`, `iso-truenas.zip.001` + `.002` (split: GitHub refuses LFS files over 2 GB), `archives.json` with the SHA-256 of each part | 3.9 GB |
+| **This repo** `03_Network/images/` | `README.md` (every file: size, SHA-256, source, nodes that use it, licence) and `manifest.json` | a few KB |
 
 | Folder | Content |
 |---|---|
-| `cisco` | Cisco IOSv (EDGE-A/B) and IOSvL2 (cores, leafs) — licensed, never pushed |
-| `iso` | pfSense CE 2.7.2 and TrueNAS SCALE 25.10.7 installers |
-| `qemu` | Ubuntu 20.04 cloud image, cloud-init seed, offline apt repository ISO, blank disks |
+| `cisco` | Cisco IOSv 15.9(3)M6 (EDGE-A/B) and IOSvL2 2017 (cores, leafs). Cisco licence: keep the repo private |
+| `iso` | pfSense CE 2.7.2 (FW-A/B) and TrueNAS SCALE 25.10.7 (SRV-BCK-01) installers |
+| `qemu` | Ubuntu 20.04 cloud image, cloud-init seed, offline apt repository ISO, blank disks 100G/20G/10G |
 
-The files stay out of git (size, licences); [`images/README.md`](images/README.md) and `images/manifest.json` list each
-file with its size, SHA-256, source and the nodes that use it. `python automation/collect_images.py` gathers them
-again (PC drives, then the GNS3 VM, or its disk read offline when the VM cannot boot); `--verify` re-checks the
-checksums. Container images (`dc/*`) are rebuilt from `docker/` with `python automation/build_images.py`.
+On the lab PC the archives are **not checked out**, to save disk space: git keeps small LFS pointer files in
+`images/archives/` (`git config lfs.fetchexclude "03_Network/images/archives/*"`). The images live on H: and GitHub.
+
+| Task | Command (PowerShell, repo root or `03_Network`) |
+|---|---|
+| Download the archives from GitHub | `git lfs pull --include "03_Network/images/archives/*"` |
+| Join, unzip to `H:\DC-Casablanca-images` and check every SHA-256 | `python automation/pack_images.py --unpack` (other folder: add it as argument) |
+| Re-pack after an image changes | `python automation/pack_images.py` then commit `images/archives/` |
+| Re-gather the originals (PC drives, GNS3 VM, or its disk read offline when the VM cannot boot) | `python automation/collect_images.py` |
+| Check the files on H: against the manifest | `python automation/collect_images.py --verify` |
+| Put an image back in the GNS3 VM | copy it to `/opt/gns3/images/QEMU/` (GNS3 app: Preferences > QEMU VMs, or `gns3vm.put`) |
+
+Container images (`dc/*`) are not stored as files: they are rebuilt from `docker/` with
+`python automation/build_images.py`.

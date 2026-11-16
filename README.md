@@ -31,5 +31,6 @@ See `06_Documentation/` for the full technical documentation and `05_Report/` fo
 
 - Numbered folders and versioned scene files (`DC_Exterior_v02.blend`, ...).
 - Binary files (`.blend`, images, video, Office files, GNS3 archives) are stored with **Git LFS**.
+- Lab VM images (Cisco, pfSense, TrueNAS, Ubuntu): zipped in `03_Network/images/archives/` (Git LFS, not checked out on the lab PC), originals on the external disk `H:\DC-Casablanca-images\`. See [`03_Network/README.md`](03_Network/README.md#lab-images-images) and [`03_Network/images/README.md`](03_Network/images/README.md).
   Run `git lfs install` once on every computer before cloning.
 - Commit at the end of each work session with a clear message, e.g. `blender: add IT hall racks`.
