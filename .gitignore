@@ -49,3 +49,5 @@ node_modules/
 # pfSense configs with secrets (cert private key, password hashes) – redacted copies are committed
 03_Network/configs/pfsense/baseline.xml
 03_Network/configs/pfsense/FW-?.config.xml
+03_Network/**/project-files/images/
+03_Network/report/_source/field_book_print.html
