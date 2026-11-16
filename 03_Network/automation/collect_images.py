@@ -1,4 +1,4 @@
-"""Gather every image the lab uses into 03_Network/images/ and write a checksum manifest.
+"""Gather every image the lab uses into H:/DC-Casablanca-images/ (external disk) and write a checksum manifest.
 
   python automation/collect_images.py            copy what is missing, then (re)write images/manifest.json + README.md
   python automation/collect_images.py --verify   only re-check sizes and SHA-256 against the manifest
@@ -10,12 +10,14 @@ the manifest and the README in git.
 """
 import hashlib
 import json
+import os
 import shutil
 import sys
 from pathlib import Path
 
 NET = Path(__file__).resolve().parents[1]
-OUT = NET / "images"
+OUT = NET / "images"            # manifest + README (in git)
+STORE = Path(os.environ.get("DC_IMAGES", r"H:\DC-Casablanca-images"))  # the image files (external USB disk)
 HOME = Path.home()
 SRC_DIRS = [Path("E:/"), Path("H:/gns3 images"), HOME / "Downloads", HOME / "GNS3/images/QEMU"]
 VM_DIR = "/opt/gns3/images/QEMU"
@@ -82,7 +84,7 @@ def main(argv):
     old = {i["file"]: i for i in json.loads(man_path.read_text(encoding="utf-8"))["images"]} if man_path.exists() else {}
     rows, bad = [], 0
     for name, folder, used, what, lic in IMAGES:
-        dest = OUT / folder / name
+        dest = STORE / folder / name
         dest.parent.mkdir(exist_ok=True)
         src = old.get(f"{folder}/{name}", {}).get("source", "")
         if "--verify" not in argv and not dest.exists():
@@ -124,7 +126,8 @@ def main(argv):
     dock = "\n".join(f"| `{i}` | {u} | `docker/{i.split('/')[1].split(':')[0]}/` |" for i, u in DOCKER)
     (OUT / "README.md").write_text(f"""# Lab images
 
-Every disk image, ISO and container image the GNS3 lab uses. The files sit in this folder on the lab PC but are
+Every disk image, ISO and container image the GNS3 lab uses. The files are kept on the external USB disk in
+**`H:/DC-Casablanca-images/`** (`cisco/`, `iso/`, `qemu/`, with a copy of this README and the manifest). They are
 **not in git** (size, and the Cisco licence forbids publishing them): only this README and `manifest.json` are
 tracked. Re-gather them with `python automation/collect_images.py`, check them with `--verify`.
 

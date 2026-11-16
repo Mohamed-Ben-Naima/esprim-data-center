@@ -25,13 +25,13 @@ Needs Node.js (installs `docx` on first run) and Microsoft Word (TOC refresh + P
 
 ## Lab images (`images/`)
 
-Every disk image, ISO and container image the lab uses is gathered in [`images/`](images/README.md), sorted by kind:
+Every disk image, ISO and container image the lab uses is stored on the external USB disk in **`H:\DC-Casablanca-images\`**, sorted by kind (`images/README.md` in the repo lists them):
 
 | Folder | Content |
 |---|---|
-| `images/cisco/` | Cisco IOSv (EDGE-A/B) and IOSvL2 (cores, leafs) — licensed, never pushed |
-| `images/iso/` | pfSense CE 2.7.2 and TrueNAS SCALE 25.10.7 installers |
-| `images/qemu/` | Ubuntu 20.04 cloud image, cloud-init seed, offline apt repository ISO, blank disks |
+| `cisco` | Cisco IOSv (EDGE-A/B) and IOSvL2 (cores, leafs) — licensed, never pushed |
+| `iso` | pfSense CE 2.7.2 and TrueNAS SCALE 25.10.7 installers |
+| `qemu` | Ubuntu 20.04 cloud image, cloud-init seed, offline apt repository ISO, blank disks |
 
 The files stay out of git (size, licences); [`images/README.md`](images/README.md) and `images/manifest.json` list each
 file with its size, SHA-256, source and the nodes that use it. `python automation/collect_images.py` gathers them

@@ -1,6 +1,7 @@
 # Lab images
 
-Every disk image, ISO and container image the GNS3 lab uses. The files sit in this folder on the lab PC but are
+Every disk image, ISO and container image the GNS3 lab uses. The files are kept on the external USB disk in
+**`H:/DC-Casablanca-images/`** (`cisco/`, `iso/`, `qemu/`, with a copy of this README and the manifest). They are
 **not in git** (size, and the Cisco licence forbids publishing them): only this README and `manifest.json` are
 tracked. Re-gather them with `python automation/collect_images.py`, check them with `--verify`.
 

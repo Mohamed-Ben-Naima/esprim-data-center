@@ -360,8 +360,8 @@ too.</p>{deep}""", "Chapter 8")
     drows = "".join(f'<tr class="entry" data-title="docker {E(d["image"])}"><td class="mono">{E(d["image"])}</td>'
                     f'<td>{E(d["used_by"])}</td></tr>' for d in man["docker"])
     chapter("images", "The images behind every node", f"""
-<p class="lead">Each node boots from an image. They are all kept in <code>03_Network/images/</code> on the lab PC,
-with size and SHA-256 in <code>images/manifest.json</code>. They are not in git: too big, and the Cisco licence forbids
+<p class="lead">Each node boots from an image. They are all kept on the external USB disk in <code>H:/DC-Casablanca-images/</code>
+(cisco, iso, qemu), with size and SHA-256 in <code>03_Network/images/manifest.json</code>. They are not in git: too big, and the Cisco licence forbids
 publishing them. <code>python automation/collect_images.py --verify</code> checks them.</p>
 <div class="tablewrap"><table><thead><tr><th>File</th><th>Size</th><th>Used by</th><th>What</th><th>Licence</th></tr>
 </thead><tbody>{irows}</tbody></table></div>
