@@ -31,6 +31,13 @@ existing evidence (screenshots, outputs, 13 Nov run), labelled with its date.
 
 Assumptions: talk ≈ 20 min + video 8 min + questions. Change the plan if the slot is different.
 
+## Working rule — full autonomy (user, 23 Nov 2026)
+
+Work through **every phase P0 → P8 in one go, without asking for permission and without stopping to wait for
+"continue"**. Decide alone (record each decision in the table above), fix problems yourself, commit + push after
+each phase, and keep going until P8 is ticked. Stop only for something only the user can do (a reboot, an admin
+prompt, a physical disk), and then say exactly what to do. Never stop at "should I go on?".
+
 ## Deck — outline mapped to content
 
 Each line: slide(s) → visual → source in the repo → "how it was done" → norm badge.
@@ -199,7 +206,8 @@ open the project, lab_up.py --profile fw, demo_check.py 12/12. If the VM still r
 Then P1 (facts.json), P2 (visual kit D11-D14: SVG diagrams, licensed photos, Canva covers) and P3
 (deck v1 from the Slides type, French, screenshots of D10, quality gate D15).
 No Samba/AD/LDAP before the presentation (D4). Tick the boxes in PLAN_05, commit + push after each phase.
-Decide alone, caveman replies, sign 🍀.
+Full autonomy: do every phase P0 -> P8 without asking permission and without stopping for "continue";
+stop only for something only I can do. Decide alone, caveman replies, sign 🍀.
 ```
 
 ## Skills and tools used
