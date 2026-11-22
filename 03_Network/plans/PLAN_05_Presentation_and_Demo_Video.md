@@ -12,7 +12,7 @@ slide comes from the inventory, the tests or the evidence files, and every scene
 | D1 | Deck built from the **Artifact Slides type** (French), exported to **.pptx and .pdf**. ~40 slides + 8 annex slides. One theme taken from the Blender renders (graphite + cyan LED). | Opens on any PC, prints, keeps speaker notes. |
 | D2 | Slide rule: **1 visual + max 3 bullets**, footer "Comment c'est fait" (tool/script used) and a badge with the norm clause (TIA-942 / ISO 27001 Annex A). Full detail goes in the speaker notes. | Jury reads the picture, listens to you. "Spill the tea" without walls of text. |
 | D3 | The firewall slide says **pfSense CE 2.7.2**, not OPNsense: the lab runs pfSense. One line explains the choice (same FreeBSD/pf base as OPNsense, CARP + pfsync + XMLRPC proven in T2). | The outline says OPNsense but the lab does not run it. Migrating takes days and would break T2. Never show a product we do not run. |
-| D4 | **AD + LDAP are missing in the lab; build them**: `SRV-AD-01`, Samba 4 AD DC in a container (`dc/samba-ad:1.0`), VLAN 100, `10.100.0.12`, realm `DC-CASA.LOCAL`. LDAPS 636 is used by the pfSense GUI, Zabbix and Grafana. Groups `dc-admins` / `dc-noc` / `dc-readonly`. Core ACL: only admin zone + servers to 88/389/636. Time box **4 h**; if it fails, the slides show it as design + next phase, with no demo. | It is in the outline (III.9, III.10), and it gives a strong demo: one account logs in everywhere. A container fits the RAM. |
+| D4 | **AD + LDAP: not built before the presentation** (user decision 23 Nov). Done after the presentation if time allows: Samba 4 AD DC container `SRV-AD-01` (VLAN 100, `10.100.0.12`, realm `DC-CASA.LOCAL`), LDAPS 636 for pfSense, Zabbix and Grafana. In the deck: **one slide "AD / LDAP — prévu"** with this design, no demo, no screenshot. | Keeps the time for the deck, the screenshots and the video. The outline headings stay, and nothing is shown that does not run. |
 | D5 | **Database** = the MariaDB behind Zabbix on SRV-MON-01 (already running). Slides cover schema size, users, the backup pulled by TrueNAS and a restore test. No new DB server. | It exists and is real. Adding a DB only for the slide adds RAM and risk. |
 | D6 | Video = **real screen recording** at 1080p30 with OBS (installed). Browser scenes are driven by **Playwright** (installed): visible cursor, click ripple, hover highlight, slow human pace. Terminal scenes are typed by a **typist script** at human speed. Every scene can be re-recorded in 1 minute. | Looks human and smooth, never shows typos or hesitations, and is repeatable. |
 | D7 | Editing with **ffmpeg** (installed): French chapter cards, captions, zoom on key lines, an on-screen timer for failovers, waits sped up ×4. Outputs: **master video 8–9 min** and **one clip per scene** (20–60 s) embedded in the slides. | Clips play inside the deck; the master is the backup if the live demo fails. |
@@ -59,7 +59,7 @@ Each line: slide(s) → visual → source in the repo → "how it was done" → 
 6. DNS (1): SRV-INF-01 dnsmasq, internal zone, forwarders, pfSense resolver off by design.
 7. DHCP (1): SRV-INF-01 + relay (P1 checks how the relay is configured before writing the slide).
 8. Web Server (1): SRV-WEB-01 nginx in the DMZ (VLAN 50), NAT port forward, path from the Internet.
-9. AD (1) and 10. LDAP (1): per D4.
+9. AD and 10. LDAP (1 slide together): design only, marked "prévu", per D4.
 11. Firewall (3): pfSense, CARP/pfsync/XMLRPC, rule sets, NAT, logs. Screenshots `screenshots/21–25`.
 12. Base de données (1): per D5.
 13. ACLs (2): core ACL (`generated/core_acl.md`), **access-matrix heatmap** from `report/evidence/access_matrix.csv`.
@@ -86,7 +86,7 @@ versions, ISO detail, glossary.
 | S2 | Admin entry 1:00–1:40 | SSH to the bastion with TOTP, ADMIN-WS portal | fw |
 | S3 | Network 1:40–2:40 | Typed: `show standby brief`, OSPF neighbours, BGP summary, etherchannel, STP | edge/fw |
 | S4 | Firewall 2:40–3:30 | pfSense GUI: CARP status, rules (hover), NAT, live logs | fw |
-| S5 | Services 3:30–4:20 | `dig` on DNS, DHCP lease, `curl` to the web site through NAT, AD login on Grafana | fw + mon |
+| S5 | Services 3:30–4:20 | `dig` on DNS, DHCP lease, `curl` to the web site through NAT | fw + mon |
 | S6 | NOC 4:20–5:20 | Zabbix problems, Grafana power (UPS/PDU), CCTV, DCIM racks | mon |
 | S7 | NAS 5:20–5:55 | TrueNAS pool, snapshots, last pull, restore one file | nas |
 | S8 | Chaos 5:55–7:45 | Continuous ping + timer: T2 FW-A off, T3 CORE-A off, T5 SRV-CMP-01 off (keepalived), T6 BMS path A, then recovery | per test |
@@ -106,7 +106,6 @@ Already there and reused: `02` topology, `12/13` CARP console, `14/15` NAT and r
 | 35 | `35_vlan_trunks.png` | III.2 | terminal, `show interfaces trunk` |
 | 36–37 | `36_srv-inf-01_dns_dig.png`, `37_dhcp_lease.png` | III.6, III.7 | terminal |
 | 38 | `38_srv-web-01_site_via_nat.png` | III.8 | browser through the WAN NAT |
-| 39–41 | `39_samba-ad_users_groups.png`, `40_pfsense_ldap_server.png`, `41_grafana_ldap_login.png` | III.9, III.10 | terminal + browser (if P2 done) |
 | 42 | `42_mariadb_zabbix_db.png` | III.12 | terminal, DB size + tables |
 | 43 | `43_core_acl_denied.png` | III.13 | terminal, denied flow + ACL hit counters |
 | 44–47 | `44_zabbix_problems.png`, `45_zabbix_hosts.png`, `46_grafana_power_ups_pdu.png`, `47_syslog_viewer.png` | II.5, III.14 | browser |
@@ -124,8 +123,6 @@ Each new screenshot is listed in `report/content` (French report) and in the Fie
 - [ ] **P1 Fact sheet** (1 h, no lab): `05_Report/presentation/facts.json` with every number used (nodes, VLANs,
       IPs, tests, outage times, versions, ISO controls) from the inventory, tests and evidence. Check the DHCP relay,
       the DB backup and the DCIM storage. Slides and video read only from this file.
-- [ ] **P2 AD/LDAP** (4 h max, lab): image `dc/samba-ad`, inventory + ACL + DNS forward, users/groups, LDAPS to
-      pfSense/Zabbix/Grafana, tests `ADM-AD-*` added to `tests.yaml`, `verify_lab.py` still all PASS.
 - [ ] **P3 Deck v1** (3 h): every slide, diagrams (SVG), charts (outage times, access heatmap, conformity
       scorecard), screenshots, speaker notes in French. Text pass with the humanizer skill.
 
@@ -133,7 +130,7 @@ Each new screenshot is listed in `report/content` (French report) and in the Fie
 - [ ] **P4 Video tooling** (2 h): `automation/demo_video/director.py` (Playwright scenes, cursor/ripple/hover
       overlay), `typist.py` (human-speed typing), `edit.py` (ffmpeg: cards, captions, zooms, timer, speed-ups),
       OBS scene 1080p30. Dry run on S1.
-- [ ] **P5 Record + screenshots** (3 h): scenes S1–S9 per profile, PNGs 30–59 saved by the same run; retake until
+- [ ] **P5 Record + screenshots** (3 h): scenes S1–S9 per profile, PNGs 30–59 (except 39–41) saved by the same run; retake until
       clean; RAM check between profiles. Check every screenshot shows the value written on its slide.
 - [ ] **P6 Edit and embed** (2 h): master MP4 + scene clips, clips into the slides, export .pptx + .pdf.
 - [ ] **P7 Rehearsal kit** (1 h): timing per section, cue cards, **20 likely jury questions with answers**, live-demo
@@ -143,7 +140,11 @@ Each new screenshot is listed in `report/content` (French report) and in the Fie
 
 ### Wed 25 Nov — present.
 
-Priority if time runs out: deck (P1, P3) → video (P4–P6) → AD/LDAP (P2). If P2 is skipped, D4 fallback applies.
+Priority if time runs out: deck (P1, P3) → screenshots + video (P4–P6) → rehearsal kit (P7).
+
+### After the presentation (if time)
+- [ ] **P9 AD/LDAP** per D4: image `dc/samba-ad`, inventory + ACL + DNS forward, users/groups, LDAPS to
+      pfSense/Zabbix/Grafana, tests `ADM-AD-*` in `tests.yaml`, `verify_lab.py` still all PASS.
 
 ## Before the next session — reboot (you do it)
 
@@ -159,8 +160,8 @@ Undo later (only if WSL2, Docker Desktop or Windows Sandbox are needed): `bcdedi
 Read 03_Network/plans/PLAN_05_Presentation_and_Demo_Video.md and do it, starting at P0.
 P0: check VT-x is free (bcdedit /enum shows hypervisorlaunchtype Off, H: present), start the GNS3 VM with vmrun,
 open the project, lab_up.py --profile fw, demo_check.py 12/12. If the VM still refuses VT-x, stop and tell me.
-Then P1 (facts.json), P2 (Samba AD + LDAP, 4 h max, else D4 fallback), P3 (deck v1 from the Slides type,
-French, with the screenshots of D10). Tick the boxes in PLAN_05, commit + push after each phase.
+Then P1 (facts.json) and P3 (deck v1 from the Slides type, French, with the screenshots of D10).
+No Samba/AD/LDAP before the presentation (D4). Tick the boxes in PLAN_05, commit + push after each phase.
 Decide alone, caveman replies, sign 🍀.
 ```
 
