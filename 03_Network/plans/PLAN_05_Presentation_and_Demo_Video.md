@@ -19,6 +19,11 @@ slide comes from the inventory, the tests or the evidence files, and every scene
 | D8 | Lab recorded **per profile** (edge/fw, compute, nas, mon), as in the demo. | Host RAM cannot run every node at once ([[lab-capacity-limits]]). |
 | D9 | Files: deck and video sources in `05_Report/presentation/`, recording scripts in `03_Network/automation/demo_video/`, MP4s in Git LFS. | Matches 01_Planning (05_Report = report + presentation); scripts sit next to the other automation. |
 | D10 | **Screenshots everywhere**: every technical slide (II.3 → III.15) shows at least one **real screenshot** of the live lab. `director.py` saves a PNG at each key moment of the recording, so the screenshot and the video come from the same run and show the same values. | The jury trusts what it sees. Screenshot = proof; same run = consistency rule. |
+| D11 | **One visual system** for deck, diagrams and video: palette from the Blender renders (graphite background, cyan accent, one colour per security zone, same colours as the GNS3 VLAN legend), fonts Inter (text) + JetBrains Mono (commands), one icon set (Tabler, MIT licence, line style). Product logos only where the product is named. | Neat and coherent: the jury sees one designed project, not a collage. |
+| D12 | **Architecture diagrams redrawn as clean SVG** (19 diagrams, list below), never a raw screenshot alone: the GNS3 screenshot is shown next to the clean drawing. Tools: artifact-diagramming (SVG), draw.io and Mermaid for the layered ones, dataviz for charts. | A screenshot proves it runs, a clean diagram explains it. Both together. |
+| D13 | **Internet images**: real hardware photos (UPS, PDU, rack, CCTV camera, generator, cold aisle) and the Casablanca map, only with a free licence (Wikimedia Commons, Unsplash, Pexels; OpenStreetMap for maps), ≥ 1920 px. Each one goes in `05_Report/presentation/assets/CREDITS.md` with its source and licence, plus a credits slide. No copied vendor or Uptime Institute diagrams: we redraw. | High quality without any copyright problem in front of the jury. |
+| D14 | **Canva** (connected) for the title slide, the 4 section covers, the "project in numbers" infographic and the video thumbnail/end card, in the D11 style. The deck itself stays in the Slides type (editable, exports .pptx/.pdf); a Canva copy of the deck is made only if you want to present from Canva. | Canva is strong for covers and infographics; the deck stays one source. |
+| D15 | **Quality gate** before export: every slide rendered to PNG and checked (no overflow, text ≥ 18 pt, contrast AA, same fonts and margins, every number = `facts.json`), with the design-critique and accessibility-review skills. Video: 1080p, no cursor jumps, no typos, captions in sync, sound levels even, optional royalty-free music (credited). | "Neat and perfect" checked, not hoped. |
 
 **Needs your OK before P0:** turning off Hyper-V (`bcdedit /set hypervisorlaunchtype off` + reboot). The GNS3 VM
 cannot boot without VT-x, so without it there is **no live lab and no new video**. Fallback: a deck built from the
@@ -116,6 +121,34 @@ Already there and reused: `02` topology, `12/13` CARP console, `14/15` NAT and r
 
 Each new screenshot is listed in `report/content` (French report) and in the Field Book gallery too.
 
+## Visual kit (D11–D14)
+
+Files in `05_Report/presentation/assets/` (`diagrams/*.svg`, `photos/`, `icons/`, `canva/`, `CREDITS.md`).
+
+| # | Diagram / visual | Slide | Tool |
+|---|---|---|---|
+| V1 | Casablanca location map + campus plan (3 buildings, gate, power feeds) | II.2 | OpenStreetMap + `plan_masse.png` redrawn |
+| V2 | Tier I–IV comparison with our position (Rated-3) | II.1 | SVG |
+| V3 | TIA-942 spaces (ER, MDA, HDA, EDA, halls A/B) as a floor plan | II.3 | SVG |
+| V4 | **Full logical architecture** in layers: ISP → EDGE → FW → CORE → LEAF → servers, zones coloured | II.3, III | draw.io / SVG |
+| V5 | Redundancy chain with the protocol of each tier (eBGP, HSRP, CARP, OSPF, LACP, bond, keepalived) | II.4 | SVG |
+| V6 | Measured outage times T1–T6, M1 vs target | II.4 | dataviz chart |
+| V7 | Power path A/B: utility → UPS → PDU → rack, generator | II.5 | SVG + real photos |
+| V8 | Non-IT: cameras, BMS counters, UPS, PDU (photo + live screenshot side by side) | II.5 | photos + screenshots |
+| V9 | Lab environment stack (host → VMware → GNS3 VM → QEMU/Docker nodes) | III.1 | SVG |
+| V10 | **Automation pipeline** (inventory → generators → push → audit → verify → reports) | III.1 | SVG |
+| V11 | VLAN and zone map | III.2 | SVG |
+| V12 | Addressing plan as blocks (10.<vlan>.0.0/24, VIPs, /30 transit) | III.5 | SVG |
+| V13 | Service map (who serves whom, port) incl. DNS, DHCP, web DMZ path | III.3, III.6–8 | SVG |
+| V14 | Backup pull flow (TrueNAS pulls, server cannot delete) | III.4 | SVG |
+| V15 | Firewall zones and flows, CARP/pfsync/XMLRPC pair | III.11 | SVG |
+| V16 | Access matrix heatmap | III.13 | dataviz |
+| V17 | Monitoring pipeline (SNMPv3 → Zabbix → Grafana, syslog, alerts) | III.14 | SVG |
+| V18 | Defence in depth + admin path (admin → bastion TOTP → ADMIN-WS → devices) | III.15 | SVG |
+| V19 | ISO 27001 / TIA-942 conformity scorecard; AD/LDAP "prévu" design (dashed) | III.9–10, III.15, IV | dataviz / SVG |
+| C1–C6 | Title, 4 section covers, "project in numbers" infographic | I–IV | Canva |
+| C7–C8 | Video thumbnail + end card | video | Canva |
+
 ## Phases
 
 ### Day 1 — Mon 23 Nov
@@ -123,6 +156,8 @@ Each new screenshot is listed in `report/content` (French report) and in the Fie
 - [ ] **P1 Fact sheet** (1 h, no lab): `05_Report/presentation/facts.json` with every number used (nodes, VLANs,
       IPs, tests, outage times, versions, ISO controls) from the inventory, tests and evidence. Check the DHCP relay,
       the DB backup and the DCIM storage. Slides and video read only from this file.
+- [ ] **P2 Visual kit** (3 h, no lab): D11 style sheet, diagrams V1–V19 (SVG), licensed photos + `CREDITS.md`,
+      Canva covers C1–C6. Every diagram checked against the inventory (names, IPs, VLANs).
 - [ ] **P3 Deck v1** (3 h): every slide, diagrams (SVG), charts (outage times, access heatmap, conformity
       scorecard), screenshots, speaker notes in French. Text pass with the humanizer skill.
 
@@ -132,7 +167,8 @@ Each new screenshot is listed in `report/content` (French report) and in the Fie
       OBS scene 1080p30. Dry run on S1.
 - [ ] **P5 Record + screenshots** (3 h): scenes S1–S9 per profile, PNGs 30–59 (except 39–41) saved by the same run; retake until
       clean; RAM check between profiles. Check every screenshot shows the value written on its slide.
-- [ ] **P6 Edit and embed** (2 h): master MP4 + scene clips, clips into the slides, export .pptx + .pdf.
+- [ ] **P6 Edit and embed** (2 h): master MP4 + scene clips (Canva thumbnail/end card C7–C8), clips into the
+      slides, quality gate D15, export .pptx + .pdf.
 - [ ] **P7 Rehearsal kit** (1 h): timing per section, cue cards, **20 likely jury questions with answers**, live-demo
       fallback (master MP4 + PDF on USB and `H:`), node start order for a live demo.
 - [ ] **P8 Close** (30 min): READMEs + Field Book mention the presentation, commit `presentation(P<n>)`, push (MP4 in
@@ -160,13 +196,16 @@ Undo later (only if WSL2, Docker Desktop or Windows Sandbox are needed): `bcdedi
 Read 03_Network/plans/PLAN_05_Presentation_and_Demo_Video.md and do it, starting at P0.
 P0: check VT-x is free (bcdedit /enum shows hypervisorlaunchtype Off, H: present), start the GNS3 VM with vmrun,
 open the project, lab_up.py --profile fw, demo_check.py 12/12. If the VM still refuses VT-x, stop and tell me.
-Then P1 (facts.json) and P3 (deck v1 from the Slides type, French, with the screenshots of D10).
+Then P1 (facts.json), P2 (visual kit D11-D14: SVG diagrams, licensed photos, Canva covers) and P3
+(deck v1 from the Slides type, French, screenshots of D10, quality gate D15).
 No Samba/AD/LDAP before the presentation (D4). Tick the boxes in PLAN_05, commit + push after each phase.
 Decide alone, caveman replies, sign 🍀.
 ```
 
 ## Skills and tools used
 
-Artifact Slides type + `artifact-design` (deck), `artifact-diagramming` (architecture, pipeline, defence in depth),
+Artifact Slides type + `artifact-design` (deck), Canva (covers, infographic,
+thumbnail), draw.io / Mermaid, `design-critique` + `accessibility-review` (quality gate), web search for licensed
+photos, `artifact-diagramming` (architecture, pipeline, defence in depth),
 `dataviz` (outage chart, heatmap, scorecard), `humanizer` (French text), `pptx`/`pdf` (exports and checks), Playwright,
 OBS, ffmpeg, the lab's own scripts (`lab_up.py`, `demo_check.py`, `verify_lab.py`, `vnc.py`, `render_topology.py`).
