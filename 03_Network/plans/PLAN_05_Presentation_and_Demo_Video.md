@@ -1,0 +1,171 @@
+# PLAN_05 — Final presentation + demo video (from 23 Nov 2026, presentation 25 Nov 2026)
+
+Goal: one French slide deck that follows the official outline (I → IV) and tells **what was built, how it was
+configured, how it was automated, and how it conforms to TIA-942 and ISO 27001**, plus a **real recorded demo
+video** of the lab working (clicks, hovers, typed commands, live failovers). Nothing is faked: every number on a
+slide comes from the inventory, the tests or the evidence files, and every scene in the video is the live lab.
+
+## Decisions (taken 23 Nov 2026, "decide alone" rule; change them here if you disagree)
+
+| # | Decision | Why |
+|---|---|---|
+| D1 | Deck built from the **Artifact Slides type** (French), exported to **.pptx and .pdf**. ~40 slides + 8 annex slides. One theme taken from the Blender renders (graphite + cyan LED). | Opens on any PC, prints, keeps speaker notes. |
+| D2 | Slide rule: **1 visual + max 3 bullets**, footer "Comment c'est fait" (tool/script used) and a badge with the norm clause (TIA-942 / ISO 27001 Annex A). Full detail goes in the speaker notes. | Jury reads the picture, listens to you. "Spill the tea" without walls of text. |
+| D3 | The firewall slide says **pfSense CE 2.7.2**, not OPNsense: the lab runs pfSense. One line explains the choice (same FreeBSD/pf base as OPNsense, CARP + pfsync + XMLRPC proven in T2). | The outline says OPNsense but the lab does not run it. Migrating takes days and would break T2. Never show a product we do not run. |
+| D4 | **AD + LDAP are missing in the lab; build them**: `SRV-AD-01`, Samba 4 AD DC in a container (`dc/samba-ad:1.0`), VLAN 100, `10.100.0.12`, realm `DC-CASA.LOCAL`. LDAPS 636 is used by the pfSense GUI, Zabbix and Grafana. Groups `dc-admins` / `dc-noc` / `dc-readonly`. Core ACL: only admin zone + servers to 88/389/636. Time box **4 h**; if it fails, the slides show it as design + next phase, with no demo. | It is in the outline (III.9, III.10), and it gives a strong demo: one account logs in everywhere. A container fits the RAM. |
+| D5 | **Database** = the MariaDB behind Zabbix on SRV-MON-01 (already running). Slides cover schema size, users, the backup pulled by TrueNAS and a restore test. No new DB server. | It exists and is real. Adding a DB only for the slide adds RAM and risk. |
+| D6 | Video = **real screen recording** at 1080p30 with OBS (installed). Browser scenes are driven by **Playwright** (installed): visible cursor, click ripple, hover highlight, slow human pace. Terminal scenes are typed by a **typist script** at human speed. Every scene can be re-recorded in 1 minute. | Looks human and smooth, never shows typos or hesitations, and is repeatable. |
+| D7 | Editing with **ffmpeg** (installed): French chapter cards, captions, zoom on key lines, an on-screen timer for failovers, waits sped up ×4. Outputs: **master video 8–9 min** and **one clip per scene** (20–60 s) embedded in the slides. | Clips play inside the deck; the master is the backup if the live demo fails. |
+| D8 | Lab recorded **per profile** (edge/fw, compute, nas, mon), as in the demo. | Host RAM cannot run every node at once ([[lab-capacity-limits]]). |
+| D9 | Files: deck and video sources in `05_Report/presentation/`, recording scripts in `03_Network/automation/demo_video/`, MP4s in Git LFS. | Matches 01_Planning (05_Report = report + presentation); scripts sit next to the other automation. |
+| D10 | **Screenshots everywhere**: every technical slide (II.3 → III.15) shows at least one **real screenshot** of the live lab. `director.py` saves a PNG at each key moment of the recording, so the screenshot and the video come from the same run and show the same values. | The jury trusts what it sees. Screenshot = proof; same run = consistency rule. |
+
+**Needs your OK before P0:** turning off Hyper-V (`bcdedit /set hypervisorlaunchtype off` + reboot). The GNS3 VM
+cannot boot without VT-x, so without it there is **no live lab and no new video**. Fallback: a deck built from the
+existing evidence (screenshots, outputs, 13 Nov run), labelled with its date.
+
+Assumptions: talk ≈ 20 min + video 8 min + questions. Change the plan if the slot is different.
+
+## Deck — outline mapped to content
+
+Each line: slide(s) → visual → source in the repo → "how it was done" → norm badge.
+
+**I. Introduction et contexte** (3)
+- Title: Blender hero render `02_Blender/04_Renders/stills/01_Hero_SouthEast.png`.
+- Context and goal: why a Tier III DC in Casablanca, the 6 phases (`01_Planning/ESPRIM_DC_Project_Plan.md`).
+- The project in numbers: nodes, VLANs, scripts, tests 59/59, demo 12/12, documents (from `facts.json`, see P1).
+
+**II. Architecture du Data Center**
+1. Classification (2): Tier I–IV table with our position, **Rated-3 / Tier III** (concurrently maintainable,
+   N+1, 99.982 %), why not Tier IV. Sources: `06_Documentation/01_Architecture_Decisions.md`, `report/content/02_normes.md`.
+2. Localisation (2): campus plan `06_Documentation/img/plan_masse.png` + aerial render `03_Aerial.png`, 3 buildings,
+   site choices (`06_Documentation/02_Site_and_Buildings.md`).
+3. Composants (2): TIA-942 spaces ER / MDA / HDA / EDA mapped on the GNS3 canvas (zones from `layout_topology.py`),
+   equipment table (IOSv, IOSvL2, pfSense, servers, containers).
+4. Redondance (3): the redundant chain diagram, 2 ISPs eBGP → 2 EDGE HSRP → 2 FW CARP → 2 CORE HSRP/OSPF → 4 LEAF →
+   bonded servers; **measured outage chart** T1–T6, M1 (T2 3.0 s, T3 4.5 s, T4 3.0 s, T5 3.1 s); power path A/B.
+5. Infrastructure non IT (4): a) cameras: CCTV-SIM, zones and motion events into Zabbix; b) incident counters:
+   BMS + Zabbix problem counters, Grafana stat tiles; c) UPS: UPS-A/B, battery, autonomy (BMS-SIM, Grafana power
+   dashboard); d) PDU: feeds A/B per rack, load. Render `04_Power_Feed.png`, test T6 (path A lost → alarm ≤ 30 s).
+
+**III. Conception technique**
+1. Environnement de travail (3): host, VMware GNS3 VM, GNS3, Docker, Python, Git/LFS, Blender. **Automation pipeline
+   diagram**: `inventory/dc_casa.yaml` → generators (`gen_gns3.py`, `gen_configs.py`, `gen_pfsense.py`) → push →
+   audits (`fw_audit.py`) → `verify_lab.py` → reports. Script table by family.
+2. VLAN (2): table from `report/content/generated/vlans.md`, zones, trunks, Rapid-PVST roots, LACP.
+3. Services (1): service map, who serves what, VLAN, port (`inventory` service ports).
+4. Stockage NAS (2): TrueNAS SCALE, ZFS mirror, snapshots, **pull model** (ransomware argument), hall B, restore test.
+5. Plan d'adressage (1): `10.<vlan>.0.0/24`, gateways `.1` (HSRP VIP), /30 transit, RFC 5737 ISP ranges, MGMT.
+6. DNS (1): SRV-INF-01 dnsmasq, internal zone, forwarders, pfSense resolver off by design.
+7. DHCP (1): SRV-INF-01 + relay (P1 checks how the relay is configured before writing the slide).
+8. Web Server (1): SRV-WEB-01 nginx in the DMZ (VLAN 50), NAT port forward, path from the Internet.
+9. AD (1) and 10. LDAP (1): per D4.
+11. Firewall (3): pfSense, CARP/pfsync/XMLRPC, rule sets, NAT, logs. Screenshots `screenshots/21–25`.
+12. Base de données (1): per D5.
+13. ACLs (2): core ACL (`generated/core_acl.md`), **access-matrix heatmap** from `report/evidence/access_matrix.csv`.
+14. Supervision NOC (2): Zabbix (SNMPv3, templates, triggers), Grafana, syslog viewer, alert ≤ 1 min, NOC render.
+15. Sécurité (3): defence in depth diagram; bastion + TOTP, SNMPv3, SSH keys, no secrets on command lines;
+    **ISO 27001 Annex A matrix** (control → what we did → evidence file); TIA-942 checklist.
+
+**IV. Conclusion** (4)
+- Results: 59/59 checks, 12/12 demo, outage times, conformity scorecard (TIA-942 + ISO 27001).
+- **Behind the scenes** (spill the tea): the real problems and fixes, e.g. IOSvL2 boot hang, missing RSA keys
+  (`cisco_heal.py`), HSRP flap from fast timers + VM swap, USB disk freeze, pfSense via VNC, 2 GB LFS limit,
+  Hyper-V blocking VT-x.
+- Limits and next steps. Thanks + questions.
+
+**Annex** (8, for questions): full VLAN and address tables, ACL matrix, test list, commands cheat sheet, tools and
+versions, ISO detail, glossary.
+
+## Demo video — storyboard (master ≈ 8 min 30)
+
+| # | Scene | What is shown (live) | Profile |
+|---|---|---|---|
+| S0 | Opening 0:00–0:25 | Blender drone flythrough (existing MP4) + title | — |
+| S1 | Topology 0:25–1:00 | GNS3 canvas, zoom on the zones, hover on node labels | any |
+| S2 | Admin entry 1:00–1:40 | SSH to the bastion with TOTP, ADMIN-WS portal | fw |
+| S3 | Network 1:40–2:40 | Typed: `show standby brief`, OSPF neighbours, BGP summary, etherchannel, STP | edge/fw |
+| S4 | Firewall 2:40–3:30 | pfSense GUI: CARP status, rules (hover), NAT, live logs | fw |
+| S5 | Services 3:30–4:20 | `dig` on DNS, DHCP lease, `curl` to the web site through NAT, AD login on Grafana | fw + mon |
+| S6 | NOC 4:20–5:20 | Zabbix problems, Grafana power (UPS/PDU), CCTV, DCIM racks | mon |
+| S7 | NAS 5:20–5:55 | TrueNAS pool, snapshots, last pull, restore one file | nas |
+| S8 | Chaos 5:55–7:45 | Continuous ping + timer: T2 FW-A off, T3 CORE-A off, T5 SRV-CMP-01 off (keepalived), T6 BMS path A, then recovery | per test |
+| S9 | Proof 7:45–8:30 | `verify_lab.py` → PASS count, end card | any |
+
+## Screenshots — list (D10)
+
+Saved in `03_Network/screenshots/` (PNG, 1920×1080 or cropped to the useful part), named `<nn>_<node>_<what>.png`.
+Already there and reused: `02` topology, `12/13` CARP console, `14/15` NAT and rules console, `18` XMLRPC sync,
+`20` ADMIN-WS portal, `21–25` pfSense GUI (CARP master, rules, NAT, logs, CARP backup). New ones:
+
+| # | File | Slide | How |
+|---|---|---|---|
+| 30 | `30_gns3_topology_zones.png` | II.3, III.1 | GNS3 GUI, zones + labels |
+| 31 | `31_bastion_totp_login.png` | III.15 | terminal, SSH + TOTP code |
+| 32–34 | `32_core-a_hsrp_ospf.png`, `33_edge-a_bgp.png`, `34_leaf-a1_etherchannel_stp.png` | II.4, III.2 | terminal, typed `show` commands |
+| 35 | `35_vlan_trunks.png` | III.2 | terminal, `show interfaces trunk` |
+| 36–37 | `36_srv-inf-01_dns_dig.png`, `37_dhcp_lease.png` | III.6, III.7 | terminal |
+| 38 | `38_srv-web-01_site_via_nat.png` | III.8 | browser through the WAN NAT |
+| 39–41 | `39_samba-ad_users_groups.png`, `40_pfsense_ldap_server.png`, `41_grafana_ldap_login.png` | III.9, III.10 | terminal + browser (if P2 done) |
+| 42 | `42_mariadb_zabbix_db.png` | III.12 | terminal, DB size + tables |
+| 43 | `43_core_acl_denied.png` | III.13 | terminal, denied flow + ACL hit counters |
+| 44–47 | `44_zabbix_problems.png`, `45_zabbix_hosts.png`, `46_grafana_power_ups_pdu.png`, `47_syslog_viewer.png` | II.5, III.14 | browser |
+| 48–50 | `48_cctv_cameras.png`, `49_bms_incident_counters.png`, `50_dcim_racks.png` | II.5 | browser |
+| 51–53 | `51_truenas_pool.png`, `52_truenas_snapshots.png`, `53_truenas_restore.png` | III.4 | browser |
+| 54–58 | `54_t2_fw_failover.png`, `55_t3_core_failover.png`, `56_t4_leaf_failover.png`, `57_t5_keepalived.png`, `58_t6_bms_alarm.png` | II.4 | ping + timer, before/after |
+| 59 | `59_verify_lab_pass.png` | IV | terminal, final PASS count |
+
+Each new screenshot is listed in `report/content` (French report) and in the Field Book gallery too.
+
+## Phases
+
+### Day 1 — Mon 23 Nov
+- [ ] **P0 Unblock the lab** (30 min, needs your OK): Hyper-V off + reboot, start the GNS3 VM, `demo_check.py` 12/12.
+- [ ] **P1 Fact sheet** (1 h, no lab): `05_Report/presentation/facts.json` with every number used (nodes, VLANs,
+      IPs, tests, outage times, versions, ISO controls) from the inventory, tests and evidence. Check the DHCP relay,
+      the DB backup and the DCIM storage. Slides and video read only from this file.
+- [ ] **P2 AD/LDAP** (4 h max, lab): image `dc/samba-ad`, inventory + ACL + DNS forward, users/groups, LDAPS to
+      pfSense/Zabbix/Grafana, tests `ADM-AD-*` added to `tests.yaml`, `verify_lab.py` still all PASS.
+- [ ] **P3 Deck v1** (3 h): every slide, diagrams (SVG), charts (outage times, access heatmap, conformity
+      scorecard), screenshots, speaker notes in French. Text pass with the humanizer skill.
+
+### Day 2 — Tue 24 Nov
+- [ ] **P4 Video tooling** (2 h): `automation/demo_video/director.py` (Playwright scenes, cursor/ripple/hover
+      overlay), `typist.py` (human-speed typing), `edit.py` (ffmpeg: cards, captions, zooms, timer, speed-ups),
+      OBS scene 1080p30. Dry run on S1.
+- [ ] **P5 Record + screenshots** (3 h): scenes S1–S9 per profile, PNGs 30–59 saved by the same run; retake until
+      clean; RAM check between profiles. Check every screenshot shows the value written on its slide.
+- [ ] **P6 Edit and embed** (2 h): master MP4 + scene clips, clips into the slides, export .pptx + .pdf.
+- [ ] **P7 Rehearsal kit** (1 h): timing per section, cue cards, **20 likely jury questions with answers**, live-demo
+      fallback (master MP4 + PDF on USB and `H:`), node start order for a live demo.
+- [ ] **P8 Close** (30 min): READMEs + Field Book mention the presentation, commit `presentation(P<n>)`, push (MP4 in
+      LFS), lab stopped cleanly.
+
+### Wed 25 Nov — present.
+
+Priority if time runs out: deck (P1, P3) → video (P4–P6) → AD/LDAP (P2). If P2 is skipped, D4 fallback applies.
+
+## Before the next session — reboot (you do it)
+
+1. PowerShell **as administrator**: `bcdedit /set hypervisorlaunchtype off`
+2. Reboot the PC. Plug in the external disk `H:` (the GNS3 VM disk is on it).
+3. Open Claude Code in `C:\Users\ASUS\Documents\ESPRIM\Data Center` and paste the prompt below.
+
+Undo later (only if WSL2, Docker Desktop or Windows Sandbox are needed): `bcdedit /set hypervisorlaunchtype auto` + reboot.
+
+## Next-session prompt (paste after the reboot)
+
+```
+Read 03_Network/plans/PLAN_05_Presentation_and_Demo_Video.md and do it, starting at P0.
+P0: check VT-x is free (bcdedit /enum shows hypervisorlaunchtype Off, H: present), start the GNS3 VM with vmrun,
+open the project, lab_up.py --profile fw, demo_check.py 12/12. If the VM still refuses VT-x, stop and tell me.
+Then P1 (facts.json), P2 (Samba AD + LDAP, 4 h max, else D4 fallback), P3 (deck v1 from the Slides type,
+French, with the screenshots of D10). Tick the boxes in PLAN_05, commit + push after each phase.
+Decide alone, caveman replies, sign 🍀.
+```
+
+## Skills and tools used
+
+Artifact Slides type + `artifact-design` (deck), `artifact-diagramming` (architecture, pipeline, defence in depth),
+`dataviz` (outage chart, heatmap, scorecard), `humanizer` (French text), `pptx`/`pdf` (exports and checks), Playwright,
+OBS, ffmpeg, the lab's own scripts (`lab_up.py`, `demo_check.py`, `verify_lab.py`, `vnc.py`, `render_topology.py`).
