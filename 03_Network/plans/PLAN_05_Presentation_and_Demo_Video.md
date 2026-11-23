@@ -24,6 +24,11 @@ slide comes from the inventory, the tests or the evidence files, and every scene
 | D13 | **Internet images**: real hardware photos (UPS, PDU, rack, CCTV camera, generator, cold aisle) and the Casablanca map, only with a free licence (Wikimedia Commons, Unsplash, Pexels; OpenStreetMap for maps), ≥ 1920 px. Each one goes in `05_Report/presentation/assets/CREDITS.md` with its source and licence, plus a credits slide. No copied vendor or Uptime Institute diagrams: we redraw. | High quality without any copyright problem in front of the jury. |
 | D14 | **Canva** (connected) for the title slide, the 4 section covers, the "project in numbers" infographic and the video thumbnail/end card, in the D11 style. The deck itself stays in the Slides type (editable, exports .pptx/.pdf); a Canva copy of the deck is made only if you want to present from Canva. | Canva is strong for covers and infographics; the deck stays one source. |
 | D15 | **Quality gate** before export: every slide rendered to PNG and checked (no overflow, text ≥ 18 pt, contrast AA, same fonts and margins, every number = `facts.json`), with the design-critique and accessibility-review skills. Video: 1080p, no cursor jumps, no typos, captions in sync, sound levels even, optional royalty-free music (credited). | "Neat and perfect" checked, not hoped. |
+| D16 | P0 uses `lab_up.py --profile demo` (no `fw` profile exists): it is the fw/edge set (EDGE-A, FW-A/B, cores, hall B, MON). 23 Nov 01:21: lab up, `demo_check` **12/12** (first run 11/12 = Grafana panel empty just after boot, documented wait). | The prompt named a profile the script does not have; `demo` is the one the runbook rehearsed. |
+| D17 | **DHCP is not deployed**: no pool on SRV-INF-01 (`dhcp` role is a no-op), no `ip helper-address` on the cores, pfSense DHCP off by design. The DHCP slide says it: servers use static addresses (the inventory is the IPAM), design = dnsmasq pool + relay on the cores, marked "prévu" like AD. | Never show what does not run (same rule as D3/D4). |
+| D18 | Design numbers come from the **Casablanca spec** (PDF Tableaux 5–12: 2 halls, 96 racks, 942 kW, PUE 1.45, 4 × 750 kW, UPS 5 × 250 kW per path) and the lab. `06_Documentation/01_Architecture_Decisions.md` (Blender phase: Greater Tunis, 200 racks, 6 generators) is an older scenario: its renders are used as pictures only, its numbers are not shown. | Two design generations disagree; the spec and the lab are the ones the jury checks. To fix later in 06_Documentation. |
+| D19 | Diagrams are drawn as SVG by `assets/build_diagrams.py` (values read from `facts.json` + inventory) and **rendered to PNG with the text baked in** (Playwright + installed Edge, Inter/JetBrains Mono loaded), 2x. The Slides type cannot load fonts inside an SVG, and 30 labels per diagram exceed its 24-pin limit. Playwright's own Chromium is not downloaded: `channel="msedge"`. | Crisp, same fonts as the deck; SVG sources stay editable. |
+| D20 | Access heatmap V16 = **zone-to-zone policy** of the inventory (firewall rules + core ACL), not `access_matrix.csv` (most rows "not running" in the demo profile). Proof stays DEMO-05 (0 deviation, every denied flow traced). | A heatmap of "not running" says nothing. |
 
 **Needs your OK before P0:** turning off Hyper-V (`bcdedit /set hypervisorlaunchtype off` + reboot). The GNS3 VM
 cannot boot without VT-x, so without it there is **no live lab and no new video**. Fallback: a deck built from the
@@ -159,10 +164,13 @@ Files in `05_Report/presentation/assets/` (`diagrams/*.svg`, `photos/`, `icons/`
 ## Phases
 
 ### Day 1 — Mon 23 Nov
-- [ ] **P0 Unblock the lab** (30 min, needs your OK): Hyper-V off + reboot, start the GNS3 VM, `demo_check.py` 12/12.
-- [ ] **P1 Fact sheet** (1 h, no lab): `05_Report/presentation/facts.json` with every number used (nodes, VLANs,
+- [x] **P0 Unblock the lab** (30 min, needs your OK): Hyper-V off + reboot, start the GNS3 VM, `demo_check.py` 12/12.
+      Done 23 Nov 01:21: HypervisorPresent False, VM started by vmrun, `lab_up --profile demo` (D16), 12/12 (`report/evidence/demo_s6_check.txt`).
+- [x] **P1 Fact sheet** (1 h, no lab): `05_Report/presentation/facts.json` with every number used (nodes, VLANs,
       IPs, tests, outage times, versions, ISO controls) from the inventory, tests and evidence. Check the DHCP relay,
       the DB backup and the DCIM storage. Slides and video read only from this file.
+      Done: `build_facts.py` -> `facts.json`. Found: no DHCP (D17); DB = nightly dump 01:30 pulled by the NAS 02:00 (110 s);
+      DCIM keeps no store (state computed from BMS-SIM every poll); design numbers from the spec (D18).
 - [ ] **P2 Visual kit** (3 h, no lab): D11 style sheet, diagrams V1–V19 (SVG), licensed photos + `CREDITS.md`,
       Canva covers C1–C6. Every diagram checked against the inventory (names, IPs, VLANs).
 - [ ] **P3 Deck v1** (3 h): every slide, diagrams (SVG), charts (outage times, access heatmap, conformity

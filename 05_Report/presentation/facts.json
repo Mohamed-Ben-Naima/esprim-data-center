@@ -1,0 +1,418 @@
+{
+ "generated": "2026-11-23",
+ "design": {
+  "site": "Casablanca, Maroc (site de référence, spec §3.2)",
+  "standard": "ANSI/TIA-942-C",
+  "rating": "Rated-3 (Tier III)",
+  "availability_pct": 99.982,
+  "downtime_h_per_year": 1.6,
+  "halls": 2,
+  "racks": 96,
+  "racks_per_hall": 48,
+  "it_load_kw": 942,
+  "it_load_max_mw": 2,
+  "pue": 1.45,
+  "facility_mw": 1.45,
+  "tiers": {
+   "I": {
+    "avail": 99.671,
+    "down_h": 28.8,
+    "redundancy": "N",
+    "paths": 1
+   },
+   "II": {
+    "avail": 99.741,
+    "down_h": 22.0,
+    "redundancy": "N+1",
+    "paths": 1
+   },
+   "III": {
+    "avail": 99.982,
+    "down_h": 1.6,
+    "redundancy": "N+1",
+    "paths": "1 actif + 1 secours",
+    "concurrently_maintainable": true
+   },
+   "IV": {
+    "avail": 99.995,
+    "down_h": 0.4,
+    "redundancy": "2N / 2(N+1)",
+    "paths": "2 actifs",
+    "fault_tolerant": true
+   }
+  },
+  "src": "Spec PDF Tableau 5 ; 06_Documentation/01_Architecture_Decisions.md ADR-01"
+ },
+ "lab": {
+  "nodes": 32,
+  "links": 62,
+  "nodes_by_type": {
+   "qemu": 18,
+   "ethernet_switch": 4,
+   "nat": 2,
+   "docker": 8
+  },
+  "network_devices": {
+   "total": 10,
+   "iosv_edge": 2,
+   "iosvl2_core_leaf": 6,
+   "pfsense": 2
+  },
+  "lab_switches": 4,
+  "isps": 2,
+  "servers": {
+   "total": 14,
+   "vm": 8,
+   "docker": 6,
+   "bonded": 8
+  },
+  "vlans_total": 14,
+  "vlans_user": 10,
+  "vlans": {
+   "10": {
+    "name": "MGMT",
+    "subnet": "10.10.0.0/24",
+    "gw": "10.10.0.254",
+    "gw_type": "fw",
+    "zone": "MANAGEMENT",
+    "active": null
+   },
+   "20": {
+    "name": "SERVEURS",
+    "subnet": "10.20.0.0/24",
+    "gw": "10.20.0.1",
+    "gw_type": "core",
+    "zone": "INTERNE",
+    "active": "CORE-A"
+   },
+   "30": {
+    "name": "STOCKAGE",
+    "subnet": "10.30.0.0/24",
+    "gw": "10.30.0.1",
+    "gw_type": "core",
+    "zone": "INTERNE",
+    "active": "CORE-B"
+   },
+   "40": {
+    "name": "BACKUP",
+    "subnet": "10.40.0.0/24",
+    "gw": "10.40.0.1",
+    "gw_type": "core",
+    "zone": "INTERNE",
+    "active": "CORE-A"
+   },
+   "50": {
+    "name": "DMZ",
+    "subnet": "10.50.0.0/24",
+    "gw": "10.50.0.1",
+    "gw_type": "fw",
+    "zone": "DMZ",
+    "active": null
+   },
+   "60": {
+    "name": "MONITORING",
+    "subnet": "10.60.0.0/24",
+    "gw": "10.60.0.1",
+    "gw_type": "core",
+    "zone": "INTERNE",
+    "active": "CORE-A"
+   },
+   "70": {
+    "name": "BMS-DCIM",
+    "subnet": "10.70.0.0/24",
+    "gw": "10.70.0.1",
+    "gw_type": "core",
+    "zone": "INTERNE",
+    "active": "CORE-B"
+   },
+   "80": {
+    "name": "SECURITE-CCTV",
+    "subnet": "10.80.0.0/24",
+    "gw": "10.80.0.1",
+    "gw_type": "core",
+    "zone": "INTERNE",
+    "active": "CORE-B"
+   },
+   "90": {
+    "name": "ADMIN",
+    "subnet": "10.90.0.0/24",
+    "gw": "10.90.0.1",
+    "gw_type": "fw",
+    "zone": "ADMINISTRATION",
+    "active": null
+   },
+   "100": {
+    "name": "SERVICES-INT",
+    "subnet": "10.100.0.0/24",
+    "gw": "10.100.0.1",
+    "gw_type": "core",
+    "zone": "INTERNE",
+    "active": "CORE-A"
+   },
+   "901": {
+    "name": "TRANSIT-EXT",
+    "subnet": "10.254.1.0/28",
+    "gw": null,
+    "gw_type": "none",
+    "zone": "TRANSIT",
+    "active": null
+   },
+   "902": {
+    "name": "TRANSIT-INT",
+    "subnet": "10.254.2.0/28",
+    "gw": null,
+    "gw_type": "none",
+    "zone": "TRANSIT",
+    "active": null
+   },
+   "998": {
+    "name": "OSPF-CORE",
+    "subnet": "10.254.4.0/30",
+    "gw": null,
+    "gw_type": "none",
+    "zone": "TRANSIT",
+    "active": null
+   },
+   "999": {
+    "name": "PARKING",
+    "subnet": null,
+    "gw": null,
+    "gw_type": "none",
+    "zone": "NONE",
+    "active": null
+   }
+  },
+  "demo_profile_nodes": 20,
+  "host_ram_gb": 15.7,
+  "gns3_vm": {
+   "ram_gb": 8,
+   "vcpu": 6,
+   "gns3": "2.2.56.1"
+  }
+ },
+ "addressing": {
+  "scheme": "10.<vlan>.0.0/24",
+  "gateway_rule": "HSRP VIP .1 sur les cœurs, CARP VIP sur les pare-feux",
+  "public_prefix": "192.0.2.0/24",
+  "snat_ip": "192.0.2.10",
+  "web_public_ip": "192.0.2.80",
+  "asn": 65100,
+  "isp_asn": {
+   "ISP-A": 64500,
+   "ISP-B": 64501
+  },
+  "transit": {
+   "ext": "10.254.1.0/28",
+   "int": "10.254.2.0/28",
+   "sync": "10.254.3.0/30",
+   "ospf_core": "10.254.4.0/30",
+   "edge_isl": "10.254.0.0/30"
+  },
+  "loopbacks": "10.255.0.0/24",
+  "domain": "dc.casa.lab",
+  "services": {
+   "dns": "10.100.0.11",
+   "ntp": "10.100.0.11",
+   "syslog": "10.60.0.12",
+   "log_retention_days": 30,
+   "log_viewer": "https://10.60.0.12/",
+   "monitoring": "10.60.0.11",
+   "snmp_trap": "10.60.0.11"
+  }
+ },
+ "security": {
+  "firewall_rules": 22,
+  "firewall_interfaces": [
+   "WAN",
+   "DMZ",
+   "LAN",
+   "MGMT",
+   "ADMIN",
+   "SYNC"
+  ],
+  "core_acl_entries": 19,
+  "access_matrix_rows": 28,
+  "gui_session_timeout_min": 15,
+  "snmp": "SNMPv3 authPriv (SHA / AES-128) sur Cisco, v2c restreint au VLAN 60 sur pfSense",
+  "mfa": "TOTP RFC 6238 sur SRV-BASTION",
+  "log_retention_days": 30,
+  "iso27001_controls": {
+   "A.5.15": "Contrôle d'accès : matrice d'accès par zone, refus par défaut",
+   "A.5.17": "Authentification : TOTP sur le bastion, comptes nominatifs",
+   "A.8.2": "Accès privilégiés : administration uniquement depuis le VLAN 90",
+   "A.8.5": "Authentification sécurisée : SSH v2, sessions web fermées après 15 min",
+   "A.8.9": "Gestion des configurations : générées depuis l'inventaire, versionnées dans Git",
+   "A.8.13": "Sauvegarde : NAS TrueNAS en mode « pull », snapshots ZFS, test de restauration",
+   "A.8.15": "Journalisation : syslog central, 30 jours, lecteur en lecture seule",
+   "A.8.16": "Surveillance : Zabbix + Grafana, alertes",
+   "A.8.17": "Synchronisation des horloges : NTP unique 10.100.0.11",
+   "A.8.20": "Sécurité des réseaux : pare-feux en HA, ACL inter-VLAN",
+   "A.8.21": "Services réseau : filtrage BGP, NAT, DMZ",
+   "A.8.22": "Ségrégation des réseaux : 14 VLAN, 5 zones"
+  }
+ },
+ "tests": {
+  "catalogue_tests": 108,
+  "catalogue_groups": 16,
+  "groups": [
+   "PLT",
+   "EDGE",
+   "FW",
+   "CORE",
+   "CMP",
+   "INF",
+   "LOG",
+   "ADM",
+   "WT",
+   "ACC",
+   "PRV",
+   "PWR",
+   "MON",
+   "WEB",
+   "NAS",
+   "DEMO"
+  ],
+  "verify_lab": {
+   "pass": 59,
+   "fail": 0,
+   "known_limit": 1,
+   "na": 2,
+   "seconds": 528,
+   "date": "2026-11-12",
+   "file": "03_Network/report/evidence/verify_lab.txt"
+  },
+  "demo_check": {
+   "ok": 12,
+   "total": 12,
+   "file": "03_Network/report/evidence/demo_s6_check.txt"
+  }
+ },
+ "resilience": {
+  "T1": {
+   "fault": "ISP-A arrêté",
+   "target": "≤ 10 s, bascule vers ISP-B",
+   "measured_s": null,
+   "note": "non mesuré au chronomètre ; bascule BGP vers ISP-B vérifiée (EDGE-01)"
+  },
+  "T2": {
+   "fault": "FW-A arrêté",
+   "target": "≤ 5 s, FW-B MASTER, sessions conservées",
+   "measured_s": 3.0,
+   "back_s": 1.5,
+   "file": "fw_lan_failover.txt 13:36:33"
+  },
+  "T3": {
+   "fault": "CORE-A arrêté",
+   "target": "≤ 5 s, passerelles reprises par CORE-B",
+   "measured_s": 4.5,
+   "file": "fw_lan_failover.txt 12:43:42",
+   "before_fix_s": 150
+  },
+  "T4": {
+   "fault": "LEAF-A1 arrêté",
+   "target": "≈ 1 s, serveurs dual-homed sans coupure",
+   "measured_s": 3.0,
+   "file": "fw_lan_failover.txt 15:21:30"
+  },
+  "T5": {
+   "fault": "SRV-CMP-01 arrêté (keepalived)",
+   "target": "service repris par SRV-CMP-02, alerte ≤ 1 min",
+   "measured_s": 3.1,
+   "file": "fw_lan_failover.txt 16:25:55"
+  },
+  "T6": {
+   "fault": "Perte du chemin A (BMS)",
+   "target": "alarme ≤ 30 s, chemin B seul actif",
+   "alarm_s": 9.4,
+   "target_s": 30,
+   "file": "demo_s6_power_test.txt"
+  },
+  "M1": {
+   "fault": "Maintenance CORE-A + perte lien ISP-A",
+   "target": "service maintenu (double événement)",
+   "measured_s": null,
+   "note": "non rejoué dans ce profil (RAM)"
+  }
+ },
+ "nas": {
+  "product": "TrueNAS SCALE 25.10.7",
+  "pool": "tank (MIRROR)",
+  "disks": "2 x 10 Go (miroir ZFS)",
+  "snapshots": [
+   "hourly 0 * * * * conservé 24 HOUR",
+   "daily 0 1 * * * conservé 14 DAY"
+  ],
+  "pull_schedule": "0 2 * * *",
+  "pull_user": "nasbackup",
+  "pull_sources": {
+   "SRV-MON-01": [
+    "/var/backups/dc",
+    "/etc"
+   ],
+   "SRV-INF-01": [
+    "/etc"
+   ]
+  },
+  "pull_mon_backup_s": 110,
+  "restore": "OK, même SHA-256 (10/11/2026)",
+  "hall": "B",
+  "ip": "10.40.0.11"
+ },
+ "monitoring": {
+  "zabbix": "Zabbix 6.0 LTS",
+  "grafana": "Grafana 13.2.3",
+  "grafana_plugin": "alexanderzobnin-zabbix-app 6.8.0",
+  "zabbix_hosts": 18,
+  "grafana_panels": 28,
+  "groups": [
+   "DC/Edge",
+   "DC/Firewalls",
+   "DC/Core",
+   "DC/Leaf",
+   "DC/Servers",
+   "DC/Services",
+   "DC/Storage"
+  ],
+  "service_triggers": 17,
+  "db": "MariaDB (base Zabbix) sur SRV-MON-01, dump nocturne 01:30 dans /var/backups/dc, tiré par le NAS à 02:00",
+  "mon_disk": "7.8G"
+ },
+ "power": {
+  "paths": "A et B",
+  "racks": 96,
+  "it_load_kw": 942,
+  "pue_target": 1.45,
+  "ups": "2 x UPS modulaires 5 x 250 kW (N+1) par chemin, 10 min d'autonomie",
+  "generators": "4 x 750 kW (N+1)",
+  "bms_alarm_s": 9.4,
+  "t6_target_s": 30,
+  "src": "Spec PDF Tableaux 5, 7, 10 ; BMS-SIM"
+ },
+ "project": {
+  "automation_scripts": 43,
+  "automation_lines": 7361,
+  "commits": 99,
+  "first_commit": "2026-09-29",
+  "docker_images": 7,
+  "screenshots_existing": 17,
+  "plans": 5,
+  "phases": 6
+ },
+ "versions": {
+  "IOSv (EDGE)": "15.9(3)M6",
+  "IOSvL2 (CORE/LEAF)": "15.2 (vios_l2 2017)",
+  "pfSense CE": "2.7.2",
+  "Zabbix": "6.0 LTS",
+  "Grafana": "13.2.3",
+  "TrueNAS SCALE": "25.10.7",
+  "GNS3": "2.2.56.1",
+  "Ubuntu (serveurs)": "22.04 cloud image",
+  "FRR (ISP)": "conteneur dc/frr-isp",
+  "Blender": "5.2"
+ },
+ "not_built": {
+  "AD/LDAP": "prévu après la présentation (D4) : Samba 4 AD DC SRV-AD-01 10.100.0.12, LDAPS 636",
+  "DHCP": "pas de pool ni de relais : adressage statique des serveurs (inventaire = IPAM) ; conçu : dnsmasq sur SRV-INF-01 + ip helper-address sur les cœurs (D17)",
+  "OPNsense": "le lab tourne pfSense CE 2.7.2 (même base FreeBSD/pf) (D3)"
+ }
+}
