@@ -14,7 +14,8 @@ Fill in the team members and the supervisor on the cover page before submitting.
 | Path | Contents |
 |---|---|
 | Slides artifact | https://claude.ai/artifact/9SfWhkneCwM7aaFgcNCTd1 – 61 slides in French with speaker notes; Share › Export gives the editable .pptx and the .pdf |
-| `presentation/deck/project/` | Deck sources (one HTML file per slide, `deck.css`, `deck.json`); `deck/gen_annex.py` writes the 8 annex slides from the inventory |
+| `presentation/deck_v1/project/` | **Deck v1 to present: 24 slides** (rule 20–25, plan from the board in `00_Docs/`), artifact https://claude.ai/artifact/GTcGERUuaHRf8tavD91S4v · own `render_check.py`, `assets_map.json` · backup `presentation/DC_Casablanca_Soutenance_v1.pdf` |
+| `presentation/deck/project/` | v0, long version (61 slides + annexes) for Q&A · Deck sources (one HTML file per slide, `deck.css`, `deck.json`); `deck/gen_annex.py` writes the 8 annex slides from the inventory |
 | `presentation/deck/render_check.py` | Quality gate D15: renders every slide with Edge, checks overflow, footer band, text < 24 px, broken images |
 | `presentation/DC_Casablanca_Soutenance.pdf` | Backup PDF made from the gate renders (images) |
 | `presentation/facts.json`, `build_facts.py` | Every number shown on a slide or in the video, read from the inventory, tests and evidence |

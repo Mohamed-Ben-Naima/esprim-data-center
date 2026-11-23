@@ -159,6 +159,13 @@ def main():
              "ups": "2 x UPS modulaires 5 x 250 kW (N+1) par chemin, 10 min d'autonomie",
              "generators": "4 x 750 kW (N+1)", "bms_alarm_s": t6, "t6_target_s": 30,
              "src": "Spec PDF Tableaux 5, 7, 10 ; BMS-SIM"}
+    cooling = {"room_setpoint_c": "20–25", "ashrae_c": "18–27", "warn_c": 27, "crit_c": 32, "delta_t_k": 12,
+               "design_mw": 1.2, "modules": "4 × 400 kW (3 + 1)", "installed_mw": 1.6, "n1_mw": 1.2,
+               "margin_normal_pct": 60, "margin_n1_pct": 20, "gpu_racks": 8, "gpu_kw": "20–30",
+               "dry_coolers": 21, "aisles": "allées froides / chaudes confinées",
+               "src": "Spec PDF §6.1–6.5, Tableaux 13 et 22 ; consigne salle 20–25 °C (cahier de soutenance) ; "
+                      "06_Documentation/img/refroidissement.png"}
+    power["cooling"] = cooling
 
     # --- project ------------------------------------------------------------------------------------------------
     py = sorted((NET / "automation").glob("*.py"))

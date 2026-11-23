@@ -1,0 +1,19 @@
+<section id="noc" class="alt">
+<p class="eyebrow">Partie 2 · Conception technique <span class="part">— Supervision NOC</span></p>
+<h2>Tout remonte à Zabbix, le NOC regarde Grafana</h2>
+<div class="row" style="gap:32px">
+<img class="dia" src="/_blob/27f2011b715892029647a9bbb3eeeb71" alt="Chaîne de supervision : Cisco en SNMPv3, pfSense en SNMP, agents Zabbix, API BMS et DCIM, scénarios web, TrueNAS vers Zabbix 6.0, Grafana NOC, alertes ; syslog vers collecteur et lecteur HTTPS" style="width:900px;height:427px">
+<div class="col" style="flex:1;gap:14px">
+<div class="shot" style="flex:none;padding:12px"><img src="/_blob/6071440b575e808a817258415775aa51" alt="Zabbix, liste des hôtes : interfaces SNMP vertes pour les nœuds démarrés, icône de maintenance pour les nœuds hors profil" style="height:210px"></div>
+<div class="shot" style="flex:none;padding:12px"><img src="/_blob/2142b3deecf5f93d15b7800f04141497" alt="Zabbix, problèmes en cours : deux avertissements BMS-SIM, charge chemin A et charge chemin B supérieures à 45 %" style="height:92px"></div>
+</div>
+</div>
+<div class="chips">
+<p class="chip"><b>18</b> hôtes Zabbix</p>
+<p class="chip"><b>SNMPv3</b> authPriv</p>
+<p class="chip"><b>Syslog</b> central, 30 jours</p>
+<p class="chip"><b>0</b> fausse alerte</p>
+</div>
+<div class="foot"><p class="how">Comment c’est fait : zabbix_setup.py apply (hôtes depuis l’inventaire) · captures du 23/11/2026 via ADMIN-WS</p><p class="badge">ISO 27001 A.8.15 · A.8.16</p><div class="pg"></div></div>
+<aside>Tout remonte à Zabbix : les équipements Cisco en SNMPv3 chiffré, pfSense, les agents des serveurs, l’API du BMS et du DCIM. Le NOC regarde Grafana. À droite, la vraie liste : SNMP vert pour les nœuds démarrés, maintenance pour ceux qui sont éteints, donc pas de fausse alerte. Les deux problèmes restants sont la marge voulue des chemins électriques. Les journaux de tous les équipements arrivent au collecteur central et y restent 30 jours.</aside>
+</section>

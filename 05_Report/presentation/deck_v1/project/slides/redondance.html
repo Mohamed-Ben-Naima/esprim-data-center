@@ -1,0 +1,19 @@
+<section id="redondance" class="alt">
+<p class="eyebrow">Partie 1 · Architecture <span class="part">— Redondance</span></p>
+<h2>Éléments de secours : chaque niveau IT et non IT est doublé</h2>
+<div class="row" style="gap:40px">
+<div class="col" style="flex:1;gap:10px"><img class="dia" src="/_blob/ff05eda53810778c36cb0a9bfa9b0cd7" alt="Chaîne IT redondante : 2 ISP, 2 EDGE, 2 pare-feux, 2 cœurs, 2 Leaf par hall, serveurs ; protocole de chaque niveau ; coupures mesurées T2 3,0 s, T3 4,5 s, T4 3,0 s, T5 3,1 s" style="width:1040px;height:416px"><p class="note">IT : chaque bascule est mesurée par une sonde toutes les 0,5 s</p></div>
+<div class="col" style="width:584px;justify-content:center">
+<table class="t">
+<tr><th style="width:42%">Non IT</th><th>Secours</th></tr>
+<tr><td>Alimentation</td><td><b>Chemins A + B</b></td></tr>
+<tr><td>UPS</td><td><b>N+1</b> · 5 × 250 kW / chemin</td></tr>
+<tr><td>Groupes</td><td><b>N+1</b> · 4 × 750 kW</td></tr>
+<tr><td>Froid</td><td><b>N+1</b> · 4 × 400 kW</td></tr>
+<tr><td>Opérateurs</td><td><b>ISP-A + ISP-B</b></td></tr>
+</table>
+</div>
+</div>
+<div class="foot"><p class="how">Comment c’est fait : fw_lan_failover.py arrête un nœud par l’API GNS3 · cahier des charges tableau 30</p><p class="badge">TIA-942 Rated-3</p><div class="pg"></div></div>
+<aside>La redondance, ce sont les éléments de secours. Côté IT, chaque niveau est doublé : deux opérateurs, deux routeurs, deux pare-feux, deux cœurs, deux Leaf par salle, et nous avons mesuré chaque bascule : entre 3 et 4,5 secondes. Côté non IT : deux chemins électriques A et B, des onduleurs et des groupes en N+1, et quatre modules de froid dont un en secours.</aside>
+</section>

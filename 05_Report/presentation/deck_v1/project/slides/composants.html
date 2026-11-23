@@ -1,0 +1,18 @@
+<section id="composants">
+<p class="eyebrow">Partie 1 · Architecture <span class="part">— Composants</span></p>
+<h2>Les espaces TIA-942 et les 32 nœuds qui les peuplent</h2>
+<div class="shots">
+<div class="shot"><img src="/_blob/047caa1c2973e74228c5ec0ef6bc2a67" alt="Plan des espaces TIA-942 : Entrance Room, MDA, NOC, salles techniques, Data Halls A et B avec HDA et EDA" style="height:420px"><p class="cap">Espaces TIA-942 : ER, MDA, HDA et EDA dans chaque hall</p></div>
+<div class="shot"><img src="/_blob/9777739e3d999927c194d7bf1d4678fe" alt="Vue en direct du projet GNS3 : 32 nœuds rangés dans leurs zones, 62 liens, nœuds démarrés en vert" style="height:420px"><p class="cap">Projet GNS3 lu en direct sur l’API – 23/11/2026</p></div>
+</div>
+<div class="chips">
+<p class="chip"><b>2</b> bordures IOSv</p>
+<p class="chip"><b>2</b> pare-feux pfSense</p>
+<p class="chip"><b>6</b> cœurs et Leaf IOSvL2</p>
+<p class="chip"><b>8</b> VM serveurs</p>
+<p class="chip"><b>8</b> conteneurs</p>
+<p class="chip"><b>6</b> switchs et NAT</p>
+</div>
+<div class="foot"><p class="how">Comment c’est fait : gen_gns3.py crée la topologie depuis l’inventaire · champ tia de chaque nœud (TIA-606)</p><p class="badge">TIA-942 espaces</p><div class="pg"></div></div>
+<aside>À gauche, les espaces de la norme : l’Entrance Room reçoit les deux opérateurs, la MDA porte pare-feux et cœurs, chaque hall a ses Leaf et ses baies. À droite, le même découpage dans GNS3 : 32 nœuds réels, 18 machines virtuelles et 8 conteneurs, rangés par zone. Ce ne sont pas des icônes : chaque équipement démarre un vrai système.</aside>
+</section>

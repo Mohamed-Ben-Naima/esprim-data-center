@@ -30,8 +30,9 @@ for hall in ("A", "B"):
         rid = f"RACK-{hall}{i:02d}"
         racks[rid] = {"rack_id": rid, "hall": hall, "type": typ,
                       "power_kw": round(KW[typ] * random.uniform(0.85, 1.1), 1),
-                      "inlet_temp_c": round(random.uniform(22.0, 25.5), 1),
+                      "inlet_temp_c": round(random.uniform(21.0, 24.5), 1),
                       "network": leaf, "pdu_a": f"PDU-A-{hall}{i:02d}", "pdu_b": f"PDU-B-{hall}{i:02d}", "status": "OK"}
+BASE = {rid: r["inlet_temp_c"] for rid, r in racks.items()}
 bms = {"paths": {"A": "UNKNOWN", "B": "UNKNOWN"}, "status": "UNKNOWN", "alarms": [], "pue": 1.45}
 last_status = None
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -56,7 +57,9 @@ def poll():
         status = "OK" if len(up) == 2 else "DEGRADED" if up else ("DOWN" if "UNKNOWN" not in bms["paths"].values() else "UNKNOWN")
         for r in racks.values():
             r["status"] = status
-            r["inlet_temp_c"] = round(min(32.0, max(20.0, r["inlet_temp_c"] + random.uniform(-0.2, 0.2))), 1)
+            # cold-aisle setpoint 20-25 C (spec 6.5): noise pulled back to the rack's own setpoint, never a free random walk
+            t = r["inlet_temp_c"]
+            r["inlet_temp_c"] = round(min(32.0, max(20.0, t + 0.15 * (BASE[r["rack_id"]] - t) + random.uniform(-0.2, 0.2))), 1)
         if status != last_status:
             syslog(f"rack power status {last_status} -> {status} (paths A={bms['paths']['A']} B={bms['paths']['B']})",
                    2 if status in ("DOWN", "DEGRADED") else 5)

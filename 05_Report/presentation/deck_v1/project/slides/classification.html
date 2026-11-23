@@ -1,0 +1,16 @@
+<section id="classification">
+<p class="eyebrow">Partie 1 · Architecture <span class="part">— Classification</span></p>
+<h2>Tier I à IV : nous visons le Tier III</h2>
+<div class="row">
+<img class="dia" src="/_blob/efd69f87e3b458987066143e3571eaee" alt="Comparaison Tier I à IV : Tier I N, 99,671 %, 28,8 h d’arrêt par an ; Tier II N+1, 99,741 %, 22 h ; Tier III N+1 avec chemin de secours, 99,982 %, 1,6 h, maintenable sans arrêt, notre cible ; Tier IV 2N, 99,995 %, 0,4 h, tolérant aux pannes" style="width:1104px;height:560px">
+<div class="side">
+<ul>
+<li><b>Tier III :</b> 99,982 %, soit 1,6 h d’arrêt par an au plus.</li>
+<li><b>N+1</b> et un chemin de secours : tout élément s’arrête pour maintenance sans couper le service.</li>
+<li><b>Pas de Tier IV :</b> le 2N double le coût pour gagner 1,2 h par an.</li>
+</ul>
+</div>
+</div>
+<div class="foot"><p class="how">Comment c’est fait : niveaux Uptime Institute / TIA-942-C Rated-1 à Rated-4 · ADR-01</p><p class="badge">TIA-942 Rated-3</p><div class="pg"></div></div>
+<aside>Quatre niveaux. Le Tier I n’a aucune redondance, le Tier II a des composants de secours mais un seul chemin. Le Tier III, notre cible, ajoute un chemin de secours : on peut arrêter n’importe quel élément pour le maintenir sans couper le service, 1,6 heure d’arrêt par an au plus. Le Tier IV double tout en 2N pour tolérer une panne, ce qui double le coût pour gagner à peine plus d’une heure par an.</aside>
+</section>

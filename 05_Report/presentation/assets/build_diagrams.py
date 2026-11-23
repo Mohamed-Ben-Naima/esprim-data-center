@@ -41,7 +41,9 @@ class S:
                      f'<marker id="ac" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">'
                      f'<path d="M0 0L10 5L0 10z" fill="{CYAN}"/></marker>'
                      f'<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">'
-                     f'<path d="M0 0L10 5L0 10z" fill="{BAD}"/></marker>')
+                     f'<path d="M0 0L10 5L0 10z" fill="{BAD}"/></marker>'
+                     f'<marker id="ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">'
+                     f'<path d="M0 0L10 5L0 10z" fill="#4A90D9"/></marker>')
 
     def add(self, s):
         self.el.append(s)
@@ -300,6 +302,72 @@ def v7():
     s.rect(1060, 650, 520, 90, fill=PANEL2, stroke=LINE)
     s.t(1080, 688, f"Test T6 : chemin A coupé → alarme en {fmt(F['power']['bms_alarm_s'])} s", 20, 700, OK)
     s.t(1080, 718, "cible ≤ 30 s · chemin B seul actif, 0 arrêt", 19, 400, MUTED)
+    return s
+
+
+# ---- V8 cooling chain + temperature scale --------------------------------------------------------------------
+def v8():
+    C = F["power"]["cooling"]
+    COLD, HOT = "#4A90D9", BAD
+    s = S(1600, 780)
+    # room section: hot | rack | cold | rack | hot
+    s.zone(30, 20, 600, 440, "Salle blanche · vue en coupe", MUTED, 20)
+    for x, w, col, lab in [(55, 120, HOT, "allée chaude"), (255, 120, COLD, "allée froide"), (455, 120, HOT, "allée chaude")]:
+        s.rect(x, 80, w, 300, fill=col, stroke=col, r=8, op=0.16)
+        s.t(x + w / 2, 410, lab, 19, 600, col, "middle")
+    for x in (190, 390):
+        s.rect(x, 110, 50, 250, fill="#0B1015", stroke=LINE, r=6)
+        s.t(x + 25, 240, "baie", 17, 600, MUTED, "middle")
+    s.line(315, 330, 255, 280, COLD, 3, "ab")
+    s.line(315, 330, 375, 280, COLD, 3, "ab")
+    s.line(190, 200, 140, 150, HOT, 3, "ar")
+    s.line(440, 200, 490, 150, HOT, 3, "ar")
+    s.t(315, 445, f"confinement · ΔT ≈ {C['delta_t_k']} K", 18, 600, TXT, "middle")
+    # chain CRAH -> chillers -> dry coolers
+    xs = [680, 980, 1280]
+    data = [("CRAH (N+1)", ["air soufflé", f"{C['room_setpoint_c']} °C"]),
+            ("Groupes froids", [C["modules"], "boucle d’eau glacée"]),
+            ("Aéroréfrigérants", [f"{C['dry_coolers']} dry coolers", "free cooling l’hiver"])]
+    for x, (t, ln) in zip(xs, data):
+        s.box(x, 110, 270, 150, t, ln, CYAN, 26, 20, center=True)
+    for a, b in zip(xs, xs[1:]):
+        s.line(a + 272, 160, b - 4, 160, HOT, 3, "ar")
+        s.line(b - 2, 215, a + 274, 215, COLD, 3, "ab")
+    s.line(632, 160, 676, 160, HOT, 3, "ar")
+    s.line(678, 215, 634, 215, COLD, 3, "ab")
+    s.t(680, 70, "Chaîne du froid : la chaleur quitte la baie jusqu’à l’air extérieur", 22, 700, TXT)
+    # capacity bars
+    s.t(680, 320, f"Capacité pour ≈ 1 MW IT (conception {fmt(C['design_mw'])} MW)", 22, 700, TXT)
+    rows = [("4 modules · normal", C["installed_mw"], f"+{C['margin_normal_pct']} %", OK),
+            ("3 modules · N+1", C["n1_mw"], f"+{C['margin_n1_pct']} %", OK),
+            ("2 modules", 0.8, "insuffisant", BAD)]
+    for i, (lab, mw, m, col) in enumerate(rows):
+        y = 345 + i * 40
+        s.t(680, y + 24, lab, 19, 500, MUTED)
+        s.rect(900, y + 6, 1.6 * 250, 24, fill=PANEL, stroke=LINE, r=6)
+        s.rect(900, y + 6, mw * 250, 24, fill=col, stroke=col, r=6, op=0.85)
+        s.t(1320, y + 25, f"{fmt(mw)} MW · {m}", 19, 700, col, "start", MONO)
+    s.line(900 + 250, 345, 900 + 250, 470, TXT, 2, None, "4 4")
+    s.t(900 + 250, 492, "1 MW IT", 17, 600, TXT, "middle")
+    # temperature scale 14 -> 36 °C
+    x0, x1, t0, t1 = 60, 1540, 14, 36
+    X = lambda t: x0 + (t - t0) * (x1 - x0) / (t1 - t0)
+    y = 600
+    s.t(40, 545, "Température d’entrée d’air des serveurs", 22, 700, TXT)
+    s.rect(x0, y, x1 - x0, 44, fill=PANEL, stroke=LINE, r=8)
+    a18, a27 = (int(v) for v in C["ashrae_c"].split("–"))
+    c20, c25 = (int(v) for v in C["room_setpoint_c"].split("–"))
+    s.rect(X(a18), y, X(a27) - X(a18), 44, fill=OK, stroke=OK, r=0, op=0.25)
+    s.rect(X(c20), y - 6, X(c25) - X(c20), 56, fill=CYAN, stroke=CYAN, r=8, op=0.9)
+    s.rect(X(C["warn_c"]), y, X(C["crit_c"]) - X(C["warn_c"]), 44, fill=WARN, stroke=WARN, r=0, op=0.55)
+    s.rect(X(C["crit_c"]), y, x1 - X(C["crit_c"]), 44, fill=BAD, stroke=BAD, r=0, op=0.6)
+    s.t((X(c20) + X(c25)) / 2, y + 30, f"consigne {C['room_setpoint_c']} °C", 20, 800, BG, "middle")
+    for t in range(16, 36, 2):
+        s.t(X(t), y + 76, f"{t}", 17, 500, DIM, "middle", MONO)
+    s.t(X(a18), y - 18, f"ASHRAE {C['ashrae_c']} °C", 18, 600, OK, "start")
+    s.t((X(C["warn_c"]) + X(C["crit_c"])) / 2, y + 29, f"alerte > {C['warn_c']}", 18, 700, BG, "middle")
+    s.t((X(C["crit_c"]) + x1) / 2, y + 29, f"critique > {C['crit_c']}", 18, 700, BG, "middle")
+    s.t(1560, y + 76, "°C", 17, 600, DIM, "end")
     return s
 
 
@@ -653,7 +721,7 @@ ALL = {"V2_tiers": v2, "V3_tia942_spaces": v3, "V4_architecture": v4, "V5_redund
        "V7_power_ab": v7, "V9_lab_stack": v9, "V10_automation_pipeline": v10, "V11_vlan_zones": v11,
        "V12_addressing": v12, "V13_service_map": v13, "V14_backup_pull": v14, "V15_firewall": v15,
        "V16_policy_heatmap": v16, "V17_monitoring": v17, "V18_defence_in_depth": v18, "V19_conformity": v19,
-       "V19b_ad_ldap_design": v19b}
+       "V19b_ad_ldap_design": v19b, "V8_cooling": v8}
 
 
 def render(names):

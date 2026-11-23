@@ -1,0 +1,18 @@
+<section id="vlan">
+<p class="eyebrow">Partie 2 · Conception technique <span class="part">— VLAN et plan d’adressage</span></p>
+<h2>14 VLAN, et une adresse qui dit où l’on est</h2>
+<div class="row" style="gap:40px">
+<img class="dia" src="/_blob/1ac4a7329e913959bdeedb34abfe3490" alt="Carte des VLAN : 7 VLAN internes avec passerelle HSRP sur les cœurs, DMZ 50, management 10, administration 90 sur le pare-feu, 3 VLAN de transit, parking 999" style="width:1040px;height:507px">
+<div class="col" style="flex:1;justify-content:center">
+<p class="code" style="font-size:32px;text-align:center">10.<span style="color:#3FD0E8">VLAN</span>.0.0/24</p>
+<ul style="font-size:26px;line-height:1.4;color:#A9B8C4;padding-left:32px">
+<li style="margin-bottom:14px"><b style="color:#E8EEF2">.1</b> passerelle HSRP, <b style="color:#E8EEF2">.2 / .3</b> les deux cœurs.</li>
+<li style="margin-bottom:14px"><b style="color:#E8EEF2">Transit</b> en /28 et /30.</li>
+<li style="margin-bottom:14px"><b style="color:#E8EEF2">Public :</b> RFC 5737, AS privés RFC 5398.</li>
+<li><b style="color:#E8EEF2">Ports libres</b> éteints dans le VLAN 999.</li>
+</ul>
+</div>
+</div>
+<div class="foot"><p class="how">Comment c’est fait : vlans + gw_type dans l’inventaire → gen_configs.py (SVI, HSRP, trunks)</p><p class="badge">IEEE 802.1Q · RFC 1918</p><div class="pg"></div></div>
+<aside>Quatorze VLAN, un par fonction : serveurs, stockage, sauvegarde, DMZ, supervision, BMS, caméras, administration, services. Les VLAN internes ont leur passerelle HSRP sur les cœurs ; DMZ, management et administration passent par le pare-feu. Le plan d’adressage est lisible : 10, puis le numéro de VLAN, puis l’hôte. Point 1 la passerelle virtuelle, points 2 et 3 les deux cœurs.</aside>
+</section>

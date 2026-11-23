@@ -1,0 +1,16 @@
+<section id="environnement" class="alt">
+<p class="eyebrow">Partie 2 · Conception technique <span class="part">— Environnement de travail</span></p>
+<h2>Un PC portable qui porte tout le Data Center</h2>
+<div class="row">
+<img class="dia" src="/_blob/f03b3adaa11e9229d0477536aaf175c5" alt="Pile de l’environnement : PC Windows 11, VMware Workstation, VM GNS3 avec 18 VM QEMU, 8 conteneurs Docker et 6 nœuds GNS3" style="width:1104px;height:525px">
+<div class="side">
+<ul>
+<li><b>GNS3 2.2.56</b> dans une VM VMware : QEMU pour Cisco et pfSense, Docker pour les services légers.</li>
+<li><b>15,7 Go de RAM :</b> le labo démarre par profils (20 nœuds en démo).</li>
+<li><b>Un inventaire YAML</b>, 43 scripts : configs générées, déployées, vérifiées.</li>
+</ul>
+</div>
+</div>
+<div class="foot"><p class="how">Comment c’est fait : lab_up.py démarre par étapes · inventory/dc_casa.yaml → gen_configs.py, gen_pfsense.py · Git + LFS</p><p class="badge">ISO 27001 A.8.9</p><div class="pg"></div></div>
+<aside>Tout tourne sur un PC portable : Windows, VMware, et dans la VM GNS3, dix-huit machines QEMU et huit conteneurs. Avec 15,7 Go de mémoire, on ne peut pas tout démarrer ensemble, donc le laboratoire démarre par profils. Surtout, rien n’est configuré à la main : un seul fichier d’inventaire, et 43 scripts génèrent, déploient et vérifient les configurations.</aside>
+</section>

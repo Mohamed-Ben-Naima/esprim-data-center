@@ -1,0 +1,21 @@
+<section id="preuves" class="alt">
+<p class="eyebrow">Partie 3 · Réalisation pratique <span class="part">— Ce que la démo prouve</span></p>
+<h2>Pannes provoquées, coupures mesurées, tests au vert</h2>
+<div class="row" style="gap:32px">
+<div class="col" style="flex:1;gap:16px">
+<div class="shots" style="flex:none;gap:16px">
+<div class="shot" style="padding:10px;gap:6px"><img src="/_blob/37b81060148c61fe2e67ae335ad731e8" alt="Panne T2 : sonde ADMIN-WS vers la GTB toutes les 0,5 s, FW-A arrêté par l’API GNS3, une seule coupure de 2,5 s, FW-B prend le relais" style="height:250px"><p class="cap">T2 : FW-A arrêté → 2,5 s</p></div>
+<div class="shot" style="padding:10px;gap:6px"><img src="/_blob/64c09fe62fd9a08b451530fc93c38119" alt="Panne T6 : DCIM pendant le test, chemin A DOWN, chemin B POWERED, les 96 baies passent en mode dégradé" style="height:250px"><p class="cap">T6 : chemin A coupé, 96 baies dégradées</p></div>
+</div>
+<img class="dia" src="/_blob/8de56f054ad4b8bab1ca79f20fc79080" alt="Diagramme en barres : T2 3,0 s, T3 4,5 s, T4 3,0 s au-dessus de sa cible de 1 s, T5 3,1 s, T6 alarme en 9,4 s pour une cible de 30 s" style="width:1000px;height:300px">
+</div>
+<div class="mini" style="width:620px;align-content:center">
+<div class="card ok"><p class="big">59/59</p><p class="txt"><b>tests réussis</b>, 0 échec</p></div>
+<div class="card ok"><p class="big">12/12</p><p class="txt"><b>contrôles</b> avant démo</p></div>
+<div class="card"><p class="big">9,4 s</p><p class="txt"><b>alarme T6</b>, cible 30 s</p></div>
+<div class="card"><p class="big">4/5</p><p class="txt"><b>bascules</b> dans la cible</p></div>
+</div>
+</div>
+<div class="foot"><p class="how">Comment c’est fait : verify_lab.py, demo_check.py, fw_lan_failover.py · traces datées dans report/evidence</p><p class="badge">TIA-942 Rated-3</p><div class="pg"></div></div>
+<aside>Ce que la démonstration prouve. Pendant la démo, l’arrêt du pare-feu maître ne coupe le trafic que 2,5 secondes. La perte du chemin électrique A lève l’alarme en 9,4 secondes et les 96 baies restent alimentées par le chemin B. Sur les cinq bascules mesurées, quatre sont dans la cible ; le Leaf fait 3 secondes au lieu d’une, c’est la limite de l’émulation et nous le disons. Et le catalogue complet : 59 tests sur 59.</aside>
+</section>

@@ -1,0 +1,17 @@
+<section id="refroidissement">
+<p class="eyebrow">Partie 1 · Architecture <span class="part">— Refroidissement et température</span></p>
+<h2>Salle tenue entre 20 et 25 °C, froid en N+1</h2>
+<div class="row" style="gap:40px">
+<img class="dia" src="/_blob/9cb0557a39cf9692e1635ed86823970b" alt="Chaîne du froid : allées froides et chaudes confinées, CRAH N+1 soufflant 20 à 25 °C, 4 groupes froids de 400 kW dont 1 en secours, 21 aéroréfrigérants en free cooling ; capacité 1,6 MW normal, 1,2 MW en N+1 pour 1 MW IT ; échelle de température : consigne 20–25 °C dans la plage ASHRAE 18–27 °C, alerte au-delà de 27 °C, critique au-delà de 32 °C" style="width:1180px;height:574px">
+<div class="side" style="width:444px">
+<ul>
+<li><b>Consigne 20–25 °C</b> à l’entrée des serveurs, dans la plage ASHRAE.</li>
+<li><b>Allées confinées :</b> ΔT ≈ 12 K, pas de mélange d’air.</li>
+<li><b>N+1 :</b> 3 modules sur 4 couvrent 1,2 MW.</li>
+<li><b>Baies GPU</b> 20–30 kW : liquide prévu.</li>
+</ul>
+</div>
+</div>
+<div class="foot"><p class="how">Comment c’est fait : cahier des charges §6 (tableaux 13 et 22) · température d’entrée suivie par le DCIM et Zabbix</p><p class="badge">ASHRAE TC 9.9</p><div class="pg"></div></div>
+<aside>La quasi-totalité de l’électricité consommée par les serveurs devient de la chaleur : pour un mégawatt informatique, il faut évacuer environ un mégawatt. L’air froid à 20–25 °C entre par l’allée froide, ressort 12 degrés plus chaud dans l’allée chaude confinée, et la chaleur part par les armoires CRAH, les groupes froids puis les aéroréfrigérants. Quatre modules de 400 kW : si l’un tombe, les trois autres couvrent encore 1,2 MW. Au-delà de 27 °C on alerte, au-delà de 32 °C c’est critique.</aside>
+</section>

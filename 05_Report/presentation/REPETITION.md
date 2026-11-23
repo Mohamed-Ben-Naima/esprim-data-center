@@ -1,6 +1,22 @@
 # Kit de répétition – soutenance du 25 novembre 2026
 
-Présentation : https://claude.ai/artifact/9SfWhkneCwM7aaFgcNCTd1 (61 slides, notes de l’orateur sous chaque slide).
+**Présentation à projeter : v1, 24 slides** – https://claude.ai/artifact/GTcGERUuaHRf8tavD91S4v (secours : `DC_Casablanca_Soutenance_v1.pdf`).
+Version longue v0 (61 slides, annexes pour les questions) : https://claude.ai/artifact/9SfWhkneCwM7aaFgcNCTd1.
+
+## 0. Minutage de la v1 (plan imposé au tableau)
+
+| Partie | Slides | Durée |
+|---|---|---|
+| Introduction et contexte | 1–3 | 2 min |
+| Partie 1 – Architecture (classification, localisation, composants, redondance, froid 20–25 °C, UPS/PDU, caméras/compteurs) | 4–10 | 6 min |
+| Partie 2 – Conception technique (environnement, VLAN/adressage, DNS/DHCP, web/DB, NAS, AD/LDAP, pfSense, ACL, NOC, sécurité) | 11–20 | 8 min |
+| Partie 3 – Réalisation pratique : démo **5 min** puis slide « ce que la démo prouve » | 21–22 | 6 min |
+| Conclusion, questions | 23–24 | 1 min + questions |
+
+Slide 10 : la capture Grafana affiche 29,5 °C – le dire (dérive du simulateur DCIM, corrigée, D28).
+
+Les sections ci-dessous gardent la numérotation de la v0.
+
 Vidéo : `05_Report/presentation/video/DC_Casablanca_demo.mp4` (master) et `video/clips/` (un clip par scène).
 Chiffres : tous dans `05_Report/presentation/facts.json` – ne jamais en citer un autre.
 
