@@ -277,8 +277,8 @@
    "fail": 0,
    "known_limit": 1,
    "na": 2,
-   "seconds": 528,
-   "date": "2026-11-12",
+   "seconds": 632,
+   "date": "2026-11-23",
    "file": "03_Network/report/evidence/verify_lab.txt"
   },
   "demo_check": {
@@ -375,7 +375,10 @@
   ],
   "service_triggers": 17,
   "db": "MariaDB (base Zabbix) sur SRV-MON-01, dump nocturne 01:30 dans /var/backups/dc, tiré par le NAS à 02:00",
-  "mon_disk": "7.8G"
+  "mon_disk": "7.8G",
+  "db_tables": 173,
+  "db_mb": 128,
+  "db_file": "03_Network/screenshots/42_srv-mon-01_mariadb_zabbix_db.png (23/11/2026)"
  },
  "power": {
   "paths": "A et B",
@@ -390,11 +393,11 @@
  },
  "project": {
   "automation_scripts": 43,
-  "automation_lines": 7361,
-  "commits": 99,
+  "automation_lines": 7363,
+  "commits": 100,
   "first_commit": "2026-09-29",
   "docker_images": 7,
-  "screenshots_existing": 17,
+  "screenshots_existing": 37,
   "plans": 5,
   "phases": 6
  },
@@ -406,7 +409,8 @@
   "Grafana": "13.2.3",
   "TrueNAS SCALE": "25.10.7",
   "GNS3": "2.2.56.1",
-  "Ubuntu (serveurs)": "22.04 cloud image",
+  "Ubuntu (serveurs)": "20.04 LTS",
+  "MariaDB": "10.3.39",
   "FRR (ISP)": "conteneur dc/frr-isp",
   "Blender": "5.2"
  },

@@ -353,7 +353,7 @@
      "calcs": [
       "lastNotNull"
      ],
-     "fields": "",
+     "fields": "/^(?!Time$).+$/",
      "values": false
     },
     "colorMode": "background",
@@ -495,7 +495,7 @@
      "calcs": [
       "lastNotNull"
      ],
-     "fields": "",
+     "fields": "/^(?!Time$).+$/",
      "values": false
     },
     "colorMode": "background",
@@ -637,7 +637,7 @@
      "calcs": [
       "lastNotNull"
      ],
-     "fields": "",
+     "fields": "/^(?!Time$).+$/",
      "values": false
     },
     "colorMode": "background",
@@ -2160,7 +2160,7 @@
      "calcs": [
       "lastNotNull"
      ],
-     "fields": "",
+     "fields": "/^(?!Time$).+$/",
      "values": false
     },
     "colorMode": "background",

@@ -130,7 +130,8 @@ def html(s):
                  for a in s["alarms"]) or '<tr><td colspan="3">Aucune alarme</td></tr>'
     return (PAGE.replace("%ELEMENTS%", el).replace("%STATUS%", s["status"]).replace("%RED%", s["redundancy"])
             .replace("%PA%", s["paths"]["A"]).replace("%PB%", s["paths"]["B"])
-            .replace("%LA%", str(s["path_load_pct"]["A"])).replace("%LB%", str(s["path_load_pct"]["B"])).replace("%%", "%"))
+            .replace("%LA%", str(s["path_load_pct"]["A"])).replace("%LB%", str(s["path_load_pct"]["B"]))
+            .replace("%ALARMS%", al).replace("%%", "%"))
 
 
 class H(BaseHTTPRequestHandler):

@@ -1,0 +1,16 @@
+<section id="firewall">
+<p class="eyebrow">III.11 · Pare-feu</p>
+<h2>pfSense en haute disponibilité, refus par défaut</h2>
+<div class="row">
+<div class="viz"><img src="/_blob/7762de49dd9c999167075d11d158cf86" alt="Cluster pfSense : interfaces WAN, LAN, DMZ, MGMT, ADMIN avec VIP CARP et nombre de règles ; NAT SNAT et DNAT ; 22 règles générées, 0 écart à l’audit"></div>
+<div class="side">
+<ul>
+<li><b>pfSense CE 2.7.2</b> : même base FreeBSD/pf qu’OPNsense, CARP + pfsync + XMLRPC éprouvés.</li>
+<li><b>22 règles</b> générées depuis l’inventaire, refus journalisé à la fin.</li>
+<li><b>fw_audit.py :</b> 0 écart entre la config et l’inventaire.</li>
+</ul>
+</div>
+</div>
+<div class="foot"><p class="how">Comment c’est fait : gen_pfsense.py → config.xml · deploy_pfsense.py · fw_audit.py</p><p class="badge">ISO 27001 A.8.20</p><div class="pg"></div></div>
+<aside>Le sommaire cite OPNsense ; le labo tourne pfSense CE 2.7.2, et nous ne montrons que ce qui tourne. Les deux partagent la même base FreeBSD et le même filtre pf ; pfSense nous a donné CARP, pfsync et la synchronisation XMLRPC, testés en bascule. Cinq interfaces, cinq adresses virtuelles CARP. Les 22 règles sont générées depuis l’inventaire et un audit compare la configuration réelle à l’inventaire : zéro écart. Tout ce qui n’est pas autorisé est refusé et journalisé.</aside>
+</section>

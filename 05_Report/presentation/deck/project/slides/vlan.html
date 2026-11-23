@@ -1,0 +1,16 @@
+<section id="vlan">
+<p class="eyebrow">III.2 · VLAN</p>
+<h2>14 VLAN, une zone de sécurité par fonction</h2>
+<div class="row">
+<div class="viz"><img src="/_blob/39561780043e0e57aa89652ee0ffe66b" alt="Carte des VLAN : 7 VLAN internes avec passerelle HSRP, DMZ 50, management 10, administration 90 en CARP, 3 VLAN de transit, parking 999"></div>
+<div class="side">
+<ul>
+<li><b>Internes :</b> passerelle HSRP sur les cœurs, actif réparti CORE-A / CORE-B.</li>
+<li><b>DMZ, MGMT, ADMIN :</b> passerelle sur le pare-feu, filtrée.</li>
+<li><b>Ports inutilisés</b> éteints dans le VLAN 999.</li>
+</ul>
+</div>
+</div>
+<div class="foot"><p class="how">Comment c’est fait : vlans + gw_type dans l’inventaire → gen_configs.py (SVI, HSRP, trunks)</p><p class="badge">ISO 27001 A.8.22</p><div class="pg"></div></div>
+<aside>Les VLAN suivent le tableau 15 du cahier des charges, plus des VLAN techniques. Les sept VLAN internes ont leur passerelle sur les cœurs en HSRP, et le rôle actif est partagé : CORE-A pour 20, 40, 60 et 100, CORE-B pour 30, 70 et 80, ce qui répartit la charge. La DMZ, le management et l’administration ont leur passerelle sur le pare-feu : tout flux vers ces zones passe par une règle. Les ports inutilisés sont désactivés dans un VLAN parking.</aside>
+</section>

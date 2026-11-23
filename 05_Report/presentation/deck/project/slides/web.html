@@ -1,0 +1,16 @@
+<section id="web">
+<p class="eyebrow">III.8 · Serveur web</p>
+<h2>Le site public : Internet → NAT → DMZ</h2>
+<div class="row">
+<div class="shot one" style="flex:1.5"><img src="/_blob/86164a35ffe5ff29793007ce7168905d" alt="Depuis ISP-A, requête HTTP vers 192.0.2.80 : réponse 200 OK SRV-WEB-01" style="height:420px"><p class="cap">Depuis l’opérateur ISP-A, l’adresse publique 192.0.2.80 répond « OK SRV-WEB-01 » – 23/11/2026</p></div>
+<div class="side">
+<ul>
+<li><b>SRV-WEB-01</b> : nginx dans la DMZ (VLAN 50, 10.50.0.11).</li>
+<li><b>DNAT</b> 192.0.2.80:80/443 → 10.50.0.11 (règle T18-1).</li>
+<li>La DMZ ne peut joindre <b>ni le management, ni l’administration</b> (T18-9, journalisé).</li>
+</ul>
+</div>
+</div>
+<div class="foot"><p class="how">Comment c’est fait : conteneur nginx:alpine · NAT et règles WAN/DMZ générés par gen_pfsense.py · test FW-06</p><p class="badge">ISO 27001 A.8.22</p><div class="pg"></div></div>
+<aside>Le seul service exposé à Internet est le site web, dans la DMZ. Depuis le conteneur de l’opérateur ISP-A, donc depuis « Internet », on interroge l’adresse publique 192.0.2.80 : le pare-feu traduit vers 10.50.0.11 et nginx répond. La DMZ est cloisonnée : elle ne peut parler qu’à l’application sur le port 8443 et au DNS interne ; toute tentative vers le management ou l’administration est bloquée et journalisée.</aside>
+</section>

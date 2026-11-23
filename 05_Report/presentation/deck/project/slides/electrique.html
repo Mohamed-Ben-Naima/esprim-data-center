@@ -1,0 +1,16 @@
+<section id="electrique" class="alt">
+<p class="eyebrow">II.4 · Redondance électrique</p>
+<h2>Deux chemins A et B, de l’arrivée HT jusqu’à la baie</h2>
+<div class="row">
+<div class="viz"><img src="/_blob/d36a290adfad902bbd49193d0be4541b" alt="Chemins électriques A et B : arrivée HT, poste, UPS modulaire, PDU, baie à double alimentation ; groupes électrogènes partagés ; BMS-SIM et test T6"></div>
+<div class="side">
+<ul>
+<li>Chaque chemin porte <b>100 %</b> de la charge si l’autre tombe.</li>
+<li>UPS <b>5 × 250 kW (N+1)</b> par chemin, groupes <b>4 × 750 kW (N+1)</b>.</li>
+<li>Simulé par <b>BMS-SIM</b> : la perte du chemin A lève l’alarme en 9,4 s.</li>
+</ul>
+</div>
+</div>
+<div class="foot"><p class="how">Comment c’est fait : cahier des charges §5 (tableaux 10 à 12) · conteneur dc/bms-sim · power_test.py</p><p class="badge">TIA-942 électrique</p><div class="pg"></div></div>
+<aside>L’alimentation suit le même principe que le réseau. Deux chemins indépendants, chacun dimensionné pour toute la charge IT : en temps normal chaque UPS est chargé à 38 % environ. Les groupes électrogènes démarrent en 10 à 15 secondes, les batteries couvrent ce délai avec une large marge. Dans le labo, BMS-SIM simule l’état de chaque élément ; Zabbix le lit toutes les 10 secondes. Le test T6 coupe le chemin A : l’alarme apparaît en 9,4 secondes, le chemin B porte seul la charge.</aside>
+</section>

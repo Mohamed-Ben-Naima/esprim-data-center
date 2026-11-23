@@ -1,0 +1,10 @@
+<section id="vlan-live" class="alt">
+<p class="eyebrow">III.2 · VLAN en direct</p>
+<h2>HSRP, OSPF, LACP et trunks sur les vrais équipements</h2>
+<div class="shots">
+<div class="shot"><img src="/_blob/ec05f71d3d676726755974b1d3f4f6a1" alt="CORE-A show standby brief : actif sur 20, 40, 60, 100, 902, standby sur 30, 70, 80 ; show ip ospf neighbor : 2 voisins FULL" style="height:560px"><p class="cap">CORE-A : HSRP partagé, 2 voisins OSPF FULL</p></div>
+<div class="shot"><img src="/_blob/b5155a33155e8ee08d73c471fab03e3b" alt="LEAF-B1 show interfaces trunk : Gi0/0 porte 20, 40, 60, 100, Gi0/1 porte 30, 70, 80 ; spanning-tree VLAN 60 : Gi0/0 racine, Gi0/1 en secours" style="height:560px"><p class="cap">LEAF-B1 : chaque uplink porte les VLAN de « son » cœur</p></div>
+</div>
+<div class="foot"><p class="how">Comment c’est fait : demo_video/shots.py – commandes réelles via SSH depuis ADMIN-WS, 23/11/2026</p><p class="badge">IEEE 802.1Q / 802.1w</p><div class="pg"></div></div>
+<aside>Deux captures du labo prises ce matin, commandes passées par SSH depuis le poste d’administration. À gauche CORE-A : il est actif sur ses VLAN et en standby sur ceux de CORE-B, avec deux adjacences OSPF complètes. À droite LEAF-B1 : l’uplink vers CORE-A transporte les VLAN dont CORE-A est actif, l’autre est bloqué en secours par Rapid-PVST+. En cas de panne d’un cœur, le secours prend le relais en quelques secondes.</aside>
+</section>

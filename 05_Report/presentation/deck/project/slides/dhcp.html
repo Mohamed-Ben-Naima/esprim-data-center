@@ -1,0 +1,11 @@
+<section id="dhcp" class="alt">
+<p class="eyebrow">III.7 · DHCP</p>
+<h2>DHCP : adressage statique par choix, relais conçu</h2>
+<div class="cards" style="flex:1">
+<div class="card ok"><p class="tag">En service</p><h3>Adresses fixes</h3><p class="txt">Serveurs et équipements ont une adresse fixe, écrite dans l’inventaire qui sert d’IPAM. Pas de bail qui expire sous un service critique.</p></div>
+<div class="card"><p class="tag">Désactivé</p><h3>DHCP de pfSense</h3><p class="txt">Désactivé sur toutes les interfaces : pas de serveur DHCP pirate possible sur les VLAN du pare-feu.</p></div>
+<div class="card warn"><p class="tag">Prévu</p><h3>Pool + relais</h3><p class="txt">Pool dnsmasq sur SRV-INF-01 (10.100.0.11) et <span class="mono">ip helper-address</span> sur les SVI des cœurs, pour des postes clients.</p></div>
+</div>
+<div class="foot"><p class="how">Comment c’est fait : gen_pfsense.py (DHCP off) · conception du relais dans PLAN_05 D17</p><p class="badge">ISO 27001 A.8.20</p><div class="pg"></div></div>
+<aside>Nous préférons le dire clairement : il n’y a pas de serveur DHCP en service dans le labo. Dans un Data Center, les serveurs ont des adresses fixes ; c’est la bonne pratique, et notre inventaire joue le rôle d’IPAM. Le DHCP de pfSense est désactivé partout, ce qui évite un serveur DHCP non maîtrisé. Pour des postes clients, la conception est prête : un pool dnsmasq sur SRV-INF-01 et un relais ip helper-address sur les cœurs. Ce sera fait avec l’annuaire AD.</aside>
+</section>

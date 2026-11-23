@@ -1,0 +1,7 @@
+<section id="redondance">
+<p class="eyebrow">II.4 · Redondance</p>
+<h2>Chaque niveau est doublé, chaque bascule est chronométrée</h2>
+<div class="viz wide" style="flex:1"><img src="/_blob/8f7f16477f61de2b21c23dc3483ef142" alt="Chaîne redondante : 2 ISP, 2 EDGE, 2 pare-feux, 2 cœurs, 2 Leaf par hall, serveurs ; protocole de chaque niveau ; coupures mesurées T2 3,0 s, T3 4,5 s, T4 3,0 s, T5 3,1 s" style="width:1664px;height:666px;object-fit:contain"></div>
+<div class="foot"><p class="how">Comment c’est fait : fw_lan_failover.py – sonde continue toutes les 0,5 s pendant l’arrêt d’un nœud par l’API GNS3</p><p class="badge">TIA-942 Rated-3</p><div class="pg"></div></div>
+<aside>De gauche à droite, le chemin d’un paquet : deux opérateurs en eBGP, deux routeurs de bordure en HSRP, deux pare-feux pfSense en CARP avec synchronisation des états, deux cœurs en HSRP et OSPF reliés par un port-channel LACP, deux Leaf par hall en Rapid-PVST+, et des serveurs raccordés aux deux Leaf, avec keepalived pour l’adresse applicative. Sous chaque niveau, la coupure mesurée quand on éteint l’équipement actif. T4 est en orange : 3 secondes au lieu d’environ 1, c’est une limite de l’émulation IOSvL2, détaillée slide suivante.</aside>
+</section>

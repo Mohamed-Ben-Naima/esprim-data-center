@@ -1,0 +1,16 @@
+<section id="composants">
+<p class="eyebrow">II.3 · Composants</p>
+<h2>Les espaces TIA-942 et ce qu’ils contiennent</h2>
+<div class="row">
+<div class="viz"><img src="/_blob/4bc08833dc26d9fbe7be5c13383ebaa3" alt="Plan des espaces TIA-942 : Entrance Room, MDA, NOC, salles techniques, Data Halls A et B avec HDA et EDA"></div>
+<div class="side">
+<ul>
+<li><b>ER :</b> arrivée des 2 opérateurs et routeurs de bordure.</li>
+<li><b>MDA :</b> pare-feux, cœurs, management et administration.</li>
+<li><b>HDA / EDA :</b> 2 Leaf et les baies serveurs dans chaque hall.</li>
+</ul>
+</div>
+</div>
+<div class="foot"><p class="how">Comment c’est fait : champ tia de chaque nœud dans inventory/dc_casa.yaml, repris dans les libellés TIA-606</p><p class="badge">TIA-942 / TIA-606</p><div class="pg"></div></div>
+<aside>La TIA-942 découpe le bâtiment en espaces. L’Entrance Room reçoit les opérateurs. La Main Distribution Area concentre le cœur, la sécurité et le management. Chaque hall a sa zone de distribution horizontale, les Leaf, et ses baies serveurs, l’EDA. Dans le labo, chaque nœud porte son espace dans l’inventaire, et chaque description d’interface suit le format TIA-606 : espace-équipement:port vers espace-équipement:port.</aside>
+</section>

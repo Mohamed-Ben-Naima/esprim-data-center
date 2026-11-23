@@ -1,0 +1,10 @@
+<section id="pdu" class="alt">
+<p class="eyebrow">II.5 · Infrastructure non IT · d</p>
+<h2>PDU : la perte du chemin A vue baie par baie</h2>
+<div class="shots">
+<div class="shot"><img src="/_blob/ca9e9cd59e586210c023ded0332db605" alt="Panneau d’une PDU de salle avec mesures de tension et de courant" style="object-fit:cover;height:470px"><p class="cap">PDU de salle (photo Robert.Harker, CC BY-SA 3.0)</p></div>
+<div class="shot" style="flex:1.5"><img src="/_blob/10c892189900623aadcaf3a92fbd9e5b" alt="DCIM pendant le test T6 : chemin A DOWN, chemin B POWERED, les 96 baies passent en mode dégradé" style="height:470px"><p class="cap">DCIM pendant le test T6 : chemin A coupé, 96 baies dégradées, chemin B à 94,2 %</p></div>
+</div>
+<div class="foot"><p class="how">Comment c’est fait : conteneur dc/dcim (96 baies RACK-A01 à B48) lit BMS-SIM · déclencheurs Zabbix > 45 % / > 50 %</p><p class="badge">TIA-942 électrique</p><div class="pg"></div></div>
+<aside>Chaque baie a deux PDU, une par chemin. Le DCIM du labo, un jumeau numérique des 96 baies, calcule l’état de chaque baie depuis BMS-SIM. Cette capture a été prise pendant le test T6 de la vérification du 23 novembre : le chemin A est coupé, les 96 baies passent en mode dégradé, le chemin B porte 94 % de sa capacité. Aucune baie n’est hors tension : c’est exactement ce que la redondance A/B doit garantir.</aside>
+</section>

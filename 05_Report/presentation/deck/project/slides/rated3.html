@@ -1,0 +1,11 @@
+<section id="rated3" class="alt">
+<p class="eyebrow">II.1 · Classification</p>
+<h2>Pourquoi Rated-3 et pas Tier IV</h2>
+<div class="cards" style="flex:1">
+<div class="card"><p class="tag">Coût</p><h3>2N partout double l’investissement</h3><p class="txt">Le Tier IV exige deux chemins actifs et la tolérance aux pannes : UPS, groupes et froid en 2N.</p></div>
+<div class="card"><p class="tag">Besoin</p><h3>N+1 suffit au service visé</h3><p class="txt">1,6 h d’arrêt par an au plus contre 0,4 h : un écart que les services hébergés acceptent.</p></div>
+<div class="card ok"><p class="tag">Preuve</p><h3>La maintenance concurrente est mesurée</h3><p class="txt">Pare-feu, cœur, Leaf et serveur arrêtés tour à tour : 3 à 4,5 s de coupure (tests T2 à T5).</p></div>
+</div>
+<div class="foot"><p class="how">Comment c’est fait : ADR-01 · tests de résilience PDF tableau 27 rejoués par fw_lan_failover.py</p><p class="badge">TIA-942 Rated-3</p><div class="pg"></div></div>
+<aside>Le Tier IV aurait doublé l’électrique et le froid en 2N pour gagner une heure d’arrêt par an. Le Tier II n’autorise pas la maintenance sans coupure. Le Tier III est l’équilibre. Et nous ne nous contentons pas de l’affirmer : la maintenance concurrente est mesurée dans le labo, on éteint un équipement de chaque niveau et on chronomètre la coupure. Les chiffres viennent plus loin.</aside>
+</section>

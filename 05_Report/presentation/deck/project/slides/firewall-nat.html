@@ -1,0 +1,11 @@
+<section id="firewall-nat">
+<p class="eyebrow">III.11 · Pare-feu en direct</p>
+<h2>Règles d’administration, NAT et journaux</h2>
+<div class="shots">
+<div class="shot"><img src="/_blob/0ec560327f07f8c251a7e6720d42780c" alt="Règles de l’interface ADMIN de pfSense : SSH, HTTPS, SNMP, DNS/NTP, syslog autorisés depuis le VLAN 90" style="height:300px"><p class="cap">Règles ADMIN (T18-6)</p></div>
+<div class="shot"><img src="/_blob/0291fe079b13b24f18c6c5ba603b4a8a" alt="Redirection de port NAT : 192.0.2.80 ports 80 et 443 vers 10.50.0.11" style="height:300px"><p class="cap">DNAT vers le site DMZ (T18-1)</p></div>
+<div class="shot"><img src="/_blob/0d7b23a2ea2bec1f0be2474f04ff5938" alt="Journal du pare-feu : flux bloqués avec interface, source, destination et règle" style="height:300px"><p class="cap">Journal des refus</p></div>
+</div>
+<div class="foot"><p class="how">Comment c’est fait : règles et NAT générés · journaux pf envoyés au collecteur syslog 10.60.0.12</p><p class="badge">ISO 27001 A.8.15</p><div class="pg"></div></div>
+<aside>Trois vues. Les règles de l’interface d’administration : depuis le VLAN 90 seulement SSH, HTTPS et SNMP vers les équipements, plus DNS, NTP et syslog. La redirection de port qui publie le site web. Et le journal : chaque flux refusé est tracé avec la règle qui l’a bloqué, et ce journal part aussi au collecteur central.</aside>
+</section>

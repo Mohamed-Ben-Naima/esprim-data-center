@@ -1,0 +1,16 @@
+<section id="adressage" class="alt">
+<p class="eyebrow">III.5 · Plan d’adressage</p>
+<h2>10.&lt;VLAN&gt;.0.0/24 : l’adresse dit où l’on est</h2>
+<div class="row">
+<div class="viz"><img src="/_blob/401bc01fa230256ac2efcd23d3410283" alt="Plan d’adressage : règle 10.VLAN.0.0/24, adresses d’un VLAN type, sous-réseaux de transit, plages publiques de documentation"></div>
+<div class="side">
+<ul>
+<li><b>.1</b> = passerelle virtuelle, <b>.2 / .3</b> = les deux cœurs.</li>
+<li><b>Transit en /28 et /30</b> entre bordure, pare-feux et cœurs.</li>
+<li><b>Public :</b> plages RFC 5737, AS privés RFC 5398 – rien de réel n’est annoncé.</li>
+</ul>
+</div>
+</div>
+<div class="foot"><p class="how">Comment c’est fait : vlans + transit + isps dans l’inventaire · tableau généré report/content/generated/vlans.md</p><p class="badge">RFC 1918 / 5737</p><div class="pg"></div></div>
+<aside>Un plan lisible par un humain à trois heures du matin : le troisième octet n’est pas utilisé, le deuxième est le numéro du VLAN. 10.60.0.11, c’est le VLAN 60, la supervision. Dans chaque VLAN interne, .1 est l’adresse virtuelle HSRP, .2 et .3 les deux cœurs. Les liaisons de transit utilisent de petits sous-réseaux. Côté Internet, nous n’utilisons que les plages réservées à la documentation, pour ne jamais entrer en conflit avec une adresse réelle.</aside>
+</section>

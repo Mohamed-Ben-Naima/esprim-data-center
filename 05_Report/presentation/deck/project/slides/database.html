@@ -1,0 +1,16 @@
+<section id="database" class="alt">
+<p class="eyebrow">III.12 · Base de données</p>
+<h2>MariaDB derrière la supervision, sauvegardée chaque nuit</h2>
+<div class="row">
+<div class="shot one" style="flex:1.5"><img src="/_blob/810d361c23c9cdf2aeb10c3c6c39ea74" alt="Requête MariaDB sur SRV-MON-01 : base zabbix 173 tables 128 Mo, 18 hôtes supervisés, MariaDB 10.3.39" style="height:560px"><p class="cap">SRV-MON-01 – capture du 23/11/2026</p></div>
+<div class="side">
+<ul>
+<li>Base <b>zabbix</b> : <b>173 tables, 128 Mo</b>, 18 hôtes supervisés.</li>
+<li><b>Dump nocturne</b> à 01:30 dans /var/backups/dc.</li>
+<li>Tiré par le NAS à 02:00 (<b>110 s</b>), restauration testée.</li>
+</ul>
+</div>
+</div>
+<div class="foot"><p class="how">Comment c’est fait : deploy_servers.py rôle zabbix · tâche PULL truenas_setup.py · secret passé par fichier, jamais en ligne de commande</p><p class="badge">ISO 27001 A.8.13</p><div class="pg"></div></div>
+<aside>La base de données du projet est la vraie base de production de la supervision : MariaDB derrière Zabbix sur SRV-MON-01. Nous n’avons pas ajouté de serveur de base de données pour la forme. Elle compte 173 tables et pèse 128 Mo. Chaque nuit à 1 h 30 un dump est écrit localement, puis le NAS le tire à 2 h, en 110 secondes lors du dernier test. Détail de sécurité : pour cette capture, le mot de passe de la base a été déposé dans un fichier temporaire, jamais tapé en ligne de commande, car les commandes sont journalisées.</aside>
+</section>

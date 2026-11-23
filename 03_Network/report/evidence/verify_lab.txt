@@ -1,4 +1,4 @@
-# verify_lab.py 2026-11-12 22:37:58 --save
+# verify_lab.py 2026-11-23 01:50:46 --save
 PASS PLT-01   2 replies
 PASS PLT-02   32 nodes listed
 PASS PLT-03   images with problems: 0
@@ -61,4 +61,4 @@ N/A  WEB-05   needs CCTV-SIM started
 PASS DEMO-03  every check OK
 PASS DEMO-04  ssh ok, snmpv3 ok
 PASS DEMO-05  0 deviation, every denied flow traced
-59 PASS, 0 FAIL, 1 known limit, 2 N/A (node off in this profile) in 528 s
+59 PASS, 0 FAIL, 1 known limit, 2 N/A (node off in this profile) in 632 s

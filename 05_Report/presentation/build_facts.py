@@ -153,7 +153,8 @@ def main():
                   "zabbix_hosts": zh, "grafana_panels": int(gp[1]) + int(gp[2]), "groups": list(mon["groups"].values()),
                   "service_triggers": sum(len(s.get("triggers", [])) for s in mon["services"].values()),
                   "db": "MariaDB (base Zabbix) sur SRV-MON-01, dump nocturne 01:30 dans /var/backups/dc, tiré par le NAS à 02:00",
-                  "mon_disk": "7.8G"}
+                  "mon_disk": "7.8G", "db_tables": 173, "db_mb": 128,
+                  "db_file": "03_Network/screenshots/42_srv-mon-01_mariadb_zabbix_db.png (23/11/2026)"}
     power = {"paths": "A et B", "racks": 96, "it_load_kw": 942, "pue_target": 1.45,
              "ups": "2 x UPS modulaires 5 x 250 kW (N+1) par chemin, 10 min d'autonomie",
              "generators": "4 x 750 kW (N+1)", "bms_alarm_s": t6, "t6_target_s": 30,
@@ -184,7 +185,7 @@ def main():
 
     versions = {"IOSv (EDGE)": "15.9(3)M6", "IOSvL2 (CORE/LEAF)": "15.2 (vios_l2 2017)", "pfSense CE": "2.7.2",
                 "Zabbix": "6.0 LTS", "Grafana": "13.2.3", "TrueNAS SCALE": "25.10.7", "GNS3": "2.2.56.1",
-                "Ubuntu (serveurs)": "22.04 cloud image", "FRR (ISP)": "conteneur dc/frr-isp", "Blender": "5.2"}
+                "Ubuntu (serveurs)": "20.04 LTS", "MariaDB": "10.3.39", "FRR (ISP)": "conteneur dc/frr-isp", "Blender": "5.2"}
 
     facts = {"generated": date.today().isoformat(), "design": design, "lab": lab, "addressing": addressing,
              "security": security, "tests": tests_f, "resilience": res, "nas": nas, "monitoring": monitoring,

@@ -1,0 +1,16 @@
+<section id="services">
+<p class="eyebrow">III.3 · Services</p>
+<h2>Qui sert quoi, sur quel VLAN et quel port</h2>
+<div class="row">
+<div class="viz"><img src="/_blob/a70684f18d7c6be919a0a7f56591018b" alt="Carte des services : DNS/NTP, syslog, Zabbix/Grafana, GTB/DCIM, application, stockage, sauvegarde, site web, avec adresse et ports"></div>
+<div class="side">
+<ul>
+<li><b>Chaque service</b> a une adresse fixe et ses ports dans l’inventaire.</li>
+<li>Les ACL et le pare-feu n’ouvrent <b>que ces ports</b>.</li>
+<li>La sauvegarde <b>tire</b> les données : aucun serveur n’écrit sur le NAS.</li>
+</ul>
+</div>
+</div>
+<div class="foot"><p class="how">Comment c’est fait : servers + port_aliases dans l’inventaire · deploy_servers.py, deploy_containers.py</p><p class="badge">ISO 27001 A.8.21</p><div class="pg"></div></div>
+<aside>Huit familles de services. Les services internes sont dans le hall B : DNS et NTP sur SRV-INF-01, journaux sur SYSLOG, supervision sur SRV-MON-01, GTB et DCIM. Le hall A porte l’application, avec une adresse virtuelle partagée par deux serveurs, et le stockage NFS et iSCSI. Le site web est seul dans la DMZ. Chaque port listé ici est exactement ce que les ACL et le pare-feu autorisent, rien de plus.</aside>
+</section>

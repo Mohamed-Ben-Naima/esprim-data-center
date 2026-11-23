@@ -1,0 +1,14 @@
+<section id="coulisses" class="alt">
+<p class="eyebrow">IV · Les coulisses</p>
+<h2>Six vrais problèmes, six vraies corrections</h2>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;flex:1">
+<div class="card"><p class="tag">Cœur perdu = LAN coupé 150 s</p><p class="txt">Un lien GNS3 reste « up » quand le nœud meurt. Segment de transit commun SW-IN : 4,5 s.</p></div>
+<div class="card"><p class="tag">HSRP qui bat des ailes</p><p class="txt">Temporisateurs 250 ms + swap de la VM. Retour à 1 s / 3 s et vidage du swap au démarrage.</p></div>
+<div class="card"><p class="tag">Clés RSA perdues au boot</p><p class="txt">IOSvL2 ignore parfois sa private-config. cisco_heal.py remet clé SSH et utilisateur SNMPv3.</p></div>
+<div class="card"><p class="tag">Disque USB qui décroche</p><p class="txt">VM figée, erreurs « delayed write ». Mise en veille USB et disque coupées, surveillance du journal.</p></div>
+<div class="card"><p class="tag">Secrets dans les journaux</p><p class="txt">Les lignes de commande sont journalisées : clés SNMP tournées, secrets passés par fichier.</p></div>
+<div class="card"><p class="tag">Hyper-V bloque VT-x</p><p class="txt">La VM GNS3 ne démarrait plus. Hyper-V désactivé, labo relancé à froid : 12/12.</p></div>
+</div>
+<div class="foot"><p class="how">Comment c’est fait : chaque incident tracé dans les plans PLAN_01 à PLAN_05 et corrigé par script quand c’est possible</p><p class="badge">Retour d’expérience</p><div class="pg"></div></div>
+<aside>Ce que les captures ne montrent pas. Le plus instructif : arrêter un cœur coupait le LAN deux minutes et demie, parce que dans GNS3 un lien reste actif quand le nœud meurt ; un switch de transit commun a ramené la coupure à 4,5 secondes. Les flaps HSRP venaient de temporisateurs trop agressifs et du swap. IOSvL2 perd parfois sa clé SSH au démarrage, un script la remet. Le disque USB de la VM décrochait. Nous avons découvert que nos clés SNMP étaient visibles dans les journaux : rotation et nouvelle règle. Et ce matin, Hyper-V bloquait la virtualisation.</aside>
+</section>

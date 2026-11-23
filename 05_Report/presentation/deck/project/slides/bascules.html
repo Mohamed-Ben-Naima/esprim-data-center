@@ -1,0 +1,16 @@
+<section id="bascules">
+<p class="eyebrow">II.4 · Redondance</p>
+<h2>Pannes provoquées : coupures mesurées contre la cible</h2>
+<div class="row">
+<div class="viz"><img src="/_blob/309aad714b8e60f3c5eabcfef04d8d88" alt="Diagramme en barres : T2 3,0 s, T3 4,5 s, T4 3,0 s au-dessus de sa cible de 1 s, T5 3,1 s, T6 alarme en 9,4 s pour une cible de 30 s"></div>
+<div class="side">
+<ul>
+<li><b>4 sur 5</b> dans la cible du cahier des charges.</li>
+<li><b>T3 :</b> 4,5 s au lieu de 150 s avant la correction SW-IN (FW.3).</li>
+<li><b>T4 :</b> 3,0 s, limite de l’IOSvL2 émulé (ARP 1 s + RPVST+).</li>
+</ul>
+</div>
+</div>
+<div class="foot"><p class="how">Comment c’est fait : report/evidence/fw_lan_failover.txt et demo_s6_power_test.txt (traces horodatées)</p><p class="badge">TIA-942 Rated-3</p><div class="pg"></div></div>
+<aside>Les tests du tableau 27 du cahier des charges, rejoués et chronométrés. Le pare-feu bascule en 3 secondes, le cœur en 4,5 secondes : avant une correction de topologie, la perte d’un cœur coupait le côté LAN plus de 150 secondes, car le lien GNS3 restait « up » ; un segment de transit commun, SW-IN, a réglé le problème. Le Leaf dépasse sa cible d’environ 1 seconde : sur du matériel réel, la détection serait plus rapide ; nous le disons plutôt que de le cacher. T1 et la double panne M1 sont vérifiés mais pas chronométrés.</aside>
+</section>

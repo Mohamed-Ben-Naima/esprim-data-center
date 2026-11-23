@@ -1,0 +1,10 @@
+<section id="firewall-gui" class="alt">
+<p class="eyebrow">III.11 · Pare-feu en direct</p>
+<h2>FW-A maître, FW-B en secours, mêmes règles</h2>
+<div class="shots">
+<div class="shot"><img src="/_blob/5d244e684349f528d890e6a762e9c27c" alt="Interface pfSense de FW-A : statut CARP, les 5 VIP en MASTER" style="height:540px"><p class="cap">FW-A : 5 VIP CARP en MASTER</p></div>
+<div class="shot"><img src="/_blob/8a328ee23df01b6955f08c666db94752" alt="Interface pfSense de FW-B : statut CARP, les 5 VIP en BACKUP" style="height:540px"><p class="cap">FW-B : les mêmes 5 VIP en BACKUP</p></div>
+</div>
+<div class="foot"><p class="how">Comment c’est fait : advskew 0 / 100 · synchronisation XMLRPC FW-A → FW-B (test FW-07 : 0 différence)</p><p class="badge">TIA-942 Rated-3</p><div class="pg"></div></div>
+<aside>Les deux pare-feux vus depuis leur interface web. FW-A est maître sur les cinq adresses virtuelles, FW-B est en secours. Les règles et le NAT sont synchronisés de FW-A vers FW-B par XMLRPC, et les états de connexion par pfsync, ce qui permet de basculer en 3 secondes sans perdre les sessions établies.</aside>
+</section>

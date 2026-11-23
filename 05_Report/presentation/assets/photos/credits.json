@@ -1,0 +1,50 @@
+{
+ "ups": {
+  "title": "File:UPS Power Management Module, racks with network cabling in NERSC data center.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:UPS_Power_Management_Module,_racks_with_network_cabling_in_NERSC_data_center.jpg",
+  "licence": "CC0",
+  "licence_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+  "author": "Derrick Coetzee from Berkeley, CA, USA",
+  "size": "4288x2848"
+ },
+ "batteries": {
+  "title": "File:Datacenter Backup Batteries.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Datacenter_Backup_Batteries.jpg",
+  "licence": "CC BY 3.0",
+  "licence_url": "https://creativecommons.org/licenses/by/3.0",
+  "author": "Jelson25",
+  "size": "2124x2118"
+ },
+ "generator": {
+  "title": "File:Power generator of a hospital data center.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Power_generator_of_a_hospital_data_center.jpg",
+  "licence": "CC0",
+  "licence_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+  "author": "Mikael Häggström",
+  "size": "4032x3024"
+ },
+ "cctv": {
+  "title": "File:Dome CCTV cameras.JPG",
+  "page": "https://commons.wikimedia.org/wiki/File:Dome_CCTV_cameras.JPG",
+  "licence": "CC BY-SA 3.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/3.0",
+  "author": "KRoock74",
+  "size": "4608x3456"
+ },
+ "rack": {
+  "title": "File:Rack of Worldwide LHC Computing Grid.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:Rack_of_Worldwide_LHC_Computing_Grid.jpg",
+  "licence": "CC BY-SA 4.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "author": "Marián Hubinský",
+  "size": "3840x2880"
+ },
+ "pdu": {
+  "title": "File:UPS PDU Power Mgmt Module.jpg",
+  "page": "https://commons.wikimedia.org/wiki/File:UPS_PDU_Power_Mgmt_Module.jpg",
+  "licence": "CC BY-SA 3.0",
+  "licence_url": "https://creativecommons.org/licenses/by-sa/3.0",
+  "author": "Robert.Harker",
+  "size": "2592x3456"
+ }
+}

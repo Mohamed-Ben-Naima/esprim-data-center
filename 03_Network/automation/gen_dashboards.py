@@ -54,8 +54,10 @@ def panel(kind, title, targets, x, y, w, h, unit="", thresholds=None, mappings=N
             "fieldConfig": {"defaults": defaults, "overrides": overrides or []}, "options": options or {}}
 
 
-def stat_opts(text_mode="value", color_mode="background", name=False):
-    return {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "/.*/" if name else "", "values": False},
+def stat_opts(text_mode="value", color_mode="background", name=False, text=False):
+    # a text item (POWERED, WARNING...) is a string field: the default reducer keeps numeric fields only and the tile
+    # showed the noValue "hors profil" although Grafana had the value (seen 23 Nov 2026, PLAN_05 screenshots)
+    return {"reduceOptions": {"calcs": ["lastNotNull"], "fields": "/^(?!Time$).+$/" if text else "/.*/" if name else "", "values": False},
             "colorMode": color_mode, "graphMode": "none", "textMode": "value_and_name" if name else text_mode,
             "justifyMode": "center", "orientation": "auto", "wideLayout": True, "showPercentChange": False}
 
@@ -111,9 +113,9 @@ def build():
                        desc="Seuils Table 22 : 45 % avertissement, 50 % redondance N+N non assurée"))
     for i, path in enumerate("AB"):
         p.append(panel("stat", f"Chemin {path}", [metric(svc, bms, f"État chemin {path}", text=True)],
-                       8 + i * 3, 1, 3, 3, mappings=text_map(), options=stat_opts()))
+                       8 + i * 3, 1, 3, 3, mappings=text_map(), options=stat_opts(text=True)))
     p.append(panel("stat", "GTB", [metric(svc, bms, "État global GTB", text=True)], 8, 4, 6, 3,
-                   mappings=text_map(), options=stat_opts()))
+                   mappings=text_map(), options=stat_opts(text=True)))
     racks = steps((None, GREEN), (1, RED))
     p.append(panel("stat", "Baies OK", [metric(svc, dcim, "Baies OK")], 14, 1, 3, 6,
                    thresholds=steps((None, RED), (96, GREEN)), options=stat_opts()))
@@ -174,7 +176,7 @@ def build():
     y, sto, nas = 37, "DC/Storage", "SRV-BCK-01"
     p.append(row("Stockage et sauvegardes", y))
     p.append(panel("stat", "NAS – pool tank", [metric(sto, nas, "Pool tank - état ZFS", text=True)], 0, y + 1, 6, 5,
-                   mappings=text_map(), options=stat_opts(), desc="Miroir ZFS (2 disques) ; DEGRADED = un disque perdu"))
+                   mappings=text_map(), options=stat_opts(text=True), desc="Miroir ZFS (2 disques) ; DEGRADED = un disque perdu"))
     p.append(panel("stat", "Âge du dernier snapshot", [metric(sto, nas, "Âge du dernier snapshot")], 6, y + 1, 6, 5,
                    unit="s", decimals=0, thresholds=steps((None, GREEN), (3900, ORANGE), (7200, RED)),
                    options=stat_opts(), desc="Snapshots horaires de tank/backups ; alarme au-delà de 2 h"))

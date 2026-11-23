@@ -1,0 +1,16 @@
+<section id="architecture" class="alt">
+<p class="eyebrow">II.4 · Redondance</p>
+<h2>L’architecture logique complète</h2>
+<div class="row">
+<div class="viz"><img src="/_blob/7628aeec4f6af4e150164c6f4b7664ce" alt="Architecture logique par couches : ISP, Entrance Room, pare-feux, cœurs, halls A et B, DMZ et zone d’administration sur les côtés" style="width:1104px;height:648px;object-fit:contain"></div>
+<div class="side">
+<ul>
+<li><b>Nord-sud :</b> Internet → bordure → pare-feux → cœurs → Leaf → serveurs.</li>
+<li><b>DMZ et administration</b> pendent du pare-feu, jamais du cœur.</li>
+<li><b>AS 65100</b> annonce 192.0.2.0/24 aux deux opérateurs.</li>
+</ul>
+</div>
+</div>
+<div class="foot"><p class="how">Comment c’est fait : configurations Cisco et pfSense générées par gen_configs.py et gen_pfsense.py</p><p class="badge">ISO 27001 A.8.22</p><div class="pg"></div></div>
+<aside>Le schéma complet. Les couleurs sont celles des zones du projet GNS3. Points à retenir : la DMZ et la zone d’administration sont rattachées au pare-feu, donc tout flux qui y entre est filtré et journalisé. Le cœur ne route jamais vers le management, une VRF l’isole. Les adresses publiques sont des plages de documentation RFC 5737, annoncées en BGP par notre AS privé 65100.</aside>
+</section>
