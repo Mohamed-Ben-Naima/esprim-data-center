@@ -16,7 +16,7 @@ ROOT = HERE.parents[2]
 PROJ = HERE / "project"
 OUT = HERE / "render"
 SEARCH = [ROOT / "05_Report/presentation/assets/diagrams/png", ROOT / "05_Report/presentation/assets/photos",
-          ROOT / "02_Blender/04_Renders/stills", ROOT / "06_Documentation/img", ROOT / "03_Network/screenshots"]
+          ROOT / "02_Blender/04_Renders/stills", ROOT / "06_Documentation/img", ROOT / "03_Network/screenshots", ROOT / "05_Report/presentation/video"]
 
 CHECK_JS = """() => {
   const sec = document.querySelector('section'); const R = sec.getBoundingClientRect(); const out = [];

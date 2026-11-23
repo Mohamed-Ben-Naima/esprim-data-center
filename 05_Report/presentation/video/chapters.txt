@@ -1,0 +1,10 @@
+0:00  Ouverture – campus en 3D (Blender)
+0:20  1 · Topologie
+0:47  2 · Réseau
+1:56  3 · Pare-feu
+2:39  4 · Services
+3:23  5 · Supervision NOC
+4:12  5b · Tableau du NOC
+4:36  6 · Panne électrique T6
+5:06  7 · Panne pare-feu T2
+5:42  8 · Preuve

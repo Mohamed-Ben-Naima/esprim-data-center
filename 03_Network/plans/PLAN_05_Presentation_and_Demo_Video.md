@@ -201,10 +201,20 @@ Files in `05_Report/presentation/assets/` (`diagrams/*.svg`, `photos/`, `icons/`
       outage frame come from the same run. Bastion, NAS, T3/T5 stay as dated traces (outside the RAM profile).
 - [ ] **P6 Edit and embed** (2 h): master MP4 + scene clips (Canva thumbnail/end card C7–C8), clips into the
       slides, quality gate D15, export .pptx + .pdf.
-- [ ] **P7 Rehearsal kit** (1 h): timing per section, cue cards, **20 likely jury questions with answers**, live-demo
+      Partly done (23 Nov ~04:10): deck 61 slides (T2 and T6 slides with the live stills, video chapters slide with
+      the thumbnail), gate 61/61 OK, backup PDF `05_Report/presentation/DC_Casablanca_Soutenance.pdf` (also on H:).
+      Clips S1–S6b encoded; the last encode (T6, T2, S9 clips + master) was **stopped by Claude Code: PC critically low
+      on memory** – not relaunched without the user's OK. Lab and GNS3 VM since stopped (10.8 GB free). To finish:
+      `python automation/demo_video/edit.py` (≈ 10 min, skips the scenes already encoded), then upload clips
+      S8_T2_fw/S8_T6_power and add `data-video` on slides demo-t2/demo-t6. Editable .pptx: Share › Export on the page.
+- [x] **P7 Rehearsal kit** (1 h): timing per section, cue cards, **20 likely jury questions with answers**, live-demo
       fallback (master MP4 + PDF on USB and `H:`), node start order for a live demo.
+      Done: `05_Report/presentation/REPETITION.md` (timing, cue cards, 20 Q&A, plan B); PDF + kit copied to
+      `H:\DC_Casablanca_Soutenance\`. USB stick copy = user (physical); master MP4 joins after the last encode.
 - [ ] **P8 Close** (30 min): READMEs + Field Book mention the presentation, commit `presentation(P<n>)`, push (MP4 in
       LFS), lab stopped cleanly.
+      Partly done: READMEs (05_Report, 03_Network) list the presentation files; `lab_down.py` 55 s, project closed,
+      GNS3 VM soft-stopped. Field Book not rebuilt (no new section); master MP4 to commit after the last encode.
 
 ### Wed 25 Nov — present.
 
