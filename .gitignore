@@ -51,3 +51,4 @@ node_modules/
 03_Network/configs/pfsense/FW-?.config.xml
 03_Network/**/project-files/images/
 03_Network/report/_source/field_book_print.html
+05_Report/presentation/DC_Casablanca_Soutenance_v1_editable.pdf
