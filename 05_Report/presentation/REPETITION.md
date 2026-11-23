@@ -1,6 +1,6 @@
 # Kit de répétition – soutenance du 25 novembre 2026
 
-Présentation : https://claude.ai/artifact/9SfWhkneCwM7aaFgcNCTd1 (58 slides, notes de l’orateur sous chaque slide).
+Présentation : https://claude.ai/artifact/9SfWhkneCwM7aaFgcNCTd1 (61 slides, notes de l’orateur sous chaque slide).
 Vidéo : `05_Report/presentation/video/DC_Casablanca_demo.mp4` (master) et `video/clips/` (un clip par scène).
 Chiffres : tous dans `05_Report/presentation/facts.json` – ne jamais en citer un autre.
 
@@ -9,11 +9,11 @@ Chiffres : tous dans `05_Report/presentation/facts.json` – ne jamais en citer 
 | Partie | Slides | Durée | Repère |
 |---|---|---|---|
 | I. Introduction | 1–5 | 2 min | finir sur « 59/59, 12/12, 3 secondes » |
-| II. Architecture | 6–19 | 6 min | redondance + bascules = le cœur (2 min) |
-| III. Conception technique | 20–44 | 9 min | 20 s par slide de service, 40 s pour pare-feu, NAS, matrice |
-| IV. Conclusion | 45–50 | 3 min | coulisses = 1 min, raconter 2 histoires (SW-IN, secrets) |
-| Démo vidéo ou en direct | – | 8 min | au choix du jury, slide 49 |
-| Questions | annexes 51–58 | reste | ouvrir l’annexe qui répond |
+| II. Architecture | 6–21 | 6 min | redondance + bascules = le cœur (2 min) |
+| III. Conception technique | 22–46 | 9 min | 20 s par slide de service, 40 s pour pare-feu, NAS, matrice |
+| IV. Conclusion | 47–53 | 3 min | coulisses = 1 min, raconter 2 histoires (SW-IN, secrets) |
+| Démo vidéo ou en direct | 51 | 8 min | au choix du jury ; clips T2 (slide 15) et T6 (slide 21) intégrés |
+| Questions | annexes 54–61 | reste | ouvrir l’annexe qui répond |
 
 ## 2. Fiches de rappel (une phrase par slide clé)
 

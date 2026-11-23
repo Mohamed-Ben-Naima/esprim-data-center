@@ -1,0 +1,6 @@
+# PLAN_05 P5 - T2 recorded for the demo video, 23 Nov 2026 03:25 (director.py S8T2)
+# probe: TCP connect ADMIN-WS -> BMS-SIM 10.70.0.12:8080 every 0.5 s through the lab proxy; FW-A stopped via GNS3 API at +6 s
+   1.29 s  probe start
+  10.69 s  outage 2.5s
+  32.47 s  shot s8_t2_fw_outage
+RESULT: one outage of 2.5 s, FW-B took over (fw_lan_failover.txt 13:36:33 measured 3.0 s)

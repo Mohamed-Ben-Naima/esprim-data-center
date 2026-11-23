@@ -56,5 +56,8 @@
  "33_edge-a_bgp.png": "1bce3163e57c13a028a91e156b92706d",
  "34_core-a_etherchannel_stp.png": "6ea4c9744ad11adfeb42ae86c5b68fb5",
  "45c_zabbix_hosts_crop.png": "7b3b9154b87a81d873beb1377b5ac779",
- "44c_zabbix_problems_crop.png": "0ab08d677280f9aa0498d83fb2358113"
+ "44c_zabbix_problems_crop.png": "0ab08d677280f9aa0498d83fb2358113",
+ "30_gns3_topology_zones.png": "c511f42f8df542884e135c417cd4aa69",
+ "s8_t2_fw_outage.png": "6fdb3e735c86b4fab0be1cae22da2d12",
+ "58v_t6_bms_video.png": "2df9d707c4676a1a5b68c76f00c086a2"
 }

@@ -1,0 +1,16 @@
+<section id="demo-t6">
+<p class="eyebrow">II.5 · Panne électrique en direct</p>
+<h2>Chemin A coupé : alarme, baies dégradées, chemin B seul</h2>
+<div class="row">
+<div class="shot one" style="flex:1.6"><img src="/_blob/2df9d707c4676a1a5b68c76f00c086a2" data-video="__CLIP_T6__" alt="Vidéo : BMS-SIM passe UTILITY-A, UPS-A et le groupe à DOWN, état CRITICAL, puis le DCIM montre les 96 baies dégradées, puis retour à la normale" style="height:560px"><p class="cap">Enregistré le 23/11/2026 – clic pour lancer ou arrêter</p></div>
+<div class="side" style="width:440px">
+<ul>
+<li>UTILITY-A, UPS-A et groupe passés à <b>DOWN</b> par l’API.</li>
+<li>GTB <b>CRITICAL</b>, chemin B porte 94,2 %.</li>
+<li>Les 96 baies restent alimentées, en <b>mode dégradé</b>.</li>
+</ul>
+</div>
+</div>
+<div class="foot"><p class="how">Comment c’est fait : director.py S8T6 · API /api/set et /api/reset de BMS-SIM via le proxy du labo</p><p class="badge">TIA-942 électrique</p><div class="pg"></div></div>
+<aside>Le test T6 en vidéo. Nous coupons l’arrivée A, l’onduleur A et le groupe en même temps. La GTB passe en état critique, le chemin B porte seul 94 % de sa capacité, et le DCIM montre les 96 baies en mode dégradé : alimentées par une seule voie, mais aucune n’est éteinte. Puis on rétablit, tout revient au vert. Zabbix lève l’alarme en moins de 10 secondes.</aside>
+</section>

@@ -138,6 +138,16 @@ class Scene:
         self.t0 = time.time()
         self.mx, self.my = 960, 600
 
+    def go(self, url, until="networkidle", timeout=90000):
+        """Navigate with retries: the lab proxy sometimes drops the first connection to a page (transient)."""
+        for attempt in range(3):
+            try:
+                return self.page.goto(url, wait_until=until, timeout=timeout)
+            except Exception as e:  # noqa: BLE001
+                print(f"   retry {url}: {str(e).splitlines()[0][:80]}", flush=True)
+                self.page.wait_for_timeout(3000)
+        raise RuntimeError(f"cannot open {url}")
+
     def mark(self, label):
         self.marks.append({"t": round(time.time() - self.t0, 2), "label": label})
 
@@ -155,8 +165,11 @@ class Scene:
         self.wait(pause)
 
     def glide_to(self, locator, click=False, pause=0.5):
-        locator.scroll_into_view_if_needed()
-        b = locator.bounding_box()
+        try:   # pages that refresh themselves (Zabbix lists) can replace the element under the pointer
+            locator.scroll_into_view_if_needed(timeout=3000)
+            b = locator.bounding_box(timeout=3000)
+        except Exception:  # noqa: BLE001
+            return
         if not b:
             return
         self.glide(b["x"] + b["width"] * random.uniform(0.35, 0.6), b["y"] + b["height"] / 2, 0.25)
@@ -234,11 +247,12 @@ class Term:
 # ------------------------------------------------------------------------------------------------ scenes
 def login_zabbix(sc):
     pg = sc.page
-    pg.goto("http://10.60.0.11/index.php", wait_until="domcontentloaded", timeout=120000)
+    sc.go("http://10.60.0.11/index.php", until="domcontentloaded")
     sc.wait(1)
     sc.type_into(pg.locator("#name"), "Admin")
     pg.fill("#password", CRED["zabbix_admin_password"])
-    sc.glide_to(pg.locator("#enter"), click=True)
+    with pg.expect_navigation(timeout=120000):
+        sc.glide_to(pg.locator("#enter"), click=True)
     pg.wait_for_load_state("networkidle", timeout=120000)
 
 
@@ -340,7 +354,7 @@ def s3_network(b):
 def s4_firewall(b):
     sc = Scene(b, "S4_firewall")
     pg = sc.page
-    pg.goto("https://10.90.0.1/", wait_until="domcontentloaded", timeout=120000)
+    sc.go("https://10.90.0.1/", until="domcontentloaded")
     sc.wait(1.2)
     sc.type_into(pg.locator("#usernamefld"), "admin")
     pg.fill("#passwordfld", CRED["admin_password"])
@@ -350,7 +364,7 @@ def s4_firewall(b):
     sc.wait(2)
     for url, label, rows in [("status_carp.php", "carp", "table tbody tr"), ("firewall_rules.php?if=opt2", "rules", "table tbody tr"),
                              ("firewall_nat.php", "nat", "table tbody tr"), ("status_logs_filter.php", "logs", "table tbody tr")]:
-        pg.goto(f"https://10.90.0.1/{url}", wait_until="networkidle", timeout=120000)
+        sc.go(f"https://10.90.0.1/{url}", until="networkidle")
         sc.mark(label)
         sc.wait(1.2)
         trs = pg.locator(rows)
@@ -380,33 +394,41 @@ def s6_noc(b):
     sc = Scene(b, "S6_noc")
     pg = sc.page
     login_zabbix(sc)
-    pg.goto("http://10.60.0.11/zabbix.php?action=host.view", wait_until="networkidle", timeout=120000)
+    sc.go("http://10.60.0.11/zabbix.php?action=host.view", until="networkidle")
     sc.mark("zabbix hosts")
     trs = pg.locator("table.list-table tbody tr")
     for i in range(0, min(trs.count(), 18), 2):
         sc.glide_to(trs.nth(i), pause=0.3)
-    pg.goto("http://10.60.0.11/zabbix.php?action=problem.view&filter_reset=1", wait_until="networkidle", timeout=120000)
+    sc.go("http://10.60.0.11/zabbix.php?action=problem.view&filter_reset=1", until="networkidle")
     sc.mark("zabbix problems")
     sc.wait(2.5)
-    # Grafana (own login)
-    pg.goto("http://10.60.0.11:3000/login", wait_until="domcontentloaded", timeout=120000)
+    sc.close()
+
+
+def s6b_grafana(b):
+    # a fresh browser context: after the Zabbix pages the Grafana login did not load through the lab proxy (twice)
+    sc = Scene(b, "S6b_grafana")
+    pg = sc.page
+    sc.go("http://10.60.0.11:3000/login", until="domcontentloaded", timeout=200000)  # ~34 s server side through the proxy
     sc.wait(1.5)
     sc.type_into(pg.locator("input[name=user]"), "admin")
     pg.fill("input[name=password]", CRED["grafana_admin_password"])
     pg.keyboard.press("Enter")
-    pg.wait_for_url(lambda u: "/login" not in u, timeout=120000)
-    pg.wait_for_load_state("networkidle", timeout=120000)
-    sc.wait(5)
+    pg.wait_for_url(lambda u: "/login" not in u, timeout=300000)
+    pg.wait_for_load_state("networkidle", timeout=300000)
+    pg.locator(".react-grid-item").first.wait_for(timeout=200000)
+    sc.wait(6)
+    sc.mark("start")   # edit.py starts the clip here: the login and the slow first load are cut
     sc.mark("grafana")
     for sel in [".react-grid-item"]:
         items = pg.locator(sel)
         for i in range(min(items.count(), 9)):
             sc.glide_to(items.nth(i), pause=0.5)
     sc.shot("46v_grafana_noc_video")
-    pg.goto("http://10.70.0.12:8080/", wait_until="networkidle", timeout=60000)
+    sc.go("http://10.70.0.12:8080/", until="networkidle")
     sc.mark("bms")
     sc.wait(3)
-    pg.goto("http://10.70.0.11:8080/", wait_until="networkidle", timeout=60000)
+    sc.go("http://10.70.0.11:8080/", until="networkidle")
     sc.mark("dcim")
     sc.wait(3)
     sc.close()
@@ -472,7 +494,7 @@ def s8_t2(b):
 def s8_t6(b):
     sc = Scene(b, "S8_T6_power")
     pg = sc.page
-    pg.goto("http://10.70.0.12:8080/", wait_until="networkidle", timeout=60000)
+    sc.go("http://10.70.0.12:8080/", until="networkidle")
     sc.mark("bms nominal")
     sc.wait(3)
     import urllib.request  # noqa: F401  (the API call goes through the proxy like the page)
@@ -488,7 +510,7 @@ def s8_t6(b):
         sc.wait(2.5)
         pg.reload(wait_until="networkidle")
     sc.shot("58v_t6_bms_video")
-    pg.goto("http://10.70.0.11:8080/", wait_until="networkidle", timeout=60000)
+    sc.go("http://10.70.0.11:8080/", until="networkidle")
     sc.mark("dcim degraded")
     sc.wait(4)
     con = SocksHTTPConnection("10.70.0.12", 8080, timeout=10)
@@ -511,7 +533,7 @@ def s9_proof(b):
     sc.close()
 
 
-SCENES = {"S1": s1_topology, "S3": s3_network, "S4": s4_firewall, "S5": s5_services, "S6": s6_noc, "S8T2": s8_t2, "S8T6": s8_t6, "S9": s9_proof}
+SCENES = {"S1": s1_topology, "S3": s3_network, "S4": s4_firewall, "S5": s5_services, "S6": s6_noc, "S6b": s6b_grafana, "S8T2": s8_t2, "S8T6": s8_t6, "S9": s9_proof}
 
 
 def main(argv):

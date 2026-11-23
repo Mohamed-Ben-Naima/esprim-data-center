@@ -27,10 +27,11 @@ STORY = [
     ("2 · Réseau", "S3_network", "Commandes réelles depuis ADMIN-WS : eBGP vers 2 opérateurs, HSRP partagé, OSPF, LACP, trunks", 1.0),
     ("3 · Pare-feu", "S4_firewall", "pfSense FW-A : 5 VIP CARP maîtres, règles d’administration, NAT, journal des refus", 1.0),
     ("4 · Services", "S5_services", "Site DMZ joint depuis Internet par le NAT · flux VLAN 60 → administration refusé par l’ACL", 1.0),
-    ("5 · Supervision NOC", "S6_noc", "Zabbix (18 hôtes), tableau Grafana du NOC, GTB et DCIM des 96 baies", 1.0),
+    ("5 · Supervision NOC", "S6_noc", "Zabbix : 18 hôtes, nœuds hors profil en maintenance, seuls les vrais problèmes", 1.0),
+    ("5b · Tableau du NOC", "S6b_grafana", "Grafana : énergie A/B, 96 baies, PUE, puis la GTB et le DCIM en direct", 1.0),
     ("6 · Panne électrique T6", "S8_T6_power", "Coupure du chemin A : alarme, 96 baies en mode dégradé, chemin B seul actif, puis retour", 1.0),
     ("7 · Panne pare-feu T2", "S8_T2_fw", "Arrêt de FW-A pendant qu’une sonde interroge la GTB toutes les 0,5 s : FW-B prend le relais", 1.0),
-    ("8 · Preuve", "S9_proof", "demo_check.py : 12 contrôles automatiques du laboratoire", 1.0),
+    ("8 · Preuve", "S9_proof", "demo_check.py : 12 contrôles automatiques du laboratoire (attente accélérée ×3)", 3.0),
 ]
 
 CARD = """<html><head><meta charset="utf-8"><link rel="stylesheet" href="{f}"><style>
@@ -48,9 +49,19 @@ html,body{{margin:0;width:1920px;height:1080px;background:transparent;font-famil
 
 
 def ff(*args):
-    r = subprocess.run(["ffmpeg", "-v", "error", "-y", *args], capture_output=True, text=True)
-    if r.returncode:
-        raise RuntimeError(r.stderr[-1500:])
+    # below normal priority: the GNS3 VM shares the CPU and its cores lose BPDUs when starved (loop guard)
+    for attempt in range(2):   # a file just written can be unreadable for a moment (antivirus scan): one retry
+        r = subprocess.run(["ffmpeg", "-v", "error", "-y", *args], capture_output=True, text=True,
+                           creationflags=getattr(subprocess, "BELOW_NORMAL_PRIORITY_CLASS", 0))
+        if not r.returncode:
+            return
+        __import__("time").sleep(5)
+    raise RuntimeError(r.stderr[-1500:])
+
+
+def fresh(out, *inputs):
+    """True when `out` exists and is newer than every input (the scene was not re-recorded)."""
+    return out.exists() and out.stat().st_size > 1000 and all(out.stat().st_mtime > i.stat().st_mtime for i in inputs)
 
 
 def dur(p):
@@ -73,7 +84,7 @@ def render_pngs():
                                  s=f"{FACTS['lab']['nodes']} nœuds GNS3 · pannes provoquées · {vl['pass']}/{vl['pass']} tests",
                                  m="VIDÉO DE DÉMONSTRATION · 8 CHAPITRES"),
         "endcard": CARD.format(f=FONTS, bg="#0D1217", size=96, img=bgimg, t="Tout est réel, tout est rejouable",
-                               s=f"verify_lab : {vl['pass']} PASS, {vl['fail']} FAIL · demo_check : 12/12 · bascule pare-feu 3,0 s mesurée",
+                               s=f"verify_lab : {vl['pass']} PASS, {vl['fail']} FAIL · demo_check : 12/12 · bascule pare-feu 2,5 s en direct",
                                m="SCRIPTS : 03_NETWORK/AUTOMATION · PREUVES : REPORT/EVIDENCE"),
     }
     for ch, _, _, _ in STORY:
@@ -126,8 +137,17 @@ def main():
         card = TMP / f"card_{n}.mp4"
         still(TMP / f"card_{n}.png", 2.5, card)
         body = TMP / f"{sc}.mp4"
-        d = dur(src) / speed
-        ff("-i", str(src), "-loop", "1", "-i", str(TMP / f"cap_{sc}.png"), "-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo",
+        marks = json.loads((RAW / f"{sc}.json").read_text(encoding="utf-8")).get("marks", []) if (RAW / f"{sc}.json").exists() else []
+        start = next((max(0.0, m["t"] - 0.3) for m in marks if m["label"] == "start"), 0.0)   # skip a page that loads slowly
+        d = (dur(src) - start) / speed
+        if fresh(body, src) and fresh(CLIPS / f"{sc}.mp4", body):
+            m, s_ = divmod(int(t), 60)
+            chapters.append((f"{m}:{s_:02d}", ch))
+            parts += [card, body]
+            t += dur(card) + dur(body)
+            print(f"   {ch}: unchanged", flush=True)
+            continue
+        ff("-ss", f"{start:.2f}", "-i", str(src), "-loop", "1", "-i", str(TMP / f"cap_{sc}.png"), "-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo",
            "-filter_complex", f"[0:v]setpts=PTS/{speed},scale=1920:1080,fps=30[v];[1:v]format=rgba,fade=out:st=6.5:d=0.6:alpha=1[c];"
                               f"[v][c]overlay=0:0:shortest=1:enable='lt(t,7.2)',"
                               f"fade=in:0:9,fade=out:st={max(0.1, d - 0.4):.2f}:d=0.4[o]",
