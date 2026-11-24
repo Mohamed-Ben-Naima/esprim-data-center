@@ -40,11 +40,12 @@ def main():
     name = sys.argv[1] if len(sys.argv) > 1 else "DEMO_SCRIPT"
     md = (HERE / f"{name}.md").read_text(encoding="utf-8")
     css = CSS
-    if name == "DEMO_DISCOURS":   # read aloud: portrait, bigger text, spoken lines in boxes
+    if name != "DEMO_SCRIPT":   # read aloud: portrait, bigger text, spoken lines in boxes
         css = (CSS.replace("size:A4 landscape", "size:A4").replace("font-size:10.5pt", "font-size:12pt")
                + "blockquote{margin:6px 0 8px;padding:8px 14px;background:#E9FAFD;border-left:5px solid #3FD0E8;"
                  "border-radius:6px;font-size:13pt;line-height:1.45;page-break-inside:avoid}"
-                 "blockquote p{margin:2px 0} hr{border:0;border-top:1px solid #D5E3EA;margin:10px 0}")
+                 "blockquote p{margin:2px 0} hr{border:0;border-top:1px solid #D5E3EA;margin:10px 0}"
+               "p:has(> strong:only-child){break-after:avoid;page-break-after:avoid}")
     body = markdown.markdown(md, extensions=["tables"])
     html = (f"<html><head><meta charset='utf-8'><style>{css}</style></head><body>{body}"
             "<p class='foot'>DC Casablanca · soutenance du 25/11/2026 · vidéo : video/DC_Casablanca_demo_5min.mp4 "
@@ -57,7 +58,7 @@ def main():
         pg = b.new_page()
         pg.goto(tmp.as_uri())
         pg.evaluate("document.fonts.ready")
-        pg.pdf(path=str(out), format="A4", landscape=name != "DEMO_DISCOURS", print_background=True,
+        pg.pdf(path=str(out), format="A4", landscape=name == "DEMO_SCRIPT", print_background=True,
                margin={"top": "14mm", "bottom": "16mm", "left": "14mm", "right": "14mm"})
         b.close()
     tmp.unlink()
