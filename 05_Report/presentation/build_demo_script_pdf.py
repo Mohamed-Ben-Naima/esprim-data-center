@@ -1,7 +1,8 @@
 """DEMO_SCRIPT.md -> DEMO_SCRIPT.pdf (A4 landscape, deck colours), rendered by Edge.
 
-  python 05_Report/presentation/build_demo_script_pdf.py
+  python 05_Report/presentation/build_demo_script_pdf.py [DEMO_DISCOURS]     (default DEMO_SCRIPT)
 """
+import sys
 from pathlib import Path
 
 import markdown
@@ -36,20 +37,27 @@ tr{{page-break-inside:avoid}} h2{{page-break-after:avoid}}
 
 
 def main():
-    md = (HERE / "DEMO_SCRIPT.md").read_text(encoding="utf-8")
+    name = sys.argv[1] if len(sys.argv) > 1 else "DEMO_SCRIPT"
+    md = (HERE / f"{name}.md").read_text(encoding="utf-8")
+    css = CSS
+    if name == "DEMO_DISCOURS":   # read aloud: portrait, bigger text, spoken lines in boxes
+        css = (CSS.replace("size:A4 landscape", "size:A4").replace("font-size:10.5pt", "font-size:12pt")
+               + "blockquote{margin:6px 0 8px;padding:8px 14px;background:#E9FAFD;border-left:5px solid #3FD0E8;"
+                 "border-radius:6px;font-size:13pt;line-height:1.45;page-break-inside:avoid}"
+                 "blockquote p{margin:2px 0} hr{border:0;border-top:1px solid #D5E3EA;margin:10px 0}")
     body = markdown.markdown(md, extensions=["tables"])
-    html = (f"<html><head><meta charset='utf-8'><style>{CSS}</style></head><body>{body}"
+    html = (f"<html><head><meta charset='utf-8'><style>{css}</style></head><body>{body}"
             "<p class='foot'>DC Casablanca · soutenance du 25/11/2026 · vidéo : video/DC_Casablanca_demo_5min.mp4 "
             "(3:36) · version longue : video/DC_Casablanca_walkthrough.mp4 (9:30)</p></body></html>")
     tmp = HERE / "_demo_script.html"
     tmp.write_text(html, encoding="utf-8")
-    out = HERE / "DEMO_SCRIPT.pdf"
+    out = HERE / f"{name}.pdf"
     with sync_playwright() as p:
         b = p.chromium.launch(channel="msedge")
         pg = b.new_page()
         pg.goto(tmp.as_uri())
         pg.evaluate("document.fonts.ready")
-        pg.pdf(path=str(out), format="A4", landscape=True, print_background=True,
+        pg.pdf(path=str(out), format="A4", landscape=name != "DEMO_DISCOURS", print_background=True,
                margin={"top": "14mm", "bottom": "16mm", "left": "14mm", "right": "14mm"})
         b.close()
     tmp.unlink()
