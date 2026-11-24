@@ -430,7 +430,11 @@ def status():
                   + "  ".join(f"{i['key_']}={i['lastvalue']}" for i in shown))
             continue
         rows = [(("agent" if i["type"] == "1" else "snmp") + " " + i["ip"], AVAIL[i["available"]], i["error"])
-                for i in h["interfaces"]] or [("agent active", "unknown", "")]    # 6.0 has no availability for active-only hosts
+                for i in h["interfaces"]]
+        if not rows:    # 6.0 has no availability for active-only hosts: healthy when the agent sent data in the last 5 min
+            items = z.call("item.get", {"output": ["lastclock"], "hostids": h["hostid"]})
+            fresh = any(int(i["lastclock"]) > time.time() - 300 for i in items)
+            rows = [("agent active", "available" if fresh else "unknown", "" if fresh else "no data for 5 min")]
         for where, state, err in rows:
             if state != "available" and maint == "-":
                 bad += 1

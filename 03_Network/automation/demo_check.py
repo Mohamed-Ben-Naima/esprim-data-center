@@ -93,11 +93,13 @@ def main(argv):
     row("nodes", not off, f"{len(want) - len(off)}/{len(want)} started" + (f", stopped: {', '.join(off)}" if off else ""),
         "python automation/labctl.py start " + " ".join(off))
 
-    v = gns3vm.run("free -m | awk '/Mem:/{print $7} /Swap:/{print $3}'").split()
+    v = gns3vm.run("free -m | awk '/Mem:/{print $7} /Swap:/{print $3}'; cat /proc/sys/vm/min_free_kbytes").split()
+    cap = int(v[2]) // 1024 if len(v) > 2 else 0   # vm_cycle.py reserve (PLAN_06 D11): RAM kept back for the host
     host = f"{host_available_gb():.1f}"   # free + standby: "free" alone read ~0.3 GB on a healthy host (PLAN_06)
     avail, swap = int(v[0]), int(v[1])
-    ok = swap < 200 and avail >= 500 and float(host or 0) >= 0.5
-    row("resources", ok, f"GNS3 VM available {avail} MB, swap {swap} MB; host available {host} GB",
+    need = 300 if cap >= 1000 else 500       # with the reserve, "available" no longer counts it
+    ok = swap < 200 and avail >= need and float(host or 0) >= 0.5
+    row("resources", ok, f"GNS3 VM available {avail} MB" + (f" (+{cap} MB reserved for the host)" if cap >= 1000 else "") + f", swap {swap} MB; host available {host} GB",
         "flush swap: python automation/gns3vm.py --sudo \"swapoff -a && swapon -a\"; close other apps on the PC")
 
     try:

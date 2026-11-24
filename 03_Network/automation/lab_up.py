@@ -153,6 +153,9 @@ OFF["noc3"] = OFF["noc2"] | {"LEAF-B2"}
 
 OFF["nas2"] = OFF["nas"] | {"LEAF-B2"}   # SRV-BCK-01 is dual-homed: LEAF-B1 alone carries it
 
+# live: small hands-on demo (NOC + SOC + web + bastion), fits with a browser open on the host
+OFF["live"] = OFF["noc2"] - {"SRV-WEB-01", "SRV-BASTION"}
+
 
 if __name__ == "__main__":
     main()

@@ -33,6 +33,8 @@ strong{{color:#0B1015}}
 ul{{margin:4px 0 4px 18px;padding:0}} li{{margin:3px 0}}
 tr{{page-break-inside:avoid}} h2{{page-break-after:avoid}}
 .foot{{margin-top:14px;font-size:8.5pt;color:#6B7A88}}
+pre{{background:#0B1015;color:#E8F6FA;border-radius:6px;padding:8px 12px;margin:4px 0 8px;white-space:pre-wrap;word-break:break-all;page-break-inside:avoid}}
+pre code{{background:none;color:inherit;padding:0;font-size:9.5pt}}
 """
 
 
@@ -41,12 +43,12 @@ def main():
     md = (HERE / f"{name}.md").read_text(encoding="utf-8")
     css = CSS
     if name != "DEMO_SCRIPT":   # read aloud: portrait, bigger text, spoken lines in boxes
-        css = (CSS.replace("size:A4 landscape", "size:A4").replace("font-size:10.5pt", "font-size:12pt")
+        css = (CSS if name == "GUIDE_LABO_LIVE" else CSS.replace("size:A4 landscape", "size:A4").replace("font-size:10.5pt", "font-size:12pt")
                + "blockquote{margin:6px 0 8px;padding:8px 14px;background:#E9FAFD;border-left:5px solid #3FD0E8;"
                  "border-radius:6px;font-size:13pt;line-height:1.45;page-break-inside:avoid}"
                  "blockquote p{margin:2px 0} hr{border:0;border-top:1px solid #D5E3EA;margin:10px 0}"
                "p:has(> strong:only-child){break-after:avoid;page-break-after:avoid}")
-    body = markdown.markdown(md, extensions=["tables"])
+    body = markdown.markdown(md, extensions=["tables", "fenced_code"])
     html = (f"<html><head><meta charset='utf-8'><style>{css}</style></head><body>{body}"
             "<p class='foot'>DC Casablanca · soutenance du 25/11/2026 · vidéo : video/DC_Casablanca_demo_5min.mp4 "
             "(3:36) · version longue : video/DC_Casablanca_walkthrough.mp4 (9:30)</p></body></html>")
@@ -58,7 +60,7 @@ def main():
         pg = b.new_page()
         pg.goto(tmp.as_uri())
         pg.evaluate("document.fonts.ready")
-        pg.pdf(path=str(out), format="A4", landscape=name == "DEMO_SCRIPT", print_background=True,
+        pg.pdf(path=str(out), format="A4", landscape=name in ("DEMO_SCRIPT", "GUIDE_LABO_LIVE"), print_background=True,
                margin={"top": "14mm", "bottom": "16mm", "left": "14mm", "right": "14mm"})
         b.close()
     tmp.unlink()
