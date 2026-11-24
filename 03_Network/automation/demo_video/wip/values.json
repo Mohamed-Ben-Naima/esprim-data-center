@@ -1,0 +1,23 @@
+{
+ "hsrp_result": "CORE-A est actif sur 5 groupes, CORE-B sur les 3 autres : chaque cœur secourt l'autre",
+ "bgp_result": "les sessions vers ISP-A et ISP-B sont établies, un préfixe reçu de chacun ; la session interne vers EDGE-B attend, car EDGE-B est éteint dans ce profil",
+ "ospf_result": "2 voisins OSPF à l'état FULL, et l'agrégat Po1 est en service avec ses 2 liens",
+ "carp_result": "5 adresses virtuelles sont MASTER sur FW-A, FW-B les tient en secours",
+ "web_result": "le serveur répond « OK SRV-WEB-01 », à travers le NAT du pare-feu",
+ "acl_result": "la connexion échoue, et le compteur de la règle deny 210 du cœur passe de 0 à 1 correspondance",
+ "soc_result": "les trois événements sont retrouvés dans la visionneuse, chacun en moins de 0,5 seconde",
+ "lock_result": "les cinq premiers essais sont refusés, le sixième reçoit « trop de requêtes » : le compte est verrouillé, et le verrouillage est journalisé",
+ "t2": "2,5",
+ "demo_ok": "12",
+ "demo_total": "12",
+ "noc_ok": "11",
+ "noc_total": "11",
+ "zbx_result": "les 18 hôtes sont connus, tous ceux qui tournent sont disponibles, et les nœuds volontairement éteints sont en maintenance",
+ "grafana_result": "les chemins A et B alimentés, chargés à 47,1 %, 96 baies en état normal, 942 kilowatts, PUE 1,45, et une température d'entrée maximale de 24,5 degrés, dans la consigne de 20 à 25",
+ "leafa_result": "2 trunks actifs vers les cœurs, avec les VLAN 20 et 30 autorisés",
+ "vip_result": "SRV-CMP-01 porte la VIP, l'autre serveur attend en secours",
+ "t5": "4,5",
+ "cmp_ok": "6",
+ "cmp_total": "6",
+ "t5_result": "la VIP passe sur SRV-CMP-02 après une coupure de 4,5 secondes, puis revient sur SRV-CMP-01 quand il redémarre"
+}

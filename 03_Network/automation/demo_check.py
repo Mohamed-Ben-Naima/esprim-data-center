@@ -147,16 +147,26 @@ def main(argv):
                 + (f", ALARMS {worse}" if worse else ""))
     except ValueError:
         ok, info = False, f"no JSON (rc {res[1][0]})"
-    row("power", ok, info, "reset the simulator: curl http://10.70.0.12:8080/api/reset (from ADMIN-WS)")
+    if "BMS-SIM" in OFF[profile]:
+        print("--   power       : hors profil", flush=True)
+    else:
+        row("power", ok, info, "reset the simulator: curl http://10.70.0.12:8080/api/reset (from ADMIN-WS)")
 
-    rc, out = script("syslog_audit.py")
+    if "SYSLOG" in OFF[profile]:
+        print("--   syslog / viewer : hors profil (SYSLOG est en salle B)", flush=True)
+        rc, out = 0, []
+    else:
+        rc, out = script("syslog_audit.py")
     marks = [l for l in out if l.split()[2:3] == ["running"]]
     okn = sum(1 for l in marks if " OK " in l)
     driven = sum(1 for l in marks if " OK " in l or "MISSING" in l or "SSH rc" in l)
-    row("syslog", rc == 0, f"marker found for {okn}/{driven} running source(s) that can be driven",
+    if "SYSLOG" not in OFF[profile]:
+        row("syslog", rc == 0, f"marker found for {okn}/{driven} running source(s) that can be driven",
         "check the source's 'logging host' / rsyslog forward, then the MGMT rule T18-8 on the firewall")
 
     try:
+        if "SYSLOG" in OFF[profile]:
+            raise LookupError("hors profil")
         from log_viewer import Viewer
         vw = Viewer()
         n = len(vw.sources())
@@ -164,6 +174,8 @@ def main(argv):
         row("viewer", n > 0 and bool(last), f"login ok, {n} sources, last line {last[0][:19] if last else '-'}")
         loop = [l for l in vw.search("%SPANTREE-2-LOOPGUARD_BLOCK", "all.log", 50) if "logviewer" not in l
                 and l[:19] >= time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(time.time() - 900))]
+    except LookupError:
+        loop = []
     except Exception as e:  # noqa: BLE001
         loop = []
         row("viewer", False, f"{e}", "SYSLOG running? python automation/labctl.py start SYSLOG; wait 10 s")
@@ -181,6 +193,10 @@ def main(argv):
                        ("fw-a", "ifconfig | grep -c 'carp: MASTER'"), ("fw-b", "ifconfig | grep -c 'carp: BACKUP'")])
     bad = []
     for n, (rc, o) in zip(("CORE-A", "CORE-B"), pairs[:2]):
+        if n in OFF[profile]:
+            continue
+        if "CORE-B" in OFF[profile]:      # single core in this profile: no pair to check
+            continue
         if st.get(n) != "started":
             bad.append(f"{n} stopped")
         elif rc != 0 or not o.strip():
@@ -195,11 +211,15 @@ def main(argv):
             continue
         if o.strip() != "5":
             bad.append(f"{n} {o.strip() or 'no answer'} x {want} (expected 5)")
-    row("redundancy", not bad, ("HSRP pairs CORE-A/CORE-B complete, CARP FW-A 5 MASTER"
+    row("redundancy", not bad, (("HSRP pairs CORE-A/CORE-B complete" if "CORE-B" not in OFF[profile] else "CORE-A alone (CORE-B hors profil)")
+                                + ", CARP FW-A 5 MASTER"
                                 + (" / FW-B 5 BACKUP" if "FW-B" not in OFF[profile] else " (FW-B hors profil)")) if not bad
         else "; ".join(bad), "a node 'started' but silent is hung: python automation/labctl.py stop X, then start X, "
         "then python automation/cisco_heal.py X")
-    row("web", res[2][1].strip().startswith("OK"), f"https://10.50.0.11/health -> {res[2][1].strip()[:40] or res[2][0]}",
+    if "SRV-WEB-01" in OFF[profile]:
+        print("--   web         : hors profil", flush=True)
+    else:
+        row("web", res[2][1].strip().startswith("OK"), f"https://10.50.0.11/health -> {res[2][1].strip()[:40] or res[2][0]}",
         "python automation/labctl.py start SRV-WEB-01; FW-A DMZ interface up?")
     bad = sum(1 for ok, _ in ROWS if not ok)
     print(f"{len(ROWS) - bad}/{len(ROWS)} checks OK in {time.time() - t0:.0f} s" + ("" if not bad else " - see the -> lines"))

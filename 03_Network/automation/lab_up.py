@@ -141,5 +141,18 @@ def post(profile):
     print("next: python automation/demo_check.py --profile", profile, flush=True)
 
 
+# PLAN_06 D11 (24 Nov): minimal sets, each recorded after a GNS3 VM restart (VMware keeps touched guest memory)
+_ALL = {n for _, names in STAGES for n in names}
+_SW = {"NAT-A", "NAT-B", "SW-OUT", "SW-DMZ", "SW-MGMT"}
+OFF["noc2"] = _ALL - _SW - {"FW-A", "CORE-A", "LEAF-B1", "LEAF-B2", "ADMIN-WS", "SYSLOG", "BMS-SIM", "SRV-DCIM-01",
+                            "SRV-MON-01"}
+OFF["cmp2"] = _ALL - _SW - {"FW-A", "CORE-A", "LEAF-A1", "LEAF-A2", "ADMIN-WS", "SRV-WEB-01", "SRV-CMP-01",
+                            "SRV-CMP-02"}   # SYSLOG hangs off hall B: not reachable here
+
+OFF["noc3"] = OFF["noc2"] | {"LEAF-B2"}
+
+OFF["nas2"] = OFF["nas"] | {"LEAF-B2"}   # SRV-BCK-01 is dual-homed: LEAF-B1 alone carries it
+
+
 if __name__ == "__main__":
     main()

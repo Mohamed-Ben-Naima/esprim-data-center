@@ -166,3 +166,20 @@
 21:07:46 cisco_heal: OK   LEAF-A1  ssh ok, snmpv3 user ok
 21:07:54 after: SRV-CMP-01 bond: ens3 up ens4 up ens3 up 10.20.0.11/24 10.20.0.10/24
 21:07:54 after: SRV-CMP-02 bond: ens3 up ens4 up ens3 up 10.20.0.12/24
+
+# PLAN_02 FW.3 / PLAN_01 T2-T5 - fw_lan_failover.py --core SRV-CMP-01 --down 45 --up 90 - 2026-11-24 07:10
+07:07:41 stop SRV-CMP-01 for 45 s, probe SRV-WEB-01 -> https://10.20.0.10:8443/ every 0.5 s
+07:07:47 before: SRV-CMP-01 bond: ens3 up ens4 up ens3 up 10.20.0.11/24 10.20.0.10/24
+07:07:47 before: SRV-CMP-02 bond: ens3 up ens4 up ens3 up 10.20.0.12/24
+07:07:52 before: SRV-CMP-02: ens3 up ens4 up ens3 up 10.20.0.12/24
+07:08:07 SRV-CMP-01 stopped (GNS3 API)
+07:08:43 +30 s: SRV-CMP-02: ens3 up ens4 up ens3 up 10.20.0.12/24 10.20.0.10/24
+07:08:58 SRV-CMP-01 started again
+07:10:33 269 probes, 4 failed
+07:10:33 fault: 1 outage(s), answered by srv-cmp-01, srv-cmp-02
+07:10:33 fault: outage from +10.0 s to +14.5 s = 4.5 s
+07:10:33    samples: +7.201 +7.801 +8.301 +8.901 +9.401 +10.0X +11.5X +13.0X +14.502 +15.102 +15.602 +16.202
+07:10:33 fault: VIP served by srv-cmp-02 from +14.5 s (was srv-cmp-01)
+07:10:33 restart: no outage, answered by srv-cmp-01, srv-cmp-02
+07:10:33 restart: VIP served by srv-cmp-01 from +72.4 s (was srv-cmp-02)
+07:10:39 after: SRV-CMP-01: ens3 up ens4 up ens3 up 10.20.0.11/24 10.20.0.10/24

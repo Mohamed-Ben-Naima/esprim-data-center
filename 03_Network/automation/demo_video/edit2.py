@@ -35,7 +35,8 @@ ENC = ["-c:v", "libx264", "-preset", "veryfast", "-crf", "21", "-pix_fmt", "yuv4
        "-c:a", "aac", "-b:a", "160k", "-ar", "48000", "-ac", "2"]
 PAD_BEFORE, PAD_AFTER = 0.35, 0.9          # silence around each voice line (s)
 ACT_TITLES = {0: "Acte 0 · Démarrage à froid", 1: "Acte 1 · Réseau, sécurité, services, SOC",
-              "1b": "Acte 1b · Supervision NOC et pannes (prises du 23/11)",
+              "1b": "Acte 1b · Supervision NOC et SOC, en direct",
+              "1c": "Acte 1c · Profil démo complet (prises du 23/11)",
               2: "Acte 2 · Calcul", 3: "Acte 3 · Stockage et sauvegarde"}
 
 

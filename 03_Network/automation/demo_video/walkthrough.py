@@ -550,12 +550,12 @@ def node_g(g, name):
 def ui_action(g, name, action):
     """Right-click the node in the GNS3 Web UI -> Start/Stop; the API is the fallback (same effect)."""
     try:
-        el = node_g(g, name)
+        el = node_g(g, name).locator("image, svg, rect").first
         g.glide_to(el, pause=0.3)
         g.page.mouse.click(g.mx, g.my, button="right")
         g.wait(0.7)
         item = g.page.locator("button[role=menuitem], button.mat-menu-item").filter(
-            has_text=re.compile(rf"^\s*{action}\s*$")).first
+            has_text=re.compile(rf"{action}\s*$")).first
         item.wait_for(timeout=3000)
         g.glide_to(item, click=True, pause=0.8)
         return "ui"
@@ -587,7 +587,14 @@ def switch(b, rec, mark, done, target, ready, limit=900):
     for n in start:
         ui_action(g, n, "Start")
     end = time.time() + limit
-    while time.time() < end and not ready():
+    proxy = False
+    while time.time() < end:
+        if not proxy and "ADMIN-WS" in want and time.time() > end - limit + 60:
+            r = subprocess.run([PY, "automation/lab_proxy.py", "start"], cwd=NET, capture_output=True, text=True)
+            proxy = r.returncode == 0
+            print("   proxy:", (r.stdout.strip().splitlines() or ["?"])[-1], flush=True)
+        if proxy and ready():
+            break
         g.wait(10)
     g.mark(done)
     g.wait(4)
@@ -612,7 +619,10 @@ def post_noc():
 
 
 def a1b_switch(b):
-    switch(b, "A1b_switch", "a1b_switch", "a1b_done", "noc", ready_zabbix)
+    switch(b, "A1b_switch", "a1b_switch", "a1b_done", "noc2", ready_zabbix)
+    gns3vm.run("sudo swapoff -a && sudo swapon -a && sudo sysctl -q -w vm.swappiness=10 vm.min_free_kbytes=600000", sudo=True)
+    r = subprocess.run([PY, "automation/cisco_heal.py"], cwd=NET, capture_output=True, text=True)
+    print("   cisco_heal:", r.stdout.strip()[-300:], flush=True)
     post_noc()
 
 
@@ -629,7 +639,7 @@ def proof(b, rec, mark, profile):
 
 
 def a1b_proof(b):
-    m = proof(b, "A1b_proof", "a1b_proof", "noc")
+    m = proof(b, "A1b_proof", "a1b_proof", "noc2")
     if m:
         put_values(noc_ok=m[0], noc_total=m[1])
 
@@ -639,8 +649,9 @@ def ready_cmp():
 
 
 def a2_switch(b):
-    switch(b, "A2_switch", "a2_switch", "a2_done", "cmp", ready_cmp)
-    r = subprocess.run([PY, "automation/cisco_heal.py", "LEAF-A1", "LEAF-A2"], cwd=NET, capture_output=True, text=True)
+    switch(b, "A2_switch", "a2_switch", "a2_done", "cmp2", ready_cmp)
+    gns3vm.run("sudo swapoff -a && sudo swapon -a && sudo sysctl -q -w vm.swappiness=10 vm.min_free_kbytes=600000", sudo=True)
+    r = subprocess.run([PY, "automation/cisco_heal.py"], cwd=NET, capture_output=True, text=True)
     print("   cisco_heal:", r.stdout.strip()[-200:], flush=True)
 
 
@@ -678,7 +689,7 @@ def a2_t5(b):
 
 
 def a2_proof(b):
-    m = proof(b, "A2_proof", "a2_proof", "cmp")
+    m = proof(b, "A2_proof", "a2_proof", "cmp2")
     if m:
         put_values(cmp_ok=m[0], cmp_total=m[1])
 
@@ -735,13 +746,25 @@ def a1_acl(b):
     put_values(acl_result=("la connexion échoue, et le compteur de la règle deny 210 du cœur passe de "
                            f"{n0.group(1) if n0 else 0} à {n2.group(1)} correspondances") if ok and n2 else
                ("la connexion est refusée par l'ACL du cœur" if ok else "voir l'écran"))
-    (RAW2 / "A1_acl_output.txt").write_text("
----
-".join((o0, o1, o2)), encoding="utf-8")
+    (RAW2 / "A1_acl_output.txt").write_text("\n---\n".join((o0, o1, o2)), encoding="utf-8")
     sc.close()
 
 
-ACTS.update({"A1_acl": a1_acl, "A1b_switch": a1b_switch, "A1b_proof": a1b_proof, "A2_switch": a2_switch, "A2_net": a2_net,
+def a1_lock(b):
+    """Brute force on the log viewer from SRV-MON-01 (VLAN 60): locked after 6 attempts (needs SRV-MON-01)."""
+    sc = Rec(b, "A1_lock")
+    t = small_term(D.Term(sc, "SOC · force brute sur la visionneuse", "PC hôte → SRV-MON-01 → https://10.60.0.12/"))
+    sc.mark("a1_lock")
+    out = run_stream(t, "PS 03_Network>", "python automation/log_viewer.py lock", [PY, "automation/log_viewer.py", "lock"],
+                     keep=lambda l: not re.match(r"^\s*\S*\s*20\d\d-\d\d-\d\dT", l), pause=4)
+    (RAW2 / "A1_lock_output.txt").write_text(out, encoding="utf-8")
+    ok = "429" in out or re.search(r"locked", out, re.I)
+    put_values(lock_result="les cinq premiers essais sont refusés, le sixième reçoit « trop de requêtes » : le compte est "
+               "verrouillé, et le verrouillage est journalisé" if ok else "voir l'écran")
+    sc.close()
+
+
+ACTS.update({"A1_lock": a1_lock, "A1_acl": a1_acl, "A1b_switch": a1b_switch, "A1b_proof": a1b_proof, "A2_switch": a2_switch, "A2_net": a2_net,
              "A2_t5": a2_t5, "A2_proof": a2_proof, "A3_switch": a3_switch, "A3_nas": a3_nas})
 
 
