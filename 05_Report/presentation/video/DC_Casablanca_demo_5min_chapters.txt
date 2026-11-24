@@ -4,9 +4,11 @@
 0:57 CORE-A
 1:07 FW-A · pfSense
 1:21 SRV-WEB-01 · DMZ
-1:33 CORE-A · ACL
-1:46 SYSLOG · SOC
-2:06 Grafana · tableau NOC
-2:21 Panne T6 · GTB / DCIM
-2:35 Panne T2 · FW-A
-2:51 demo_check.py
+1:33 SYSLOG · SOC
+1:53 Grafana · tableau NOC
+2:13 Panne T6 · chemin A
+2:27 CORE-A · ACL
+2:47 Panne T2 · FW-A
+3:03 demo_check.py
+3:09 Panne T5 · SRV-CMP-01
+3:23 SRV-BCK-01 · TrueNAS

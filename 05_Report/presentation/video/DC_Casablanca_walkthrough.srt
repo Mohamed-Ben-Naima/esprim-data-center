@@ -206,166 +206,321 @@ répond « OK SRV-WEB-01 », à travers le NAT
 du pare-feu.
 
 44
-00:03:43,134 --> 00:03:49,046
-Le cloisonnement, maintenant. Test : depuis
-le serveur de supervision, VLAN 60, on
-
-45
-00:03:49,046 --> 00:03:52,219
-tente le SSH vers le
-poste d'administration.
-
-46
-00:03:52,219 --> 00:03:58,131
-Résultat : le code retour vaut 1, la
-connexion échoue, et les compteurs des règles
-
-47
-00:03:58,131 --> 00:04:00,150
-deny du cœur l'enregistrent.
-
-48
-00:04:01,401 --> 00:04:05,370
+00:03:43,134 --> 00:03:47,104
 Côté SOC, la journalisation
 est centralisée sur SYSLOG.
 
-49
-00:04:05,370 --> 00:04:11,072
+45
+00:03:47,104 --> 00:03:52,806
 Test : on provoque trois événements, un
 échec de connexion, une modification de
 
-50
-00:04:11,072 --> 00:04:13,959
+46
+00:03:52,806 --> 00:03:55,693
 configuration, et un flux bloqué en DMZ.
 
-51
-00:04:13,959 --> 00:04:19,950
+47
+00:03:55,693 --> 00:04:01,683
 Résultat : les trois événements sont
 retrouvés dans la visionneuse, chacun en moins
 
-52
-00:04:19,950 --> 00:04:21,033
+48
+00:04:01,683 --> 00:04:02,766
 de 0,5 seconde.
 
+49
+00:04:12,301 --> 00:04:18,914
+Acte supervision, filmé en direct. Pour
+tenir dans la mémoire du PC, la VM GNS3 a
+
+50
+00:04:18,914 --> 00:04:23,079
+été redémarrée et on ne
+démarre que ce qu'il faut :
+
+51
+00:04:23,079 --> 00:04:29,611
+FW-A, CORE-A, les deux commutateurs de
+la salle B, la GTB, le DCIM, SYSLOG et le
+
+52
+00:04:29,611 --> 00:04:34,918
+serveur de supervision. Clic droit,
+Start, directement dans GNS3.
+
 53
-00:04:30,567 --> 00:04:35,945
-Les scènes suivantes viennent de l'enregistrement
-en direct du 23 novembre au matin,
+00:04:34,918 --> 00:04:35,653
+Accéléré.
 
 54
-00:04:35,945 --> 00:04:41,067
-profil démo complet : la mémoire du PC
-ne permet pas de filmer la supervision en
+00:04:36,934 --> 00:04:41,630
+SRV-MON-01 porte la supervision :
+Zabbix, Grafana et la base MariaDB.
 
 55
-00:04:41,067 --> 00:04:45,804
-même temps que tout le reste. SRV-MON-01
-porte Zabbix, Grafana et MariaDB.
+00:04:41,630 --> 00:04:45,306
+Test : la liste des hôtes,
+puis les problèmes ouverts.
 
 56
-00:04:45,804 --> 00:04:48,365
-Test : les problèmes ouverts. Résultat :
+00:04:45,306 --> 00:04:51,023
+Résultat : les 18 hôtes sont connus, tous
+ceux qui tournent sont disponibles, et les
 
 57
-00:04:48,365 --> 00:04:53,423
-seulement deux avertissements, la marge
-de charge des chemins électriques ; les
+00:04:51,023 --> 00:04:54,358
+nœuds volontairement
+éteints sont en maintenance.
 
 58
-00:04:53,423 --> 00:04:55,599
-nœuds éteints sont en maintenance.
+00:04:55,634 --> 00:04:59,848
+Le tableau de bord du NOC
+dans Grafana, en direct :
 
 59
-00:04:56,831 --> 00:05:00,017
-Le tableau de bord du NOC dans Grafana :
-
-60
-00:05:00,017 --> 00:05:06,069
+00:04:59,848 --> 00:05:06,127
 les chemins A et B alimentés, chargés
 à 47,1 %, 96 baies en état normal, 942
 
+60
+00:05:06,127 --> 00:05:12,737
+kilowatts, PUE 1,45, et une température
+d'entrée maximale d'environ 24,5 degrés,
+
 61
-00:05:06,069 --> 00:05:12,678
-kilowatts de charge IT, PUE 1,45. La
-température de 29,5 degrés venait d'une dérive
+00:05:12,737 --> 00:05:15,050
+dans la consigne de 20 à 25.
 
 62
-00:05:12,678 --> 00:05:19,367
-du simulateur DCIM, corrigée depuis : la
-consigne de la salle est de 20 à 25 degrés.
+00:05:16,301 --> 00:05:21,846
+Le non-IT : la GTB surveille l'énergie et
+le refroidissement, le DCIM suit les 96
 
 63
-00:05:20,603 --> 00:05:24,607
-La GTB surveille l'énergie,
-le DCIM suit les 96 baies.
+00:05:21,846 --> 00:05:27,323
+baies. Résultat : les deux chemins
+électriques sont alimentés, et les baies sont
 
 64
-00:05:24,607 --> 00:05:30,391
+00:05:27,323 --> 00:05:28,829
+toutes en état normal.
+
+65
+00:05:30,067 --> 00:05:35,499
 Panne provoquée T6 : on coupe tout le
 chemin électrique A, réseau, onduleur et
 
-65
-00:05:30,391 --> 00:05:36,619
+66
+00:05:35,499 --> 00:05:41,348
 groupe. Résultat : l'alarme se lève, les
 baies passent en mode dégradé, et le chemin
 
-66
-00:05:36,619 --> 00:05:39,659
+67
+00:05:41,348 --> 00:05:44,203
 B porte seul la charge. Puis on rétablit.
 
-67
-00:05:40,937 --> 00:05:47,124
-Deuxième panne, T2 : on arrête le
-pare-feu maître FW-A, pendant qu'une sonde
-
 68
-00:05:47,124 --> 00:05:50,543
-interroge la GTB toutes les demi-secondes.
+00:05:49,101 --> 00:05:55,459
+Le cloisonnement. Test : depuis le serveur
+de supervision, VLAN 60, on tente le SSH
 
 69
-00:05:50,543 --> 00:05:54,532
-Résultat : FW-B devient
-maître, coupure mesurée :
+00:05:55,459 --> 00:05:58,676
+vers le poste d'administration. Résultat :
 
 70
-00:05:54,532 --> 00:05:57,545
-2,5 secondes. FW-A redémarre ensuite.
+00:05:58,676 --> 00:06:04,728
+la connexion échoue, et le compteur de
+la règle deny 210 du cœur passe de 0 à 1
 
 71
-00:06:02,070 --> 00:06:08,195
-Pour finir, la preuve automatique :
-demo_check rejoue douze contrôles, des nœuds
+00:06:04,728 --> 00:06:05,877
+correspondance.
 
 72
-00:06:08,195 --> 00:06:11,870
-jusqu'à la redondance et
-au site web. Résultat :
+00:06:15,901 --> 00:06:20,855
+Et contre la force brute : six mauvais mots
+de passe sur la visionneuse de journaux.
 
 73
-00:06:11,870 --> 00:06:14,550
-12 sur 12. L'attente est accélérée.
+00:06:20,855 --> 00:06:25,396
+Résultat : les cinq premiers essais sont
+refusés, le sixième reçoit « trop de
 
 74
-00:06:15,803 --> 00:06:19,065
+00:06:25,396 --> 00:06:29,701
+requêtes » : le compte est verrouillé,
+et le verrouillage est journalisé.
+
+75
+00:06:30,967 --> 00:06:37,222
+La preuve automatique de ce profil : 11
+contrôles sur 11, dont Zabbix, Grafana et la
+
+76
+00:06:37,222 --> 00:06:37,519
+GTB.
+
+77
+00:06:41,401 --> 00:06:46,917
+Pour la bascule du pare-feu, il faut les
+deux pare-feux et tout le profil démo :
+
+78
+00:06:46,917 --> 00:06:49,951
+cette prise vient du
+23 novembre. Panne T2 :
+
+79
+00:06:49,951 --> 00:06:55,675
+on arrête le pare-feu maître FW-A, pendant
+qu'une sonde interroge la GTB toutes les
+
+80
+00:06:55,675 --> 00:07:00,088
+demi-secondes. Résultat : FW-B
+devient maître, coupure mesurée :
+
+81
+00:07:00,088 --> 00:07:00,985
+2,5 secondes.
+
+82
+00:07:02,534 --> 00:07:07,050
+Et la preuve sur le profil
+démo complet, le même matin :
+
+83
+00:07:07,050 --> 00:07:10,679
+demo_check rejoue douze
+contrôles. Résultat :
+
+84
+00:07:10,679 --> 00:07:13,502
+12 sur 12. L'attente est accélérée.
+
+85
+00:07:17,367 --> 00:07:24,083
+Deuxième acte, le calcul, en direct.
+Nouveau redémarrage de la VM GNS3, puis dans
+
+86
+00:07:24,083 --> 00:07:30,467
+GNS3 : FW-A, CORE-A, les deux commutateurs
+de la salle A, le site web et deux
+
+87
+00:07:30,467 --> 00:07:32,871
+serveurs de calcul. Accéléré.
+
+88
+00:07:34,134 --> 00:07:39,936
+LEAF-A1 dessert la salle A ; chaque serveur
+y est relié deux fois, à LEAF-A1 et à
+
+89
+00:07:39,936 --> 00:07:42,802
+LEAF-A2. Test : les trunks et les ports.
+
+90
+00:07:42,802 --> 00:07:48,246
+Résultat : 2 trunks actifs vers les
+cœurs, avec les VLAN 20 et 30 autorisés.
+
+91
+00:07:49,501 --> 00:07:55,833
+SRV-CMP-01 et 02 portent le service
+applicatif, sur une adresse virtuelle gérée par
+
+92
+00:07:55,833 --> 00:07:59,495
+keepalived. Test : qui
+porte la VIP ? Résultat :
+
+93
+00:07:59,495 --> 00:08:03,997
+SRV-CMP-01 porte la VIP, l'autre
+serveur attend en secours.
+
+94
+00:08:05,267 --> 00:08:11,203
+Panne T5 : on arrête SRV-CMP-01 pendant
+que le site web interroge le service toutes
+
+95
+00:08:11,203 --> 00:08:17,067
+les demi-secondes. Résultat : la VIP passe
+sur SRV-CMP-02 après une coupure de 4,5
+
+96
+00:08:17,067 --> 00:08:21,143
+secondes, puis revient sur
+SRV-CMP-01 quand il redémarre.
+
+97
+00:08:21,143 --> 00:08:22,859
+L'attente est accélérée.
+
+98
+00:08:24,134 --> 00:08:28,598
+La preuve automatique de ce
+profil : 6 contrôles sur 6.
+
+99
+00:08:32,467 --> 00:08:35,987
+SRV-BCK-01 est le NAS
+de sauvegarde, TrueNAS.
+
+100
+00:08:35,987 --> 00:08:41,854
+Il tire lui-même les sauvegardes : les
+serveurs n'ont aucun accès vers lui.
+
+101
+00:08:41,854 --> 00:08:45,530
+Test : l'état du pool et
+des tâches. Résultat :
+
+102
+00:08:45,530 --> 00:08:51,475
+le pool tank est ONLINE, en miroir, 21
+snapshots ZFS, et 3 tâches de tirage.
+
+103
+00:08:52,734 --> 00:08:56,180
+Une sauvegarde ne vaut
+que si on sait la relire.
+
+104
+00:08:56,180 --> 00:09:01,205
+Test : le même fichier, dans la copie
+et dans le dernier snapshot ZFS.
+
+105
+00:09:01,205 --> 00:09:07,164
+Résultat : le fichier recopié depuis le
+snapshot ZFS a exactement la même empreinte
+
+106
+00:09:07,164 --> 00:09:09,318
+SHA-256 que la copie en ligne.
+
+107
+00:09:16,767 --> 00:09:20,003
 Tout ce que vous avez vu
 est réel et rejouable :
 
-75
-00:06:19,065 --> 00:06:24,297
+108
+00:09:20,003 --> 00:09:25,194
 les configurations sont générées depuis
 l'inventaire, et la campagne complète
 
-76
-00:06:24,297 --> 00:06:27,491
+109
+00:09:25,194 --> 00:09:28,363
 verify_lab compte 59
 tests réussis, zéro échec.
 
-77
-00:06:27,491 --> 00:06:31,500
-Le calcul et le NAS TrueNAS
-sont présentés dans le rapport.
-
-78
-00:06:31,500 --> 00:06:31,907
+110
+00:09:28,363 --> 00:09:28,767
 Merci.
 

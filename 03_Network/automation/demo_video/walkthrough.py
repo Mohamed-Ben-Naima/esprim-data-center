@@ -720,15 +720,18 @@ def a3_nas(b):
                            f"snapshots ZFS, et {len(rs)} tâches de tirage" if pool else "voir l'écran"))
     t.p.evaluate("clearT()")
     sc.mark("a3_restore")
-    # restore proof, read-only: the same file in the live copy and in the newest ZFS snapshot -> same SHA-256
-    path = rs[0][1] if rs else "/mnt/tank/backups/SRV-MON-01"
-    cmd = (f"f=$(find {path} -type f -name hostname | head -1); s=$(ls -1t {path.split('/backups')[0]}/backups/.zfs/snapshot 2>/dev/null | head -1); "
-           f"echo fichier: $f; echo snapshot: $s; sha256sum \"$f\"; "
-           f"sha256sum {path.split('/backups')[0]}/backups/.zfs/snapshot/$s/${{f#{path.split('/backups')[0]}/backups/}}")
-    o = ssh_show(t, [("srv-bck-01", "truenas_admin@srv-bck-01:~$", cmd)], pause=4)[0]
-    sums = re.findall(r"^([0-9a-f]{64})\s", o, re.M)
-    put_values(restore_result=("le fichier relu depuis le snapshot a exactement la même empreinte SHA-256"
-                               if len(sums) == 2 and sums[0] == sums[1] else "voir l'écran"))
+    # restore proof: a file copied back out of a ZFS snapshot of the pulled copies -> same SHA-256 as the live copy
+    base = "/mnt/tank/backups/servers"
+    snap = "hourly-2026-11-10_11-00"
+    o = ssh_show(t, [("srv-bck-01", "truenas_admin@srv-bck-01:~$", f"ls {base}/.zfs/snapshot"),
+                     ("srv-bck-01", "truenas_admin@srv-bck-01:~$", f"sha256sum {base}/SRV-MON-01/etc/hostname"),
+                     ("srv-bck-01", "truenas_admin@srv-bck-01:~$",
+                      f"cp {base}/.zfs/snapshot/{snap}/SRV-MON-01/etc/hostname /tmp/restaure && sha256sum /tmp/restaure")],
+                 pause=3)
+    sums = [re.findall(r"^([0-9a-f]{64})\s", x, re.M) for x in o[1:]]
+    same = all(sums) and sums[0][0] == sums[1][0]
+    put_values(restore_result=("le fichier recopié depuis le snapshot ZFS a exactement la même empreinte SHA-256 que la "
+                               "copie en ligne" if same else "voir l'écran"))
     sc.close()
 
 

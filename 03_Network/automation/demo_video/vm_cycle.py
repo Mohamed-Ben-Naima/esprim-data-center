@@ -31,14 +31,19 @@ def main(argv):
     cap = int(argv[argv.index("--cap") + 1]) if "--cap" in argv else 1500000
     prof = argv[argv.index("--start") + 1] if "--start" in argv else None
     api = labctl.Gns3()
+    running = VMX.lower() in subprocess.run([VMRUN, "list"], capture_output=True, text=True).stdout.lower()
     p = api.project()
-    if any(n["status"] == "started" and n["node_type"] in ("qemu", "docker") for n in api.nodes(api.open(p))):
+    if running and any(n["status"] == "started" and n["node_type"] in ("qemu", "docker") for n in api.nodes(api.open(p))):
         subprocess.run([sys.executable, str(NET / "automation" / "lab_down.py")], cwd=NET)
     pid = p["project_id"]
-    api.req("POST", f"/projects/{pid}/close")
+    try:
+        api.req("POST", f"/projects/{pid}/close")
+    except RuntimeError:
+        pass
     say("project closed")
-    subprocess.run([VMRUN, "-T", "ws", "stop", VMX, "soft"], check=True)
-    say("VM stopped")
+    if running:
+        subprocess.run([VMRUN, "-T", "ws", "stop", VMX, "soft"], check=True)
+        say("VM stopped")
     time.sleep(5)
     subprocess.run([VMRUN, "-T", "ws", "start", VMX, "nogui"], check=True)
     end = time.time() + 300

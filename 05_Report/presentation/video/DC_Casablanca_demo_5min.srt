@@ -83,69 +83,101 @@ Résultat : le serveur répond « OK
 SRV-WEB-01 », à travers le NAT du pare-feu.
 
 19
-00:01:33,993 --> 00:01:38,711
-Et le cloisonnement : la supervision
-tente le SSH vers l'administration.
-
-20
-00:01:38,711 --> 00:01:44,086
-Résultat : le code retour vaut 1, la
-connexion échoue, et les compteurs des règles
-
-21
-00:01:44,086 --> 00:01:45,921
-deny du cœur l'enregistrent.
-
-22
-00:01:47,193 --> 00:01:52,377
+00:01:33,993 --> 00:01:39,177
 Côté SOC, journalisation centralisée.
 On provoque trois événements.
 
-23
-00:01:52,377 --> 00:01:58,800
+20
+00:01:39,177 --> 00:01:45,600
 Résultat : les trois événements sont
 retrouvés dans la visionneuse, chacun en moins
 
-24
-00:01:58,800 --> 00:01:59,961
+21
+00:01:45,600 --> 00:01:46,761
 de 0,5 seconde.
 
+22
+00:01:53,926 --> 00:02:01,040
+Le NOC dans Grafana, en direct : les chemins
+A et B alimentés, chargés à 47,1 %, 96
+
+23
+00:02:01,040 --> 00:02:08,155
+baies en état normal, 942 kilowatts, PUE
+1,45, et une température d'entrée maximale
+
+24
+00:02:08,155 --> 00:02:12,526
+d'environ 24,5 degrés, dans
+la consigne de 20 à 25.
+
 25
-00:02:07,126 --> 00:02:14,659
-Le NOC dans Grafana : chemins A et B
-alimentés, 96 baies, 942 kilowatts, PUE 1,45.
+00:02:13,793 --> 00:02:17,977
+Panne T6 : tout le chemin
+électrique A est coupé.
 
 26
-00:02:14,659 --> 00:02:20,998
-Les 29,5 degrés venaient d'une dérive
-du simulateur, corrigée depuis.
+00:02:17,977 --> 00:02:23,016
+Alarme, baies en dégradé, le
+chemin B porte seul la charge.
 
 27
-00:02:22,226 --> 00:02:25,816
-Panne T6 : on coupe tout
-le chemin électrique A.
+00:02:23,016 --> 00:02:24,041
+Puis retour.
 
 28
-00:02:25,816 --> 00:02:31,874
-L'alarme se lève, les baies passent en
-dégradé, le chemin B porte seul la charge.
+00:02:28,059 --> 00:02:32,989
+Le cloisonnement : la supervision
+tente le SSH vers l'administration.
 
 29
-00:02:31,874 --> 00:02:33,146
-Puis on rétablit.
+00:02:32,989 --> 00:02:38,991
+Résultat : la connexion échoue, et le
+compteur de la règle deny 210 du cœur passe de
 
 30
-00:02:35,659 --> 00:02:41,080
+00:02:38,991 --> 00:02:40,491
+0 à 1 correspondance.
+
+31
+00:02:48,159 --> 00:02:53,580
 Panne T2 : arrêt du pare-feu maître,
 sonde toutes les demi-secondes.
 
-31
-00:02:41,080 --> 00:02:44,827
+32
+00:02:53,580 --> 00:02:57,327
 FW-B prend le relais :
 coupure de 2,5 secondes.
 
-32
-00:02:51,526 --> 00:02:56,182
+33
+00:03:04,026 --> 00:03:08,682
 La preuve automatique,
 demo_check : 12 contrôles sur 12.
+
+34
+00:03:09,959 --> 00:03:13,199
+Panne T5 : SRV-CMP-01 arrêté sous sonde.
+
+35
+00:03:13,199 --> 00:03:19,517
+Résultat : la VIP passe sur SRV-CMP-02
+après une coupure de 4,5 secondes, puis
+
+36
+00:03:19,517 --> 00:03:22,919
+revient sur SRV-CMP-01 quand il redémarre.
+
+37
+00:03:24,193 --> 00:03:27,878
+Le NAS TrueNAS tire
+lui-même les sauvegardes.
+
+38
+00:03:27,878 --> 00:03:34,347
+Résultat : le pool tank est ONLINE, en
+miroir, 21 snapshots ZFS, et 3 tâches de
+
+39
+00:03:34,347 --> 00:03:34,921
+tirage.
 

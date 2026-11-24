@@ -15,7 +15,7 @@ Version longue v0 (61 slides, annexes pour les questions) : https://claude.ai/ar
 
 Slide 10 : la capture Grafana affiche 29,5 °C – le dire (dérive du simulateur DCIM, corrigée et déployée le 23/11, D28).
 
-**Démo (slide 21) : vidéo v2 `video/DC_Casablanca_demo_5min.mp4` (2:57, voix off + sous-titres), à commenter avec `DEMO_SCRIPT.md` (4 pauses ★). Version longue 6:33 : `video/DC_Casablanca_walkthrough.mp4`.**
+**Démo (slide 21) : vidéo v2 `video/DC_Casablanca_demo_5min.mp4` (3:36, voix off + sous-titres), à commenter avec `DEMO_SCRIPT.md` (4 pauses ★). Version longue 9:30 : `video/DC_Casablanca_walkthrough.mp4`.**
 
 Les sections ci-dessous gardent la numérotation de la v0.
 

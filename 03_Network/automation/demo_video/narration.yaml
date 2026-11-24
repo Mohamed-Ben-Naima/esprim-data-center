@@ -6,8 +6,6 @@
 # Numbers come from 05_Report/presentation/facts.json or from the live output of the run.
 # jury: true -> in the ≤ 5:00 cut, with `jury_vo` when a shorter text is needed. speed: timelapse factor.
 
-# PLAN_06 D9: acts 2/3 and the noc re-take were not recorded (host RAM, recorder reaped at 22:58);
-# act 1b uses the live takes of 23 Nov 02:30-03:40 (video/raw, PLAN_05) and screenshot 46.
 segments:
 - id: intro
   act: 0
@@ -52,7 +50,8 @@ segments:
   node: EDGE-A
   role: routeur de bordure, eBGP vers les opérateurs
   test: show ip bgp summary
-  vo: "Depuis le poste d'administration, on passe en SSH. EDGE-A est le routeur de bordure, AS 65100 : il échange les routes en eBGP avec les deux opérateurs, AS 64500 et AS 64501. Test : show ip bgp summary. Résultat : {bgp_result}."
+  vo: 'Depuis le poste d''administration, on passe en SSH. EDGE-A est le routeur de bordure, AS 65100 : il échange les routes
+    en eBGP avec les deux opérateurs, AS 64500 et AS 64501. Test : show ip bgp summary. Résultat : {bgp_result}.'
 - id: a1_ospf
   act: 1
   rec: A1_net
@@ -113,18 +112,6 @@ segments:
     HTTP vers l''adresse publique. Résultat : {web_result}.'
   jury: true
   jury_vo: 'Le site public en DMZ, testé depuis Internet. Résultat : {web_result}.'
-- id: a1_acl
-  act: 1
-  rec: S5_services
-  mark: acl
-  node: CORE-A · ACL
-  role: cloisonnement des VLAN
-  test: supervision → administration en SSH
-  vo: 'Le cloisonnement, maintenant. Test : depuis le serveur de supervision, VLAN 60, on tente le SSH vers le poste d''administration.
-    Résultat : {acl_result}.'
-  jury: true
-  jury_vo: 'Et le cloisonnement : la supervision tente le SSH vers l''administration. Résultat : {acl_result}.'
-  src: raw
 - id: a1_soc
   act: 1
   rec: A1_soc
@@ -137,75 +124,186 @@ segments:
   jury: true
   jury_vo: 'Côté SOC, journalisation centralisée. On provoque trois événements. Résultat : {soc_result}.'
   until: a1_lock
+- id: a1b_switch
+  act: 1b
+  rec: A1b_switch
+  mark: a1b_switch
+  node: GNS3 · profil supervision
+  role: démarrage d'un profil réduit, depuis GNS3
+  test: clic droit › Start sur chaque nœud
+  vo: 'Acte supervision, filmé en direct. Pour tenir dans la mémoire du PC, la VM GNS3 a été redémarrée et on ne démarre
+    que ce qu''il faut : FW-A, CORE-A, les deux commutateurs de la salle B, la GTB, le DCIM, SYSLOG et le serveur de supervision.
+    Clic droit, Start, directement dans GNS3. Accéléré.'
+  until: a1b_done
+  speed: auto
 - id: a1_zabbix
   act: 1b
-  rec: S6_noc
-  mark: zabbix hosts
+  rec: A1_noc
+  mark: a1_zabbix
   node: SRV-MON-01 · Zabbix
-  role: supervision, Zabbix + Grafana + MariaDB
-  test: hôtes et problèmes
-  vo: 'Les scènes suivantes viennent de l''enregistrement en direct du 23 novembre au matin, profil démo complet : la mémoire
-    du PC ne permet pas de filmer la supervision en même temps que tout le reste. SRV-MON-01 porte Zabbix, Grafana et MariaDB.
-    Test : les problèmes ouverts. Résultat : seulement deux avertissements, la marge de charge des chemins électriques ;
-    les nœuds éteints sont en maintenance.'
-  src: raw
-  jury: false
+  role: 'supervision : Zabbix + Grafana + MariaDB'
+  test: hôtes, puis problèmes
+  vo: 'SRV-MON-01 porte la supervision : Zabbix, Grafana et la base MariaDB. Test : la liste des hôtes, puis les problèmes
+    ouverts. Résultat : {zbx_result}.'
 - id: a1_grafana
   act: 1b
+  rec: A1_grafana
+  mark: a1_grafana
   node: Grafana · tableau NOC
   role: vue d'ensemble du NOC
-  test: énergie A/B, 96 baies, températures
-  vo: 'Le tableau de bord du NOC dans Grafana : les chemins A et B alimentés, chargés à 47,1 %, 96 baies en état normal,
-    942 kilowatts de charge IT, PUE 1,45. La température de 29,5 degrés venait d''une dérive du simulateur DCIM, corrigée
-    depuis : la consigne de la salle est de 20 à 25 degrés.'
+  test: énergie A/B, baies, PUE, températures
+  vo: 'Le tableau de bord du NOC dans Grafana, en direct : {grafana_result}.'
   jury: true
-  jury_vo: 'Le NOC dans Grafana : chemins A et B alimentés, 96 baies, 942 kilowatts, PUE 1,45. Les 29,5 degrés venaient
-    d''une dérive du simulateur, corrigée depuis.'
-  still: 03_Network/screenshots/46_grafana_noc.png
+  jury_vo: 'Le NOC dans Grafana, en direct : {grafana_result}.'
+- id: a1_bms
+  act: 1b
+  rec: A1_grafana
+  mark: a1_bms
+  node: BMS-SIM · SRV-DCIM-01
+  role: gestion technique du bâtiment (GTB) et DCIM
+  test: pages en direct
+  vo: 'Le non-IT : la GTB surveille l''énergie et le refroidissement, le DCIM suit les 96 baies. Résultat : les deux chemins
+    électriques sont alimentés, et les baies sont toutes en état normal.'
 - id: a1_t6
   act: 1b
-  rec: S8_T6_power
-  mark: bms nominal
-  node: Panne T6 · GTB / DCIM
-  role: GTB + DCIM, redondance électrique 2 chemins
+  rec: A1_t6
+  mark: a1_t6
+  node: Panne T6 · chemin A
+  role: redondance électrique 2 chemins
   test: coupure réseau + onduleur + groupe du chemin A
-  vo: 'La GTB surveille l''énergie, le DCIM suit les 96 baies. Panne provoquée T6 : on coupe tout le chemin électrique A,
-    réseau, onduleur et groupe. Résultat : l''alarme se lève, les baies passent en mode dégradé, et le chemin B porte seul
-    la charge. Puis on rétablit.'
+  vo: 'Panne provoquée T6 : on coupe tout le chemin électrique A, réseau, onduleur et groupe. Résultat : l''alarme se lève,
+    les baies passent en mode dégradé, et le chemin B porte seul la charge. Puis on rétablit.'
   jury: true
-  src: raw
-  jury_vo: 'Panne T6 : on coupe tout le chemin électrique A. L''alarme se lève, les baies passent en dégradé, le chemin
-    B porte seul la charge. Puis on rétablit.'
-- id: a1_t2
+  jury_vo: 'Panne T6 : tout le chemin électrique A est coupé. Alarme, baies en dégradé, le chemin B porte seul la charge.
+    Puis retour.'
+- id: a1_acl
   act: 1b
+  rec: A1_acl
+  mark: a1_acl
+  node: CORE-A · ACL
+  role: cloisonnement des VLAN
+  test: supervision (VLAN 60) → administration en SSH
+  vo: 'Le cloisonnement. Test : depuis le serveur de supervision, VLAN 60, on tente le SSH vers le poste d''administration.
+    Résultat : {acl_result}.'
+  jury: true
+  jury_vo: 'Le cloisonnement : la supervision tente le SSH vers l''administration. Résultat : {acl_result}.'
+- id: a1_lock
+  act: 1b
+  rec: A1_lock
+  mark: a1_lock
+  node: SYSLOG · visionneuse
+  role: protection contre la force brute
+  test: 6 mauvais mots de passe depuis SRV-MON-01
+  vo: 'Et contre la force brute : six mauvais mots de passe sur la visionneuse de journaux. Résultat : {lock_result}.'
+- id: a1b_proof
+  act: 1b
+  rec: A1b_proof
+  mark: a1b_proof
+  node: demo_check.py
+  role: preuve automatique
+  test: demo_check.py --profile noc2
+  vo: 'La preuve automatique de ce profil : {noc_ok} contrôles sur {noc_total}, dont Zabbix, Grafana et la GTB.'
+  speed: auto
+- id: a1_t2
+  act: 1c
   rec: S8_T2_fw
   mark: probe start
   node: Panne T2 · FW-A
   role: bascule du pare-feu maître
   test: arrêt de FW-A, sonde toutes les 0,5 s
-  vo: 'Deuxième panne, T2 : on arrête le pare-feu maître FW-A, pendant qu''une sonde interroge la GTB toutes les demi-secondes.
-    Résultat : FW-B devient maître, coupure mesurée : {t2} secondes. FW-A redémarre ensuite.'
+  vo: 'Pour la bascule du pare-feu, il faut les deux pare-feux et tout le profil démo : cette prise vient du 23 novembre.
+    Panne T2 : on arrête le pare-feu maître FW-A, pendant qu''une sonde interroge la GTB toutes les demi-secondes. Résultat
+    : FW-B devient maître, coupure mesurée : {t2} secondes.'
   jury: true
   jury_vo: 'Panne T2 : arrêt du pare-feu maître, sonde toutes les demi-secondes. FW-B prend le relais : coupure de {t2}
     secondes.'
   src: raw
 - id: a1_proof
-  act: 1b
+  act: 1c
   rec: S9_proof
   mark: demo_check
   node: demo_check.py
   role: preuve automatique
   test: demo_check.py · 12 contrôles
   speed: auto
-  vo: 'Pour finir, la preuve automatique : demo_check rejoue douze contrôles, des nœuds jusqu''à la redondance et au site
-    web. Résultat : {demo_ok} sur {demo_total}. L''attente est accélérée.'
+  vo: 'Et la preuve sur le profil démo complet, le même matin : demo_check rejoue douze contrôles. Résultat : {demo_ok}
+    sur {demo_total}. L''attente est accélérée.'
   jury: true
   jury_vo: 'La preuve automatique, demo_check : {demo_ok} contrôles sur {demo_total}.'
   src: raw
+- id: a2_switch
+  act: 2
+  rec: A2_switch
+  mark: a2_switch
+  node: GNS3 · profil calcul
+  role: changement de profil
+  test: 'clic droit › Start : salle A'
+  vo: 'Deuxième acte, le calcul, en direct. Nouveau redémarrage de la VM GNS3, puis dans GNS3 : FW-A, CORE-A, les deux commutateurs
+    de la salle A, le site web et deux serveurs de calcul. Accéléré.'
+  until: a2_done
+  speed: auto
+- id: a2_leafa
+  act: 2
+  rec: A2_net
+  mark: a2_leafa
+  node: LEAF-A1
+  role: commutateur d'accès, salle A
+  test: show interfaces trunk · show interfaces status
+  vo: 'LEAF-A1 dessert la salle A ; chaque serveur y est relié deux fois, à LEAF-A1 et à LEAF-A2. Test : les trunks et les
+    ports. Résultat : {leafa_result}.'
+- id: a2_cmp
+  act: 2
+  rec: A2_net
+  mark: a2_cmp
+  node: SRV-CMP-01 / 02
+  role: 'calcul : service applicatif sur VIP keepalived'
+  test: qui porte la VIP 10.20.0.10 ?
+  vo: 'SRV-CMP-01 et 02 portent le service applicatif, sur une adresse virtuelle gérée par keepalived. Test : qui porte
+    la VIP ? Résultat : {vip_result}.'
+- id: a2_t5
+  act: 2
+  rec: A2_t5
+  mark: a2_t5
+  node: Panne T5 · SRV-CMP-01
+  role: haute disponibilité applicative
+  test: arrêt de SRV-CMP-01, sonde toutes les 0,5 s depuis la DMZ
+  vo: 'Panne T5 : on arrête SRV-CMP-01 pendant que le site web interroge le service toutes les demi-secondes. Résultat :
+    {t5_result}. L''attente est accélérée.'
+  jury: true
+  jury_vo: 'Panne T5 : SRV-CMP-01 arrêté sous sonde. Résultat : {t5_result}.'
+  speed: auto
+- id: a2_proof
+  act: 2
+  rec: A2_proof
+  mark: a2_proof
+  node: demo_check.py
+  role: preuve automatique
+  test: demo_check.py --profile cmp2
+  vo: 'La preuve automatique de ce profil : {cmp_ok} contrôles sur {cmp_total}.'
+  speed: auto
+- id: a3_nas
+  act: 3
+  rec: A3_nas
+  mark: a3_nas
+  node: SRV-BCK-01 · TrueNAS
+  role: NAS de sauvegarde en mode pull
+  test: 'truenas_setup.py status : pool, snapshots, tâches'
+  vo: 'SRV-BCK-01 est le NAS de sauvegarde, TrueNAS. Il tire lui-même les sauvegardes : les serveurs n''ont aucun accès
+    vers lui. Test : l''état du pool et des tâches. Résultat : {nas_result}.'
+  jury: true
+  jury_vo: 'Le NAS TrueNAS tire lui-même les sauvegardes. Résultat : {nas_result}.'
+- id: a3_restore
+  act: 3
+  rec: A3_nas
+  mark: a3_restore
+  node: SRV-BCK-01 · restauration
+  role: preuve de restauration
+  test: fichier relu depuis le snapshot ZFS
+  vo: 'Une sauvegarde ne vaut que si on sait la relire. Test : le même fichier, dans la copie et dans le dernier snapshot
+    ZFS. Résultat : {restore_result}.'
 - id: fin
   act: 9
   card: end
   vo: 'Tout ce que vous avez vu est réel et rejouable : les configurations sont générées depuis l''inventaire, et la campagne
-    complète verify_lab compte 59 tests réussis, zéro échec. Le calcul et le NAS TrueNAS sont présentés dans le rapport.
-    Merci.'
+    complète verify_lab compte 59 tests réussis, zéro échec. Merci.'
   jury: false

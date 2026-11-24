@@ -5,19 +5,19 @@
 <div style="flex:1;background:#E9FAFD;border-radius:18px;padding:28px 32px;display:flex;align-items:center">
 <table class="t tl" style="color:#22424A;font-size:28px">
 <tr><th style="width:13%;color:#0B1015">Temps</th><th style="width:24%;color:#0B1015">Étape</th><th style="color:#0B1015">Ce que le jury voit</th></tr>
-<tr><td>0:00</td><td>Démarrage</td><td>GNS3 à froid : les nœuds passent au vert</td></tr>
-<tr><td>0:29</td><td>Réseau</td><td>console GNS3 sur CORE-A : HSRP, OSPF</td></tr>
-<tr><td>1:07</td><td>Pare-feu</td><td>CARP : 5 VIP MASTER sur FW-A</td></tr>
-<tr><td>1:21</td><td>Services</td><td>site web via NAT, flux refusé par l’ACL</td></tr>
-<tr><td>1:46</td><td>SOC, NOC</td><td>journaux centralisés, tableau Grafana</td></tr>
-<tr><td>2:21</td><td>Pannes</td><td>T6 chemin A coupé ; T2 FW-A arrêté : 2,5 s</td></tr>
-<tr><td>2:51</td><td>Preuve</td><td>demo_check.py : 12 contrôles sur 12</td></tr>
+<tr><td>0:00</td><td>Démarrage</td><td>GNS3 à froid, console sur CORE-A : HSRP</td></tr>
+<tr><td>1:07</td><td>Pare-feu</td><td>CARP 5 MASTER, site web via NAT</td></tr>
+<tr><td>1:33</td><td>SOC, NOC</td><td>journaux centralisés, Grafana 24,5 °C</td></tr>
+<tr><td>2:13</td><td>Panne T6</td><td>chemin A coupé, chemin B seul ; ACL</td></tr>
+<tr><td>2:47</td><td>Panne T2</td><td>FW-A arrêté : 2,5 s ; demo_check 12/12</td></tr>
+<tr><td>3:09</td><td>Panne T5</td><td>SRV-CMP-01 arrêté : VIP reprise en 4,5 s</td></tr>
+<tr><td>3:23</td><td>NAS</td><td>TrueNAS en miroir, snapshots, restauration</td></tr>
 </table>
 </div>
 <div class="col" style="width:520px;justify-content:center">
 <img class="pic" src="/_blob/56cbec129d803d590fa4cc75f1d38c71" alt="Vignette de la vidéo : DC Casablanca, visite en direct, rendu 3D du campus en fond" style="width:520px;height:292px">
-<p style="font-size:26px;line-height:1.4;color:#0B1015"><b>Plan B :</b> vidéo 1080p de 3 min, voix off et sous-titres, enregistrée sur ce labo, sur le PC et sur clé USB.</p>
+<p style="font-size:26px;line-height:1.4;color:#0B1015"><b>Plan B :</b> vidéo 1080p de 3 min 36, voix off et sous-titres, enregistrée sur ce labo, sur le PC et sur clé USB.</p>
 </div>
 </div>
-<aside>Place à la réalisation pratique. La vidéo dure trois minutes, avec voix off et sous-titres : pour chaque machine, son rôle, le test, le résultat. Je la commente en direct et je la mets en pause aux étapes clés : la console GNS3 sur CORE-A, l’état CARP, la bascule T2 de 2,5 secondes, et la preuve douze sur douze. Il reste ainsi deux minutes pour les questions du jury pendant la démonstration.</aside>
+<aside>Place à la réalisation pratique. La vidéo dure trois minutes trente-six, avec voix off et sous-titres : pour chaque machine, son rôle, le test, le résultat. Je la commente en direct et je la mets en pause aux étapes clés : la console GNS3 sur CORE-A, l’état CARP, Grafana, la bascule T2 de 2,5 secondes et la bascule T5 de 4,5 secondes. Il reste un peu plus d’une minute pour les questions du jury.</aside>
 </section>

@@ -9,11 +9,25 @@
 2:50 FW-A · pfSense
 3:09 FW-A · pfSense
 3:23 SRV-WEB-01 · DMZ
-3:42 CORE-A · ACL
-4:01 SYSLOG · SOC
-4:27 Acte 1b · Supervision NOC et pannes (prises du 23/11)
-4:30 SRV-MON-01 · Zabbix
-4:56 Grafana · tableau NOC
-5:20 Panne T6 · GTB / DCIM
-5:40 Panne T2 · FW-A
-6:01 demo_check.py
+3:42 SYSLOG · SOC
+4:09 Acte 1b · Supervision NOC et SOC, en direct
+4:11 GNS3 · profil supervision
+4:36 SRV-MON-01 · Zabbix
+4:55 Grafana · tableau NOC
+5:15 BMS-SIM · SRV-DCIM-01
+5:29 Panne T6 · chemin A
+5:48 CORE-A · ACL
+6:15 SYSLOG · visionneuse
+6:30 demo_check.py
+6:38 Acte 1c · Profil démo complet (prises du 23/11)
+6:41 Panne T2 · FW-A
+7:02 demo_check.py
+7:14 Acte 2 · Calcul
+7:17 GNS3 · profil calcul
+7:33 LEAF-A1
+7:49 SRV-CMP-01 / 02
+8:04 Panne T5 · SRV-CMP-01
+8:23 demo_check.py
+8:29 Acte 3 · Stockage et sauvegarde
+8:32 SRV-BCK-01 · TrueNAS
+8:52 SRV-BCK-01 · restauration
