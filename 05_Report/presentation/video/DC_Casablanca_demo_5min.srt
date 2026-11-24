@@ -1,0 +1,151 @@
+1
+00:00:00,350 --> 00:00:04,446
+Data Center Casablanca,
+norme TIA-942 Rated-3.
+
+2
+00:00:04,446 --> 00:00:11,837
+Voici le laboratoire GNS3 en direct : pour
+chaque machine, son rôle, le test, et le
+
+3
+00:00:11,837 --> 00:00:12,638
+résultat.
+
+4
+00:00:13,826 --> 00:00:20,781
+Démarrage à froid, accéléré. Le script
+démarre les nœuds par étages, WAN, sécurité,
+
+5
+00:00:20,781 --> 00:00:24,720
+cœur, et mesure la mémoire
+après chaque étage :
+
+6
+00:00:24,720 --> 00:00:28,826
+le PC n'a que 15,7 Go.
+Les nœuds passent au vert.
+
+7
+00:00:30,093 --> 00:00:35,811
+Console GNS3 sur CORE-A, le cœur de réseau
+qui partage les passerelles des VLAN avec
+
+8
+00:00:35,811 --> 00:00:38,874
+CORE-B. Test : show
+standby brief. Résultat :
+
+9
+00:00:38,874 --> 00:00:42,755
+CORE-A est actif sur 5 groupes,
+CORE-B sur les 3 autres :
+
+10
+00:00:42,755 --> 00:00:44,661
+chaque cœur secourt l'autre.
+
+11
+00:00:58,026 --> 00:01:00,888
+Entre les cœurs : OSPF et un agrégat LACP.
+
+12
+00:01:00,888 --> 00:01:06,545
+Résultat : 2 voisins OSPF à l'état FULL,
+et l'agrégat Po1 est en service avec ses 2
+
+13
+00:01:06,545 --> 00:01:06,954
+liens.
+
+14
+00:01:08,226 --> 00:01:11,759
+Pare-feux pfSense en haute disponibilité.
+
+15
+00:01:11,759 --> 00:01:15,034
+Test : l'état CARP de FW-A. Résultat :
+
+16
+00:01:15,034 --> 00:01:21,066
+5 adresses virtuelles sont MASTER
+sur FW-A, FW-B les tient en secours.
+
+17
+00:01:22,326 --> 00:01:26,159
+Le site public en DMZ,
+testé depuis Internet.
+
+18
+00:01:26,159 --> 00:01:32,718
+Résultat : le serveur répond « OK
+SRV-WEB-01 », à travers le NAT du pare-feu.
+
+19
+00:01:33,993 --> 00:01:38,711
+Et le cloisonnement : la supervision
+tente le SSH vers l'administration.
+
+20
+00:01:38,711 --> 00:01:44,086
+Résultat : le code retour vaut 1, la
+connexion échoue, et les compteurs des règles
+
+21
+00:01:44,086 --> 00:01:45,921
+deny du cœur l'enregistrent.
+
+22
+00:01:47,193 --> 00:01:52,377
+Côté SOC, journalisation centralisée.
+On provoque trois événements.
+
+23
+00:01:52,377 --> 00:01:58,800
+Résultat : les trois événements sont
+retrouvés dans la visionneuse, chacun en moins
+
+24
+00:01:58,800 --> 00:01:59,961
+de 0,5 seconde.
+
+25
+00:02:07,126 --> 00:02:14,659
+Le NOC dans Grafana : chemins A et B
+alimentés, 96 baies, 942 kilowatts, PUE 1,45.
+
+26
+00:02:14,659 --> 00:02:20,998
+Les 29,5 degrés venaient d'une dérive
+du simulateur, corrigée depuis.
+
+27
+00:02:22,226 --> 00:02:25,816
+Panne T6 : on coupe tout
+le chemin électrique A.
+
+28
+00:02:25,816 --> 00:02:31,874
+L'alarme se lève, les baies passent en
+dégradé, le chemin B porte seul la charge.
+
+29
+00:02:31,874 --> 00:02:33,146
+Puis on rétablit.
+
+30
+00:02:35,659 --> 00:02:41,080
+Panne T2 : arrêt du pare-feu maître,
+sonde toutes les demi-secondes.
+
+31
+00:02:41,080 --> 00:02:44,827
+FW-B prend le relais :
+coupure de 2,5 secondes.
+
+32
+00:02:51,526 --> 00:02:56,182
+La preuve automatique,
+demo_check : 12 contrôles sur 12.
+

@@ -6,339 +6,206 @@
 # Numbers come from 05_Report/presentation/facts.json or from the live output of the run.
 # jury: true -> in the ≤ 5:00 cut, with `jury_vo` when a shorter text is needed. speed: timelapse factor.
 
+# PLAN_06 D9: acts 2/3 and the noc re-take were not recorded (host RAM, recorder reaped at 22:58);
+# act 1b uses the live takes of 23 Nov 02:30-03:40 (video/raw, PLAN_05) and screenshot 46.
 segments:
-  - id: intro
-    act: 0
-    card: title
-    vo: >-
-      Data Center Casablanca, conçu selon la norme TIA-942, niveau Rated-3. Ce qui suit est le laboratoire GNS3 en
-      direct. Pour chaque machine ouverte : son rôle, ce que l'on vérifie, et le résultat à l'écran.
-    jury: true
-    jury_vo: >-
-      Data Center Casablanca, norme TIA-942 Rated-3. Voici le laboratoire GNS3 en direct : pour chaque machine, son
-      rôle, le test, et le résultat.
-
-  - id: a0_boot
-    act: 0
-    rec: A0
-    mark: a0_intro
-    until: a0_done
-    speed: auto
-    node: GNS3 · 32 nœuds, 62 liens
-    role: démarrage à froid, par étages
-    test: lab_up.py --profile demo
-    vo: >-
-      Démarrage à froid. À gauche, l'interface web de GNS3 : 32 nœuds et 62 liens, tout est rouge. À droite, le
-      script lab_up démarre les nœuds par étages : la bordure WAN, puis la sécurité, puis le cœur de réseau. Après
-      chaque étage, il mesure la mémoire, car le PC n'a que 15,7 Go : c'est pour cela que la supervision aura son
-      propre acte. Les nœuds passent au vert. La vidéo est accélérée.
-    jury: true
-    jury_vo: >-
-      Démarrage à froid, accéléré. Le script démarre les nœuds par étages, WAN, sécurité, cœur, et mesure la mémoire
-      après chaque étage : le PC n'a que 15,7 Go. Les nœuds passent au vert.
-
-  - id: a1_console
-    act: 1
-    rec: A1_console
-    mark: a1_console
-    node: CORE-A
-    role: cœur de réseau L3, passerelle des VLAN avec CORE-B
-    test: console GNS3 · show standby brief
-    vo: >-
-      On ouvre une machine directement dans GNS3 : clic droit sur CORE-A, console. CORE-A est le cœur de réseau : il
-      route les VLAN et partage les passerelles avec CORE-B grâce à HSRP. Test : show standby brief. Résultat :
-      {hsrp_result}.
-    jury: true
-    jury_vo: >-
-      Console GNS3 sur CORE-A, le cœur de réseau qui partage les passerelles des VLAN avec CORE-B. Test : show standby
-      brief. Résultat : {hsrp_result}.
-
-  - id: a1_edge
-    act: 1
-    rec: A1_net
-    mark: a1_edge
-    node: EDGE-A
-    role: routeur de bordure, eBGP vers les opérateurs
-    test: show ip bgp summary
-    vo: >-
-      Depuis le poste d'administration, on passe en SSH. EDGE-A est le routeur de bordure : il échange les routes
-      avec l'opérateur ISP-A en eBGP, AS 65100 vers AS 64500. Test : show ip bgp summary. Résultat : {bgp_result}.
-
-  - id: a1_ospf
-    act: 1
-    rec: A1_net
-    mark: a1_ospf
-    node: CORE-A
-    role: routage entre les deux cœurs
-    test: show ip ospf neighbor · show etherchannel summary
-    vo: >-
-      Entre les deux cœurs : OSPF pour le routage, et un agrégat LACP de deux liens. Test : les voisins OSPF et
-      l'etherchannel. Résultat : {ospf_result}.
-    jury: true
-    jury_vo: >-
-      Entre les cœurs : OSPF et un agrégat LACP. Résultat : {ospf_result}.
-
-  - id: a1_leaf
-    act: 1
-    rec: A1_net
-    mark: a1_leaf
-    node: LEAF-B1
-    role: commutateur d'accès top-of-rack, salle B
-    test: show interfaces trunk · show spanning-tree summary
-    vo: >-
-      LEAF-B1 est le commutateur d'accès de la salle B, relié aux deux cœurs. Test : les trunks et le spanning-tree.
-      Résultat : les VLAN autorisés sont actifs sur les deux liens montants, et aucun port n'est bloqué par erreur.
-
-  - id: a1_adminws
-    act: 1
-    rec: A1_net
-    mark: a1_adminws
-    node: ADMIN-WS
-    role: seul poste d'administration, VLAN 90
-    test: show users sur CORE-A
-    vo: >-
-      Toutes ces commandes partent d'ADMIN-WS, le seul poste autorisé à administrer, dans le VLAN 90. Test : qui est
-      connecté sur CORE-A ? Résultat : la session vient bien de 10.90.0.12, et chaque session est journalisée.
-
-  - id: a1_fw_carp
-    act: 1
-    rec: A1_fw
-    mark: a1_fw_carp
-    node: FW-A · pfSense
-    role: pare-feu haute disponibilité, CARP + pfsync
-    test: Status › CARP
-    vo: >-
-      FW-A et FW-B sont la paire de pare-feux pfSense : filtrage entre zones, NAT, et haute disponibilité par CARP.
-      Test : la page d'état CARP de FW-A. Résultat : {carp_result}.
-    jury: true
-    jury_vo: >-
-      Pare-feux pfSense en haute disponibilité. Test : l'état CARP de FW-A. Résultat : {carp_result}.
-
-  - id: a1_fw_rules
-    act: 1
-    rec: A1_fw
-    mark: a1_fw_rules
-    node: FW-A · pfSense
-    role: politique par zone, refus par défaut
-    test: règles ADMIN, NAT, journal
-    vo: >-
-      Les règles sont écrites par zone, avec un refus par défaut. Le NAT publie le site web sur l'adresse 192.0.2.80.
-      Et le journal montre en direct les flux bloqués.
-
-  - id: a1_web
-    act: 1
-    rec: A1_svc
-    mark: a1_web
-    node: SRV-WEB-01 · DMZ
-    role: site web public dans la DMZ
-    test: requête HTTP depuis Internet (ISP-A)
-    vo: >-
-      SRV-WEB-01 est le site public, placé en DMZ. Test : depuis l'opérateur ISP-A, donc depuis Internet, une requête
-      HTTP vers l'adresse publique. Résultat : {web_result}.
-    jury: true
-    jury_vo: >-
-      Le site public en DMZ, testé depuis Internet. Résultat : {web_result}.
-
-  - id: a1_acl
-    act: 1
-    rec: A1_svc
-    mark: a1_acl
-    node: CORE-A · ACL
-    role: cloisonnement des VLAN
-    test: supervision → administration en SSH
-    vo: >-
-      Le cloisonnement, maintenant. Test : depuis le serveur de supervision, VLAN 60, on tente le SSH vers le poste
-      d'administration. Résultat : {acl_result}.
-    jury: true
-    jury_vo: >-
-      Et le cloisonnement : la supervision tente le SSH vers l'administration. Résultat : {acl_result}.
-
-  - id: a1_zabbix
-    act: 1
-    rec: A1_noc
-    mark: a1_zabbix
-    node: SRV-MON-01 · Zabbix
-    role: supervision, Zabbix + Grafana + MariaDB
-    test: hôtes et problèmes
-    vo: >-
-      SRV-MON-01 porte la supervision : Zabbix, Grafana et sa base MariaDB. Test : la liste des hôtes, puis les
-      problèmes. Résultat : les équipements du profil remontent, et les nœuds volontairement éteints sont en
-      maintenance : il ne reste que les vrais problèmes.
-
-  - id: a1_grafana
-    act: 1
-    rec: A1_grafana
-    mark: a1_grafana
-    node: Grafana · tableau NOC
-    role: vue d'ensemble du NOC
-    test: énergie A/B, 96 baies, températures
-    vo: >-
-      Le tableau de bord du NOC dans Grafana : l'énergie des chemins A et B, l'état des 96 baies, le PUE, et les
-      températures de la salle, dans la plage de consigne de 20 à 25 degrés.
-    jury: true
-    jury_vo: >-
-      Le NOC dans Grafana : énergie A et B, 96 baies, PUE, températures entre 20 et 25 degrés.
-
-  - id: a1_soc
-    act: 1
-    rec: A1_soc
-    mark: a1_soc
-    node: SYSLOG · SOC
-    role: journalisation centralisée
-    test: log_viewer.py demo · lock
-    vo: >-
-      Côté SOC, la journalisation est centralisée sur SYSLOG. Test : on provoque trois événements, un échec de
-      connexion, une modification de configuration, et un flux bloqué en DMZ. Résultat : {soc_result}.
-    jury: true
-    jury_vo: >-
-      Côté SOC, journalisation centralisée. On provoque trois événements. Résultat : {soc_result}.
-
-  - id: a1_lock
-    act: 1
-    rec: A1_soc
-    mark: a1_lock
-    node: SYSLOG · visionneuse
-    role: protection contre la force brute
-    test: 6 mauvais mots de passe
-    vo: >-
-      Et contre la force brute : six mauvais mots de passe sur la visionneuse de journaux. Résultat : {lock_result}.
-
-  - id: a1_bms
-    act: 1
-    rec: A1_bms
-    mark: a1_bms
-    node: BMS-SIM · SRV-DCIM-01
-    role: gestion technique du bâtiment et DCIM
-    test: pages en direct
-    vo: >-
-      Le non-IT : la GTB surveille l'énergie et le refroidissement, le DCIM suit les 96 baies. Résultat : les deux
-      chemins électriques sont actifs, et les températures d'entrée restent entre 20 et 25 degrés.
-
-  - id: a1_t6
-    act: 1
-    rec: A1_t6
-    mark: a1_t6
-    node: Panne T6 · chemin A
-    role: redondance électrique 2 chemins
-    test: coupure réseau + onduleur + groupe du chemin A
-    vo: >-
-      Première panne provoquée, T6 : on coupe tout le chemin électrique A, réseau, onduleur et groupe. Résultat :
-      l'alarme se lève, les baies passent en mode dégradé, et le chemin B porte seul la charge. Puis on rétablit.
-    jury: true
-
-  - id: a1_t2
-    act: 1
-    rec: A1_t2
-    mark: a1_t2
-    node: Panne T2 · FW-A
-    role: bascule du pare-feu maître
-    test: arrêt de FW-A, sonde toutes les 0,5 s
-    vo: >-
-      Deuxième panne, T2 : on arrête le pare-feu maître FW-A, pendant qu'une sonde interroge la GTB toutes les
-      demi-secondes. Résultat : FW-B devient maître, coupure mesurée : {t2} secondes. FW-A redémarre ensuite.
-    jury: true
-    jury_vo: >-
-      Panne T2 : arrêt du pare-feu maître, sonde toutes les demi-secondes. FW-B prend le relais : coupure de {t2}
-      secondes.
-
-  - id: a1_proof
-    act: 1
-    rec: A1_proof
-    mark: a1_proof
-    node: demo_check.py
-    role: preuve automatique
-    test: 12 contrôles du laboratoire
-    speed: auto
-    vo: >-
-      Pour finir l'acte, la preuve automatique : demo_check rejoue les contrôles du laboratoire. Résultat : {demo_ok}
-      sur {demo_total}.
-    jury: true
-
-  - id: a2_switch
-    act: 2
-    rec: A2_switch
-    mark: a2_switch
-    until: a2_done
-    speed: auto
-    node: GNS3 · profil compute
-    role: changement de profil
-    test: arrêt de la bordure, démarrage de la salle A
-    vo: >-
-      Deuxième acte, le calcul. La mémoire ne permet pas tout en même temps : on arrête la bordure, puis on démarre
-      la salle A, ses deux commutateurs et deux serveurs de calcul. Accéléré.
-
-  - id: a2_leafa
-    act: 2
-    rec: A2_net
-    mark: a2_leafa
-    node: LEAF-A1
-    role: commutateur d'accès, salle A
-    test: show interfaces trunk · show etherchannel summary
-    vo: >-
-      LEAF-A1 dessert la salle A. Chaque serveur y est relié deux fois, à LEAF-A1 et à LEAF-A2. Test : les trunks vers
-      les cœurs. Résultat : {leafa_result}.
-
-  - id: a2_cmp
-    act: 2
-    rec: A2_net
-    mark: a2_cmp
-    node: SRV-CMP-01 / 02
-    role: calcul, service applicatif sur VIP keepalived
-    test: qui porte la VIP 10.20.0.10 ?
-    vo: >-
-      SRV-CMP-01 et 02 portent le service applicatif, sur une adresse virtuelle gérée par keepalived. Test : qui porte
-      la VIP ? Résultat : {vip_result}.
-
-  - id: a2_t5
-    act: 2
-    rec: A2_t5
-    mark: a2_t5
-    node: Panne T5 · SRV-CMP-01
-    role: haute disponibilité applicative
-    test: arrêt de SRV-CMP-01 sous sonde
-    vo: >-
-      Panne T5 : on arrête SRV-CMP-01 pendant qu'un client interroge le service. Résultat : la VIP passe sur
-      SRV-CMP-02, coupure mesurée : {t5} secondes.
-
-  - id: a3_switch
-    act: 3
-    rec: A3_switch
-    mark: a3_switch
-    until: a3_done
-    speed: auto
-    node: GNS3 · profil nas
-    role: changement de profil
-    test: la salle A s'arrête, le NAS démarre
-    vo: >-
-      Troisième acte, la sauvegarde. On libère la mémoire du calcul et on démarre le NAS TrueNAS, qui à lui seul
-      demande 3 Go. Accéléré.
-
-  - id: a3_nas
-    act: 3
-    rec: A3_nas
-    mark: a3_nas
-    node: SRV-BCK-01 · TrueNAS
-    role: NAS de sauvegarde en mode pull
-    test: pool, snapshots, tâches de tirage
-    vo: >-
-      SRV-BCK-01 est le NAS de sauvegarde, TrueNAS. Il tire lui-même les sauvegardes : les serveurs n'ont aucun accès
-      vers lui. Test : l'état du pool et des tâches. Résultat : {nas_result}.
-
-  - id: a3_restore
-    act: 3
-    rec: A3_nas
-    mark: a3_restore
-    node: SRV-BCK-01 · restauration
-    role: preuve de restauration
-    test: fichier supprimé puis restauré
-    vo: >-
-      Une sauvegarde ne vaut que si on sait restaurer. Test : un fichier est supprimé, puis restauré depuis le NAS.
-      Résultat : {restore_result}.
-
-  - id: fin
-    act: 9
-    card: end
-    vo: >-
-      Tout ce que vous avez vu est réel et rejouable : les configurations sont générées depuis l'inventaire, et la
-      campagne complète verify_lab compte 59 tests réussis, zéro échec. Merci.
-    jury: false
+- id: intro
+  act: 0
+  card: title
+  vo: 'Data Center Casablanca, conçu selon la norme TIA-942, niveau Rated-3. Ce qui suit est le laboratoire GNS3 en direct.
+    Pour chaque machine ouverte : son rôle, ce que l''on vérifie, et le résultat à l''écran.'
+  jury: true
+  jury_vo: 'Data Center Casablanca, norme TIA-942 Rated-3. Voici le laboratoire GNS3 en direct : pour chaque machine, son
+    rôle, le test, et le résultat.'
+- id: a0_boot
+  act: 0
+  rec: A0
+  mark: a0_intro
+  until: a0_done
+  speed: auto
+  node: GNS3 · 32 nœuds, 62 liens
+  role: démarrage à froid, par étages
+  test: lab_up.py --profile demo
+  vo: 'Démarrage à froid. À gauche, l''interface web de GNS3 : 32 nœuds et 62 liens, tout est rouge. À droite, le script
+    lab_up démarre les nœuds par étages : la bordure WAN, puis la sécurité, puis le cœur de réseau. Après chaque étage,
+    il mesure la mémoire, car le PC n''a que 15,7 Go : c''est pour cela que la supervision aura son propre acte. Les nœuds
+    passent au vert. La vidéo est accélérée.'
+  jury: true
+  jury_vo: 'Démarrage à froid, accéléré. Le script démarre les nœuds par étages, WAN, sécurité, cœur, et mesure la mémoire
+    après chaque étage : le PC n''a que 15,7 Go. Les nœuds passent au vert.'
+- id: a1_console
+  act: 1
+  rec: A1_console
+  mark: a1_console
+  node: CORE-A
+  role: cœur de réseau L3, passerelle des VLAN avec CORE-B
+  test: console GNS3 · show standby brief
+  vo: 'On ouvre une machine directement dans GNS3 : clic droit sur CORE-A, console. CORE-A est le cœur de réseau : il route
+    les VLAN et partage les passerelles avec CORE-B grâce à HSRP. Test : show standby brief. Résultat : {hsrp_result}.'
+  jury: true
+  jury_vo: 'Console GNS3 sur CORE-A, le cœur de réseau qui partage les passerelles des VLAN avec CORE-B. Test : show standby
+    brief. Résultat : {hsrp_result}.'
+- id: a1_edge
+  act: 1
+  rec: A1_net
+  mark: a1_edge
+  node: EDGE-A
+  role: routeur de bordure, eBGP vers les opérateurs
+  test: show ip bgp summary
+  vo: "Depuis le poste d'administration, on passe en SSH. EDGE-A est le routeur de bordure, AS 65100 : il échange les routes en eBGP avec les deux opérateurs, AS 64500 et AS 64501. Test : show ip bgp summary. Résultat : {bgp_result}."
+- id: a1_ospf
+  act: 1
+  rec: A1_net
+  mark: a1_ospf
+  node: CORE-A
+  role: routage entre les deux cœurs
+  test: show ip ospf neighbor · show etherchannel summary
+  vo: 'Entre les deux cœurs : OSPF pour le routage, et un agrégat LACP de deux liens. Test : les voisins OSPF et l''etherchannel.
+    Résultat : {ospf_result}.'
+  jury: true
+  jury_vo: 'Entre les cœurs : OSPF et un agrégat LACP. Résultat : {ospf_result}.'
+- id: a1_leaf
+  act: 1
+  rec: A1_net
+  mark: a1_leaf
+  node: LEAF-B1
+  role: commutateur d'accès top-of-rack, salle B
+  test: show interfaces trunk · show spanning-tree summary
+  vo: 'LEAF-B1 est le commutateur d''accès de la salle B, relié aux deux cœurs. Test : les trunks et le spanning-tree. Résultat
+    : les VLAN autorisés sont actifs sur les deux liens montants, et aucun port n''est bloqué par erreur.'
+- id: a1_adminws
+  act: 1
+  rec: A1_net
+  mark: a1_adminws
+  node: ADMIN-WS
+  role: seul poste d'administration, VLAN 90
+  test: show users sur CORE-A
+  vo: 'Toutes ces commandes partent d''ADMIN-WS, le seul poste autorisé à administrer, dans le VLAN 90. Test : qui est connecté
+    sur CORE-A ? Résultat : la session vient bien de 10.90.0.12, et chaque session est journalisée.'
+- id: a1_fw_carp
+  act: 1
+  rec: A1_fw
+  mark: a1_fw_carp
+  node: FW-A · pfSense
+  role: pare-feu haute disponibilité, CARP + pfsync
+  test: Status › CARP
+  vo: 'FW-A et FW-B sont la paire de pare-feux pfSense : filtrage entre zones, NAT, et haute disponibilité par CARP. Test
+    : la page d''état CARP de FW-A. Résultat : {carp_result}.'
+  jury: true
+  jury_vo: 'Pare-feux pfSense en haute disponibilité. Test : l''état CARP de FW-A. Résultat : {carp_result}.'
+- id: a1_fw_rules
+  act: 1
+  rec: A1_fw
+  mark: a1_fw_rules
+  node: FW-A · pfSense
+  role: politique par zone, refus par défaut
+  test: règles ADMIN, NAT, journal
+  vo: Les règles sont écrites par zone, avec un refus par défaut. Le NAT publie le site web sur l'adresse 192.0.2.80. Et
+    le journal montre en direct les flux bloqués.
+- id: a1_web
+  act: 1
+  rec: A1_svc
+  mark: a1_web
+  node: SRV-WEB-01 · DMZ
+  role: site web public dans la DMZ
+  test: requête HTTP depuis Internet (ISP-A)
+  vo: 'SRV-WEB-01 est le site public, placé en DMZ. Test : depuis l''opérateur ISP-A, donc depuis Internet, une requête
+    HTTP vers l''adresse publique. Résultat : {web_result}.'
+  jury: true
+  jury_vo: 'Le site public en DMZ, testé depuis Internet. Résultat : {web_result}.'
+- id: a1_acl
+  act: 1
+  rec: S5_services
+  mark: acl
+  node: CORE-A · ACL
+  role: cloisonnement des VLAN
+  test: supervision → administration en SSH
+  vo: 'Le cloisonnement, maintenant. Test : depuis le serveur de supervision, VLAN 60, on tente le SSH vers le poste d''administration.
+    Résultat : {acl_result}.'
+  jury: true
+  jury_vo: 'Et le cloisonnement : la supervision tente le SSH vers l''administration. Résultat : {acl_result}.'
+  src: raw
+- id: a1_soc
+  act: 1
+  rec: A1_soc
+  mark: a1_soc
+  node: SYSLOG · SOC
+  role: journalisation centralisée
+  test: log_viewer.py demo · lock
+  vo: 'Côté SOC, la journalisation est centralisée sur SYSLOG. Test : on provoque trois événements, un échec de connexion,
+    une modification de configuration, et un flux bloqué en DMZ. Résultat : {soc_result}.'
+  jury: true
+  jury_vo: 'Côté SOC, journalisation centralisée. On provoque trois événements. Résultat : {soc_result}.'
+  until: a1_lock
+- id: a1_zabbix
+  act: 1b
+  rec: S6_noc
+  mark: zabbix hosts
+  node: SRV-MON-01 · Zabbix
+  role: supervision, Zabbix + Grafana + MariaDB
+  test: hôtes et problèmes
+  vo: 'Les scènes suivantes viennent de l''enregistrement en direct du 23 novembre au matin, profil démo complet : la mémoire
+    du PC ne permet pas de filmer la supervision en même temps que tout le reste. SRV-MON-01 porte Zabbix, Grafana et MariaDB.
+    Test : les problèmes ouverts. Résultat : seulement deux avertissements, la marge de charge des chemins électriques ;
+    les nœuds éteints sont en maintenance.'
+  src: raw
+  jury: false
+- id: a1_grafana
+  act: 1b
+  node: Grafana · tableau NOC
+  role: vue d'ensemble du NOC
+  test: énergie A/B, 96 baies, températures
+  vo: 'Le tableau de bord du NOC dans Grafana : les chemins A et B alimentés, chargés à 47,1 %, 96 baies en état normal,
+    942 kilowatts de charge IT, PUE 1,45. La température de 29,5 degrés venait d''une dérive du simulateur DCIM, corrigée
+    depuis : la consigne de la salle est de 20 à 25 degrés.'
+  jury: true
+  jury_vo: 'Le NOC dans Grafana : chemins A et B alimentés, 96 baies, 942 kilowatts, PUE 1,45. Les 29,5 degrés venaient
+    d''une dérive du simulateur, corrigée depuis.'
+  still: 03_Network/screenshots/46_grafana_noc.png
+- id: a1_t6
+  act: 1b
+  rec: S8_T6_power
+  mark: bms nominal
+  node: Panne T6 · GTB / DCIM
+  role: GTB + DCIM, redondance électrique 2 chemins
+  test: coupure réseau + onduleur + groupe du chemin A
+  vo: 'La GTB surveille l''énergie, le DCIM suit les 96 baies. Panne provoquée T6 : on coupe tout le chemin électrique A,
+    réseau, onduleur et groupe. Résultat : l''alarme se lève, les baies passent en mode dégradé, et le chemin B porte seul
+    la charge. Puis on rétablit.'
+  jury: true
+  src: raw
+  jury_vo: 'Panne T6 : on coupe tout le chemin électrique A. L''alarme se lève, les baies passent en dégradé, le chemin
+    B porte seul la charge. Puis on rétablit.'
+- id: a1_t2
+  act: 1b
+  rec: S8_T2_fw
+  mark: probe start
+  node: Panne T2 · FW-A
+  role: bascule du pare-feu maître
+  test: arrêt de FW-A, sonde toutes les 0,5 s
+  vo: 'Deuxième panne, T2 : on arrête le pare-feu maître FW-A, pendant qu''une sonde interroge la GTB toutes les demi-secondes.
+    Résultat : FW-B devient maître, coupure mesurée : {t2} secondes. FW-A redémarre ensuite.'
+  jury: true
+  jury_vo: 'Panne T2 : arrêt du pare-feu maître, sonde toutes les demi-secondes. FW-B prend le relais : coupure de {t2}
+    secondes.'
+  src: raw
+- id: a1_proof
+  act: 1b
+  rec: S9_proof
+  mark: demo_check
+  node: demo_check.py
+  role: preuve automatique
+  test: demo_check.py · 12 contrôles
+  speed: auto
+  vo: 'Pour finir, la preuve automatique : demo_check rejoue douze contrôles, des nœuds jusqu''à la redondance et au site
+    web. Résultat : {demo_ok} sur {demo_total}. L''attente est accélérée.'
+  jury: true
+  jury_vo: 'La preuve automatique, demo_check : {demo_ok} contrôles sur {demo_total}.'
+  src: raw
+- id: fin
+  act: 9
+  card: end
+  vo: 'Tout ce que vous avez vu est réel et rejouable : les configurations sont générées depuis l''inventaire, et la campagne
+    complète verify_lab compte 59 tests réussis, zéro échec. Le calcul et le NAS TrueNAS sont présentés dans le rapport.
+    Merci.'
+  jury: false

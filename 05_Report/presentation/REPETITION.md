@@ -13,11 +13,13 @@ Version longue v0 (61 slides, annexes pour les questions) : https://claude.ai/ar
 | Partie 3 – Réalisation pratique : démo **5 min** puis slide « ce que la démo prouve » | 21–22 | 6 min |
 | Conclusion, questions | 23–24 | 1 min + questions |
 
-Slide 10 : la capture Grafana affiche 29,5 °C – le dire (dérive du simulateur DCIM, corrigée, D28).
+Slide 10 : la capture Grafana affiche 29,5 °C – le dire (dérive du simulateur DCIM, corrigée et déployée le 23/11, D28).
+
+**Démo (slide 21) : vidéo v2 `video/DC_Casablanca_demo_5min.mp4` (2:57, voix off + sous-titres), à commenter avec `DEMO_SCRIPT.md` (4 pauses ★). Version longue 6:33 : `video/DC_Casablanca_walkthrough.mp4`.**
 
 Les sections ci-dessous gardent la numérotation de la v0.
 
-Vidéo : `05_Report/presentation/video/DC_Casablanca_demo.mp4` (master) et `video/clips/` (un clip par scène).
+Vidéo v2 (à utiliser) : `video/DC_Casablanca_demo_5min.mp4` + `video/DC_Casablanca_walkthrough.mp4`, clips `video/clips_v2/`. Ancienne vidéo muette v1 : `video/clips/`.
 Chiffres : tous dans `05_Report/presentation/facts.json` – ne jamais en citer un autre.
 
 ## 1. Minutage (20 min de parole + vidéo 8 min + questions)

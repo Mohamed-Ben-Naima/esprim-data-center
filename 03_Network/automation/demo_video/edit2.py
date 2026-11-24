@@ -26,7 +26,7 @@ HERE = Path(__file__).resolve().parent
 NET = HERE.parents[1]
 ROOT = NET.parent
 VID = ROOT / "05_Report" / "presentation" / "video"
-RAW2, VO, CLIPS, TMP = VID / "raw2", VID / "vo", VID / "clips_v2", VID / "_tmp2"
+RAW, RAW2, VO, CLIPS, TMP = VID / "raw", VID / "raw2", VID / "vo", VID / "clips_v2", VID / "_tmp2"
 FACTS = json.loads((ROOT / "05_Report" / "presentation" / "facts.json").read_text(encoding="utf-8"))
 SEGS = yaml.safe_load((HERE / "narration.yaml").read_text(encoding="utf-8"))["segments"]
 IDS = {s["id"] for s in SEGS}
@@ -34,7 +34,8 @@ SPLIT = {"A0": ("A0_left_gns3", "A0_right_labup")}
 ENC = ["-c:v", "libx264", "-preset", "veryfast", "-crf", "21", "-pix_fmt", "yuv420p", "-r", "30",
        "-c:a", "aac", "-b:a", "160k", "-ar", "48000", "-ac", "2"]
 PAD_BEFORE, PAD_AFTER = 0.35, 0.9          # silence around each voice line (s)
-ACT_TITLES = {0: "Acte 0 · Démarrage à froid", 1: "Acte 1 · Réseau, sécurité, services, supervision",
+ACT_TITLES = {0: "Acte 0 · Démarrage à froid", 1: "Acte 1 · Réseau, sécurité, services, SOC",
+              "1b": "Acte 1b · Supervision NOC et pannes (prises du 23/11)",
               2: "Acte 2 · Calcul", 3: "Acte 3 · Stockage et sauvegarde"}
 
 
@@ -206,8 +207,12 @@ def render_cards():
 
 
 # ------------------------------------------------------------------------------------------------ segments
-def marks(rec):
-    d = json.loads((RAW2 / f"{rec}.json").read_text(encoding="utf-8"))
+def rdir(seg):
+    return RAW if seg.get("src") == "raw" else RAW2
+
+
+def marks(rec, base=None):
+    d = json.loads(((base or RAW2) / f"{rec}.json").read_text(encoding="utf-8"))
     off = d["t0"] - d["vstart"] if "vstart" in d and "t0" in d else 0.0   # mark times are relative to t0
     return [(m["t"] + off, m["label"]) for m in d["marks"]]
 
@@ -216,7 +221,7 @@ def span(seg):
     """(rec files, start, end) of the raw picture of a segment."""
     rec = seg["rec"]
     files = SPLIT.get(rec, (rec,))
-    ms = marks(files[-1] if rec in SPLIT else rec)
+    ms = marks(files[-1] if rec in SPLIT else rec, rdir(seg))
     start = next(t for t, l in ms if l == seg["mark"])
     stop_label = seg.get("until")
     end = None
@@ -227,7 +232,7 @@ def span(seg):
             end = t
             break
     if end is None:
-        end = dur(RAW2 / f"{files[0]}.webm") - 0.3
+        end = dur(rdir(seg) / f"{files[0]}.webm") - 0.3
     return files, start, end
 
 
@@ -270,6 +275,16 @@ def build_segment(seg, cut, out):
             f"subtitles=seg.ass:fontsdir=fonts,fade=in:0:12,fade=out:st={T - 0.5:.3f}:d=0.5,format=yuv420p",
             *ENC, "-shortest", str(out)], cwd=TMP)
         return T
+    if seg.get("still"):     # a real screenshot of the same live run, slow zoom (Ken Burns)
+        img = ROOT / seg["still"]
+        T = max(T, 5.0)
+        voice_track(key, T, wav)
+        write_ass(TMP / "seg.ass", timed(text, PAD_BEFORE, vo_len), T, seg)
+        n = int(T * 30)
+        ff(["-i", str(img), "-i", str(wav), "-vf",
+            f"scale=3840:-2,zoompan=z='min(1+0.10*on/{n},1.10)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={n}:s=1920x1080:fps=30,"
+            "subtitles=seg.ass:fontsdir=fonts,format=yuv420p", *ENC, "-t", f"{T:.3f}", str(out)], cwd=TMP)
+        return T
     files, a, b = span(seg)
     L = max(0.5, b - a)
     if seg.get("speed") == "auto":
@@ -295,7 +310,7 @@ def build_segment(seg, cut, out):
     write_ass(TMP / "seg.ass", cues, total, seg, badge)
     ins = []
     for f in files:
-        ins += ["-ss", f"{a:.3f}", "-t", f"{L:.3f}", "-i", str(RAW2 / f"{f}.webm")]
+        ins += ["-ss", f"{a:.3f}", "-t", f"{L:.3f}", "-i", str(rdir(seg) / f"{f}.webm")]
     ins += ["-i", str(wav)]
     if len(files) == 2:
         # each half has its own length (variable-rate recordings): both are fitted to the same output length V
@@ -306,7 +321,7 @@ def build_segment(seg, cut, out):
               f"[l][r]hstack=inputs=2,subtitles=seg.ass:fontsdir=fonts,format=yuv420p[v]")
         amap = "2:a"
     else:
-        fc = (f"[0:v]fps=30,{vf_speed},scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,"
+        fc = (f"[0:v]fps=30,{vf_speed},scale=1920:1080:force_original_aspect_ratio=decrease:flags=lanczos,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,"
               f"subtitles=seg.ass:fontsdir=fonts,format=yuv420p[v]")
         amap = "1:a"
     ff([*ins, "-filter_complex", fc, "-map", "[v]", "-map", amap, "-t", f"{total:.3f}", *ENC, str(out)], cwd=TMP)
@@ -325,7 +340,7 @@ def build(cut, only=None):
     parts, srt, chapters, t, last_act = [], [], [], 0.0, None
     sel = [s for s in SEGS if (cut == "long" or s.get("jury")) and (s["id"] + ("_jury" if cut == "jury" and "jury_vo" in s else "")) in texts()]
     for s in sel:
-        if s.get("rec") and not (RAW2 / f"{SPLIT.get(s['rec'], (s['rec'],))[0]}.webm").exists():
+        if s.get("rec") and not (rdir(s) / f"{SPLIT.get(s['rec'], (s['rec'],))[0]}.webm").exists():
             print(f"   {s['id']}: recording {s['rec']} missing, skipped", flush=True)
             continue
         if cut == "long" and s["act"] in ACT_TITLES and s["act"] != last_act:

@@ -1,0 +1,19 @@
+0:00 Acte 0 · Démarrage à froid
+0:19 GNS3 · 32 nœuds, 62 liens
+0:50 Acte 1 · Réseau, sécurité, services, SOC
+0:52 CORE-A
+1:30 EDGE-A
+1:58 CORE-A
+2:15 LEAF-B1
+2:31 ADMIN-WS
+2:50 FW-A · pfSense
+3:09 FW-A · pfSense
+3:23 SRV-WEB-01 · DMZ
+3:42 CORE-A · ACL
+4:01 SYSLOG · SOC
+4:27 Acte 1b · Supervision NOC et pannes (prises du 23/11)
+4:30 SRV-MON-01 · Zabbix
+4:56 Grafana · tableau NOC
+5:20 Panne T6 · GTB / DCIM
+5:40 Panne T2 · FW-A
+6:01 demo_check.py

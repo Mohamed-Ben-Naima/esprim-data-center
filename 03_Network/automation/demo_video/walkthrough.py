@@ -32,12 +32,13 @@ D.RAW = RAW2                      # director's Scene writes into raw2/ for this 
 NET = D.NET
 PY = sys.executable
 DRY = "--dry" in sys.argv
+PROFILE = sys.argv[sys.argv.index("--profile") + 1] if "--profile" in sys.argv else "net"
 
 
 class Rec(D.Scene):
     """director.Scene with a chosen size, an optional proxy and a shared t0 (for split recordings)."""
 
-    def __init__(self, browser, name, size=(1920, 1080), proxy=True, http_credentials=None, t0=None, init=None):
+    def __init__(self, browser, name, size=(1280, 720), proxy=True, http_credentials=None, t0=None, init=None):
         RAW2.mkdir(parents=True, exist_ok=True)
         self.name, self.marks = name, []
         kw = dict(viewport={"width": size[0], "height": size[1]}, record_video_dir=str(RAW2 / "_tmp"),
@@ -72,10 +73,17 @@ def mark_all(recs, label):
         r.mark(label)
 
 
+def small_term(t, px=19):
+    """Term page sized for a 1280x720 recording (D8)."""
+    t.p.evaluate("px => { document.querySelector('pre').style.fontSize = px + 'px'; "
+                 "document.querySelector('.w').style.inset = '20px'; document.querySelector('.t').style.fontSize = '17px'; }", px)
+    return t
+
+
 class Gns3Web(Rec):
     """The GNS3 Web UI of the local controller, project DC_Casablanca open."""
 
-    def __init__(self, browser, name, size=(1920, 1080), t0=None):
+    def __init__(self, browser, name, size=(1280, 720), t0=None):
         self.api = labctl.Gns3()
         self.pr = self.api.project()
         user, pw = base64.b64decode(self.api.auth.split()[1]).decode().split(":", 1)
@@ -301,7 +309,7 @@ def a1_console(b):
 
 def a1_net(b):
     sc = Rec(b, "A1_net")
-    t = D.Term(sc, "Réseau · commandes réelles en SSH", "ADMIN-WS (VLAN 90)")
+    t = small_term(D.Term(sc, "Réseau · commandes réelles en SSH", "ADMIN-WS (VLAN 90)"))
     sc.mark("a1_edge")
     o = ssh_show(t, [("edge-a", "EDGE-A#", "show ip bgp summary | begin Neighbor")])[0]
     rows = [l.split() for l in o.splitlines() if re.match(r"^\d+\.\d+\.\d+\.\d+\s", l)]
@@ -361,7 +369,7 @@ def a1_fw(b):
 
 def a1_svc(b):
     sc = Rec(b, "A1_svc")
-    t = D.Term(sc, "Services · site public et cloisonnement", "ISP-A (Internet) puis ADMIN-WS")
+    t = small_term(D.Term(sc, "Services · site public et cloisonnement", "ISP-A (Internet) puis ADMIN-WS"))
     sc.mark("a1_web")
     t.typed("root@isp-a:~#", "printf 'GET /health HTTP/1.0\\r\\n\\r\\n' | nc -w 5 192.0.2.80 80")
     out = gns3vm.run("docker exec $(docker ps -q --filter name=ISP-A) sh -c \"printf 'GET /health HTTP/1.0\\r\\n\\r\\n' | "
@@ -423,7 +431,7 @@ def a1_grafana(b):
 
 def a1_soc(b):
     sc = Rec(b, "A1_soc")
-    t = D.Term(sc, "SOC · journalisation centralisée (SYSLOG)", "PC hôte → visionneuse https://10.60.0.12/")
+    t = small_term(D.Term(sc, "SOC · journalisation centralisée (SYSLOG)", "PC hôte → visionneuse https://10.60.0.12/"))
     sc.mark("a1_soc")
     raw = lambda l: re.match(r"^\s*\S*\s*20\d\d-\d\d-\d\dT", l) is not None  # noqa: E731  raw syslog lines: too long
     out = run_stream(t, "PS 03_Network>", "python automation/log_viewer.py demo", [PY, "automation/log_viewer.py", "demo"],
@@ -474,7 +482,19 @@ def a1_t6(b):
 
 
 def a1_t2(b):
-    outages = D.failover(b, "A1_t2", "FW-A", "T2 · arrêt du pare-feu maître FW-A", "10.70.0.12", 8080, back=True)
+    scene0, term0 = D.Scene, D.Term
+
+    class SmallTerm(term0):
+        def __init__(self, sc, title, where="ADMIN-WS (VLAN 90)"):
+            super().__init__(sc, title, where)
+            small_term(self, 17)
+            self.p.add_style_tag(content="#panel.on{width:380px !important;padding:22px !important} .big{font-size:72px !important}"
+                                         " .st{font-size:24px !important} .lbl{font-size:16px !important}")
+    D.Scene, D.Term = (lambda br, name, **kw: Rec(br, name)), SmallTerm
+    try:
+        outages = D.failover(b, "A1_t2", "FW-A", "T2 · arrêt du pare-feu maître FW-A", "10.70.0.12", 8080, back=True)
+    finally:
+        D.Scene, D.Term = scene0, term0
     js = RAW2 / "A1_t2.json"
     d = json.loads(js.read_text(encoding="utf-8"))
     d["marks"].insert(0, {"t": 0.0, "label": "a1_t2"})
@@ -504,9 +524,11 @@ def wait_fw_a(limit=480):
 def a1_proof(b):
     wait_fw_a()
     sc = Rec(b, "A1_proof")
-    t = D.Term(sc, "Preuve · contrôles automatiques du laboratoire", "PC hôte · 03_Network")
+    t = small_term(D.Term(sc, "Preuve · contrôles automatiques du laboratoire", "PC hôte · 03_Network"))
     sc.mark("a1_proof")
-    out = run_stream(t, "PS 03_Network>", "python automation/demo_check.py", [PY, "automation/demo_check.py"], pause=5)
+    prof = PROFILE
+    out = run_stream(t, "PS 03_Network>", f"python automation/demo_check.py --profile {prof}",
+                     [PY, "automation/demo_check.py", "--profile", prof], pause=5)
     m = re.findall(r"(\d+)\s*/\s*(\d+)", out)
     if m:
         put_values(demo_ok=m[-1][0], demo_total=m[-1][1])
@@ -519,8 +541,212 @@ ACTS.update({"A1_console": a1_console, "A1_net": a1_net, "A1_fw": a1_fw, "A1_svc
              "A1_grafana": a1_grafana, "A1_soc": a1_soc, "A1_t6": a1_t6, "A1_t2": a1_t2, "A1_proof": a1_proof})
 
 
+# ------------------------------------------------------------------------------------------------ profile switches
+def node_g(g, name):
+    """The node group of the GNS3 map whose label is exactly `name`."""
+    return g.page.locator("svg g.node").filter(has=g.page.locator("text", has_text=re.compile(rf"^\s*{re.escape(name)}\s*$"))).first
+
+
+def ui_action(g, name, action):
+    """Right-click the node in the GNS3 Web UI -> Start/Stop; the API is the fallback (same effect)."""
+    try:
+        el = node_g(g, name)
+        g.glide_to(el, pause=0.3)
+        g.page.mouse.click(g.mx, g.my, button="right")
+        g.wait(0.7)
+        item = g.page.locator("button[role=menuitem], button.mat-menu-item").filter(
+            has_text=re.compile(rf"^\s*{action}\s*$")).first
+        item.wait_for(timeout=3000)
+        g.glide_to(item, click=True, pause=0.8)
+        return "ui"
+    except Exception as e:  # noqa: BLE001
+        g.page.keyboard.press("Escape")
+        api = g.api
+        getattr(api, action.lower())(g.pr, api.node(g.pr, name))
+        print(f"   {name}: {action} via API ({str(e).splitlines()[0][:60]})", flush=True)
+        return "api"
+
+
+def switch(b, rec, mark, done, target, ready, limit=900):
+    """Profile switch shown in the GNS3 Web UI: stop what the target does not use, then start the rest (D7)."""
+    from lab_up import OFF, STAGES
+    api = labctl.Gns3()
+    pr = api.project()
+    st = {n["name"]: n["status"] for n in api.nodes(pr)}
+    want = {n for _, names in STAGES for n in names} - OFF[target]
+    stop = [n for _, names in STAGES for n in names if n not in want and st.get(n) == "started"]
+    start = [n for _, names in STAGES for n in names if n in want and st.get(n) != "started"]
+    print(f"   switch -> {target}: stop {stop}, start {start}", flush=True)
+    g = Gns3Web(b, rec)
+    g.open(zoom_out=6)
+    g.center()
+    g.mark(mark)
+    for n in stop:
+        ui_action(g, n, "Stop")
+    g.wait(8)
+    for n in start:
+        ui_action(g, n, "Start")
+    end = time.time() + limit
+    while time.time() < end and not ready():
+        g.wait(10)
+    g.mark(done)
+    g.wait(4)
+    g.close()
+
+
+def ready_zabbix():
+    import zabbix_setup as zs
+    try:
+        z = zs.Zabbix()
+        zs.login(z)
+        return True
+    except Exception:  # noqa: BLE001
+        return False
+
+
+def post_noc():
+    env = {**__import__("os").environ, "PYTHONIOENCODING": "utf-8", "PYTHONDONTWRITEBYTECODE": "1"}
+    for args in (["automation/zabbix_setup.py", "apply"], ["automation/zabbix_setup.py", "status"]):
+        r = subprocess.run([PY, *args], cwd=NET, capture_output=True, text=True, env=env, encoding="utf-8", errors="replace")
+        print("  ", " ".join(args), "->", (r.stdout.strip().splitlines() or ["?"])[-1], flush=True)
+
+
+def a1b_switch(b):
+    switch(b, "A1b_switch", "a1b_switch", "a1b_done", "noc", ready_zabbix)
+    post_noc()
+
+
+def proof(b, rec, mark, profile):
+    sc = Rec(b, rec)
+    t = small_term(D.Term(sc, "Preuve · contrôles automatiques du laboratoire", f"PC hôte · profil {profile}"))
+    sc.mark(mark)
+    out = run_stream(t, "PS 03_Network>", f"python automation/demo_check.py --profile {profile}",
+                     [PY, "automation/demo_check.py", "--profile", profile], pause=5)
+    m = re.findall(r"(\d+)\s*/\s*(\d+) checks OK", out)
+    (RAW2 / f"{rec}_output.txt").write_text(out, encoding="utf-8")
+    sc.close()
+    return m[-1] if m else None
+
+
+def a1b_proof(b):
+    m = proof(b, "A1b_proof", "a1b_proof", "noc")
+    if m:
+        put_values(noc_ok=m[0], noc_total=m[1])
+
+
+def ready_cmp():
+    return bool(D.socks_tcp("10.20.0.10", 8443, timeout=1.5))
+
+
+def a2_switch(b):
+    switch(b, "A2_switch", "a2_switch", "a2_done", "cmp", ready_cmp)
+    r = subprocess.run([PY, "automation/cisco_heal.py", "LEAF-A1", "LEAF-A2"], cwd=NET, capture_output=True, text=True)
+    print("   cisco_heal:", r.stdout.strip()[-200:], flush=True)
+
+
+def a2_net(b):
+    sc = Rec(b, "A2_net")
+    t = small_term(D.Term(sc, "Calcul · salle A", "ADMIN-WS (VLAN 90)"))
+    sc.mark("a2_leafa")
+    o = ssh_show(t, [("leaf-a1", "LEAF-A1#", "show interfaces trunk | begin Vlans allowed and active"),
+                     ("leaf-a1", "LEAF-A1#", "show interfaces status | include connected")])[0]
+    trunks = re.findall(r"^(Gi\S+)\s", o, re.M)
+    put_values(leafa_result=f"{len(set(trunks))} trunks actifs vers les cœurs, les VLAN 20 et 30 autorisés" if trunks else "voir l'écran")
+    sc.mark("a2_cmp")
+    o1, o2 = ssh_show(t, [("srv-cmp-01", "sysadmin@srv-cmp-01:~$", "ip -br addr show | grep -E 'bond|ens'"),
+                          ("srv-cmp-02", "sysadmin@srv-cmp-02:~$", "ip -br addr show | grep -E 'bond|ens'")], pause=3)
+    owner = "SRV-CMP-01" if "10.20.0.10" in o1 else "SRV-CMP-02" if "10.20.0.10" in o2 else None
+    put_values(vip_result=f"{owner} porte la VIP, l'autre serveur attend en secours" if owner else "voir l'écran")
+    sc.close()
+
+
+def a2_t5(b):
+    sc = Rec(b, "A2_t5")
+    t = small_term(D.Term(sc, "T5 · arrêt de SRV-CMP-01 sous sonde", "SRV-WEB-01 → VIP https://10.20.0.10:8443 toutes les 0,5 s"), 16)
+    sc.mark("a2_t5")
+    out = run_stream(t, "PS 03_Network>", "python automation/fw_lan_failover.py --core SRV-CMP-01 --down 45 --up 90",
+                     [PY, "automation/fw_lan_failover.py", "--core", "SRV-CMP-01", "--down", "45", "--up", "90"],
+                     keep=lambda l: "samples:" not in l, pause=5)
+    (RAW2 / "A2_t5_output.txt").write_text(out, encoding="utf-8")
+    m = re.search(r"fault: outage from [^=]*= ([\d.]+) s", out)
+    vip = re.search(r"fault: VIP served by (\S+) from \+([\d.]+) s", out)
+    if m:
+        put_values(t5=fr(float(m.group(1))))
+    elif vip:
+        put_values(t5=fr(float(vip.group(2))))
+    sc.close()
+
+
+def a2_proof(b):
+    m = proof(b, "A2_proof", "a2_proof", "cmp")
+    if m:
+        put_values(cmp_ok=m[0], cmp_total=m[1])
+
+
+def ready_nas():
+    r = subprocess.run([PY, "automation/truenas_setup.py", "check"], cwd=NET, capture_output=True)
+    return r.returncode == 0
+
+
+def a3_switch(b):
+    switch(b, "A3_switch", "a3_switch", "a3_done", "nas", ready_nas, limit=1200)
+    r = subprocess.run([PY, "automation/truenas_setup.py", "apply"], cwd=NET, capture_output=True, text=True)
+    print("   truenas apply:", (r.stdout.strip().splitlines() or ["?"])[-1], flush=True)
+
+
+def a3_nas(b):
+    sc = Rec(b, "A3_nas")
+    t = small_term(D.Term(sc, "Sauvegarde · NAS TrueNAS SRV-BCK-01", "PC hôte → API TrueNAS (wss://10.40.0.11)"), 16)
+    sc.mark("a3_nas")
+    out = run_stream(t, "PS 03_Network>", "python automation/truenas_setup.py status",
+                     [PY, "automation/truenas_setup.py", "status"],
+                     keep=lambda l: not re.search(r"\b(UI |ntp |ssh |snmp |init script|services )", l), pause=4)
+    (RAW2 / "A3_nas_status.txt").write_text(out, encoding="utf-8")
+    pool = re.search(r"pool (\S+): (\w+), healthy=(\w+), (.*)", out)
+    snaps = re.search(r"snapshots on \S+: (\d+)", out)
+    rs = re.findall(r"rsync PULL '([^']*)' -> (\S+) .* last=(\w+)", out)
+    put_values(nas_result=(f"le pool {pool.group(1)} est {pool.group(2)}, en miroir, {snaps.group(1) if snaps else '?'} "
+                           f"snapshots ZFS, et {len(rs)} tâches de tirage" if pool else "voir l'écran"))
+    t.p.evaluate("clearT()")
+    sc.mark("a3_restore")
+    # restore proof, read-only: the same file in the live copy and in the newest ZFS snapshot -> same SHA-256
+    path = rs[0][1] if rs else "/mnt/tank/backups/SRV-MON-01"
+    cmd = (f"f=$(find {path} -type f -name hostname | head -1); s=$(ls -1t {path.split('/backups')[0]}/backups/.zfs/snapshot 2>/dev/null | head -1); "
+           f"echo fichier: $f; echo snapshot: $s; sha256sum \"$f\"; "
+           f"sha256sum {path.split('/backups')[0]}/backups/.zfs/snapshot/$s/${{f#{path.split('/backups')[0]}/backups/}}")
+    o = ssh_show(t, [("srv-bck-01", "truenas_admin@srv-bck-01:~$", cmd)], pause=4)[0]
+    sums = re.findall(r"^([0-9a-f]{64})\s", o, re.M)
+    put_values(restore_result=("le fichier relu depuis le snapshot a exactement la même empreinte SHA-256"
+                               if len(sums) == 2 and sums[0] == sums[1] else "voir l'écran"))
+    sc.close()
+
+
+def a1_acl(b):
+    """VLAN 60 (SRV-MON-01) -> administration: refused by the core ACL (needs SRV-MON-01 running: noc profile)."""
+    sc = Rec(b, "A1_acl")
+    t = small_term(D.Term(sc, "Cloisonnement · VLAN 60 vers l'administration", "ADMIN-WS → SRV-MON-01 puis CORE-A"))
+    sc.mark("a1_acl")
+    o0, o1, o2 = ssh_show(t, [("core-a", "CORE-A#", "show ip access-lists ACL-VLAN60-IN | include 210"),
+                              ("srv-mon-01", "sysadmin@srv-mon-01:~$", "nc -zv -w 3 10.90.0.12 22; echo \"code retour $?\""),
+                              ("core-a", "CORE-A#", "show ip access-lists ACL-VLAN60-IN | include 210")], pause=3)
+    n0 = re.search(r"\((\d+) match", o0)
+    n2 = re.search(r"\((\d+) match", o2)
+    ok = "code retour" in o1 and "code retour 0" not in o1
+    put_values(acl_result=("la connexion échoue, et le compteur de la règle deny 210 du cœur passe de "
+                           f"{n0.group(1) if n0 else 0} à {n2.group(1)} correspondances") if ok and n2 else
+               ("la connexion est refusée par l'ACL du cœur" if ok else "voir l'écran"))
+    (RAW2 / "A1_acl_output.txt").write_text("
+---
+".join((o0, o1, o2)), encoding="utf-8")
+    sc.close()
+
+
+ACTS.update({"A1_acl": a1_acl, "A1b_switch": a1b_switch, "A1b_proof": a1b_proof, "A2_switch": a2_switch, "A2_net": a2_net,
+             "A2_t5": a2_t5, "A2_proof": a2_proof, "A3_switch": a3_switch, "A3_nas": a3_nas})
+
+
 def main(argv):
-    names = [a for a in argv if not a.startswith("--")]
+    names = [a for a in argv if a in ACTS]
     if "--list" in argv or not names:
         print("recordings:", " ".join(ACTS))
         return

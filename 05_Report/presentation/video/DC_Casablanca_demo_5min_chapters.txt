@@ -1,0 +1,12 @@
+0:00 intro
+0:13 GNS3 · 32 nœuds, 62 liens
+0:29 CORE-A
+0:57 CORE-A
+1:07 FW-A · pfSense
+1:21 SRV-WEB-01 · DMZ
+1:33 CORE-A · ACL
+1:46 SYSLOG · SOC
+2:06 Grafana · tableau NOC
+2:21 Panne T6 · GTB / DCIM
+2:35 Panne T2 · FW-A
+2:51 demo_check.py

@@ -41,6 +41,12 @@ OFF = {"full": set(),
 OFF["demo"] = OFF["supervision"] | {"EDGE-B", "CCTV-SIM", "SRV-INF-01"}
 # compute: the demo set with hall A (both leafs, CMP-01/02 = keepalived VIP, PLAN_01 T4/T5) instead of the edge tier
 OFF["compute"] = (OFF["demo"] - {"LEAF-A1", "LEAF-A2", "SRV-CMP-01", "SRV-CMP-02"}) | {"EDGE-A"}
+# PLAN_06 D7 (video night, host baseline ~7.5 GB): the demo set + SRV-MON-01 + a recorder do not fit together.
+# net = demo without the supervision server; noc = demo with it, EDGE-A and FW-B off (the guest re-uses their memory)
+OFF["net"] = OFF["demo"] | {"SRV-MON-01"}
+OFF["noc"] = OFF["demo"] | {"EDGE-A", "FW-B"}
+# cmp = hall A (2 leafs + CMP-01/02 keepalived) in place of the edge, FW-B and the supervision server
+OFF["cmp"] = (OFF["net"] | {"EDGE-A", "FW-B", "ISP-A", "ISP-B"}) - {"LEAF-A1", "LEAF-A2", "SRV-CMP-01", "SRV-CMP-02"}
 OFF["nas"] = {n for _, names in STAGES for n in names} - {"SW-MGMT", "FW-A", "CORE-A", "LEAF-B1", "LEAF-B2", "ADMIN-WS",
                                                           "SYSLOG", "SRV-BCK-01"}
 

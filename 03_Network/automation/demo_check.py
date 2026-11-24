@@ -4,7 +4,7 @@
 
 Checks, in the order of the demo:
   nodes        every node of the profile is started (lab_up.OFF)
-  resources    GNS3 VM swap < 200 MB and >= 500 MB available, host free RAM >= 0.5 GB
+  resources    GNS3 VM swap < 200 MB and >= 500 MB available, host available RAM >= 0.5 GB (free + standby)
   proxy        lab proxy answers (SOCKS5 on 192.168.75.128:1080)
   SRV-MON-01   mariadb, zabbix-server, nginx, php-fpm, grafana-server active
   zabbix       zabbix_setup.py status: every running host available, stopped ones in maintenance
@@ -39,6 +39,41 @@ def row(name, ok, info, fix=""):
     ROWS.append((ok, line))
 
 
+def host_available_gb():
+    import ctypes
+
+    class MS(ctypes.Structure):
+        _fields_ = [("l", ctypes.c_ulong), ("load", ctypes.c_ulong), ("tot", ctypes.c_ulonglong),
+                    ("avail", ctypes.c_ulonglong)] + [(f"x{i}", ctypes.c_ulonglong) for i in range(5)]
+    m = MS()
+    m.l = ctypes.sizeof(MS)
+    ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(m))
+    return m.avail / 2**30
+
+
+def via_proxy(host, port, path, tls=False):
+    """GET through the lab proxy (= from ADMIN-WS) -> (0, body) or (1, "")."""
+    import ssl
+    from truenas_setup import socks_connect
+    try:
+        s = socks_connect(host, port, timeout=10)
+        if tls:
+            ctx = ssl.create_default_context()
+            ctx.check_hostname, ctx.verify_mode = False, ssl.CERT_NONE
+            s = ctx.wrap_socket(s, server_hostname=host)
+        s.sendall(f"GET {path} HTTP/1.0\r\nHost: {host}\r\n\r\n".encode())
+        data = b""
+        while True:
+            chunk = s.recv(65536)
+            if not chunk:
+                break
+            data += chunk
+        s.close()
+        return 0, data.split(b"\r\n\r\n", 1)[-1].decode("utf-8", "replace")
+    except Exception:  # noqa: BLE001
+        return 1, ""
+
+
 def script(*args, timeout=600):
     r = subprocess.run([sys.executable, str(HERE / args[0]), *args[1:]], capture_output=True, text=True,
                        encoding="utf-8", errors="replace", timeout=timeout, cwd=NET)
@@ -59,12 +94,10 @@ def main(argv):
         "python automation/labctl.py start " + " ".join(off))
 
     v = gns3vm.run("free -m | awk '/Mem:/{print $7} /Swap:/{print $3}'").split()
-    host = subprocess.run(["powershell", "-NoProfile", "-Command",
-                           "[math]::Round((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1MB,1)"],
-                          capture_output=True, text=True).stdout.strip().replace(",", ".")
+    host = f"{host_available_gb():.1f}"   # free + standby: "free" alone read ~0.3 GB on a healthy host (PLAN_06)
     avail, swap = int(v[0]), int(v[1])
     ok = swap < 200 and avail >= 500 and float(host or 0) >= 0.5
-    row("resources", ok, f"GNS3 VM available {avail} MB, swap {swap} MB; host free {host} GB",
+    row("resources", ok, f"GNS3 VM available {avail} MB, swap {swap} MB; host available {host} GB",
         "flush swap: python automation/gns3vm.py --sudo \"swapoff -a && swapon -a\"; close other apps on the PC")
 
     try:
@@ -77,28 +110,33 @@ def main(argv):
     row("proxy", ok, "SOCKS5 192.168.75.128:1080", "python automation/lab_proxy.py start")
 
     from adminws import ssh_batch
-    svcs = "mariadb zabbix-server nginx php7.4-fpm grafana-server"
-    checks = [("srv-mon-01", f"systemctl is-active {svcs} | tr '\\n' ' '"),
-              ("srv-mon-01", "curl -s -m5 http://10.70.0.12:8080/api/state"),
-              ("srv-mon-01", "curl -sk -m5 https://10.50.0.11/health")]
-    res = ssh_batch(checks)
-    states = res[0][1].split()
-    ok = states == ["active"] * 5
-    row("SRV-MON-01", ok, " ".join(f"{n}={s}" for n, s in zip(svcs.split(), states)) or f"no answer (rc {res[0][0]})",
-        "wait 2 min after boot; else on SRV-MON-01: sudo systemctl restart mariadb zabbix-server grafana-server")
+    mon = "SRV-MON-01" not in OFF[profile]
+    if mon:
+        svcs = "mariadb zabbix-server nginx php7.4-fpm grafana-server"
+        checks = [("srv-mon-01", f"systemctl is-active {svcs} | tr '\\n' ' '"),
+                  ("srv-mon-01", "curl -s -m5 http://10.70.0.12:8080/api/state"),
+                  ("srv-mon-01", "curl -sk -m5 https://10.50.0.11/health")]
+        res = ssh_batch(checks)
+        states = res[0][1].split()
+        ok = states == ["active"] * 5
+        row("SRV-MON-01", ok, " ".join(f"{n}={s}" for n, s in zip(svcs.split(), states)) or f"no answer (rc {res[0][0]})",
+            "wait 2 min after boot; else on SRV-MON-01: sudo systemctl restart mariadb zabbix-server grafana-server")
 
-    rc, out = script("zabbix_setup.py", "status")
-    summary = next((l for l in out if "hosts," in l), out[-1] if out else "no output")
-    probs = [l.strip() for l in out[out.index(next((l for l in out if l.startswith("service problems")), out[-1])) + 1:]
-             if l.startswith("  ")] if out else []
-    row("zabbix", rc == 0, summary.strip() + (f"; service problems: {len(probs)}" if probs else "; no service problem"),
-        "python automation/zabbix_setup.py apply   (maintenance follows the nodes started), then status")
+        rc, out = script("zabbix_setup.py", "status")
+        summary = next((l for l in out if "hosts," in l), out[-1] if out else "no output")
+        probs = [l.strip() for l in out[out.index(next((l for l in out if l.startswith("service problems")), out[-1])) + 1:]
+                 if l.startswith("  ")] if out else []
+        row("zabbix", rc == 0, summary.strip() + (f"; service problems: {len(probs)}" if probs else "; no service problem"),
+            "python automation/zabbix_setup.py apply   (maintenance follows the nodes started), then status")
 
-    rc, out = script("check_dashboard.py")
-    row("grafana", rc == 0, (out[-1] if out else "no output"),
-        "just after a start some items have no value yet (polled every 5 min): wait 5 min and run demo_check again "
-        "(cold start 10 Nov: 1 empty, 0 five minutes later); still empty = its host is not reporting; deployed "
-        "dashboard differs = python automation/deploy_servers.py --role=grafana SRV-MON-01")
+        rc, out = script("check_dashboard.py")
+        row("grafana", rc == 0, (out[-1] if out else "no output"),
+            "just after a start some items have no value yet (polled every 5 min): wait 5 min and run demo_check again "
+            "(cold start 10 Nov: 1 empty, 0 five minutes later); still empty = its host is not reporting; deployed "
+            "dashboard differs = python automation/deploy_servers.py --role=grafana SRV-MON-01")
+    else:   # profile without the supervision server (PLAN_06 net): the same two requests from ADMIN-WS via the lab proxy
+        res = [(0, ""), via_proxy("10.70.0.12", 8080, "/api/state"), via_proxy("10.50.0.11", 443, "/health", tls=True)]
+        print("--   SRV-MON-01 / zabbix / grafana : hors profil (supervision montrée dans son propre acte)", flush=True)
 
     try:
         bms = json.loads(res[1][1] or "{}")
@@ -153,9 +191,12 @@ def main(argv):
             if lone:
                 bad.append(f"{n}: no peer on {', '.join(lone)}")
     for n, (rc, o), want in (("FW-A", pairs[2], "MASTER"), ("FW-B", pairs[3], "BACKUP")):
+        if n in OFF[profile]:
+            continue
         if o.strip() != "5":
             bad.append(f"{n} {o.strip() or 'no answer'} x {want} (expected 5)")
-    row("redundancy", not bad, "HSRP pairs CORE-A/CORE-B complete, CARP FW-A 5 MASTER / FW-B 5 BACKUP" if not bad
+    row("redundancy", not bad, ("HSRP pairs CORE-A/CORE-B complete, CARP FW-A 5 MASTER"
+                                + (" / FW-B 5 BACKUP" if "FW-B" not in OFF[profile] else " (FW-B hors profil)")) if not bad
         else "; ".join(bad), "a node 'started' but silent is hung: python automation/labctl.py stop X, then start X, "
         "then python automation/cisco_heal.py X")
     row("web", res[2][1].strip().startswith("OK"), f"https://10.50.0.11/health -> {res[2][1].strip()[:40] or res[2][0]}",

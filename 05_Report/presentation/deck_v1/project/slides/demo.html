@@ -5,19 +5,19 @@
 <div style="flex:1;background:#E9FAFD;border-radius:18px;padding:28px 32px;display:flex;align-items:center">
 <table class="t tl" style="color:#22424A;font-size:28px">
 <tr><th style="width:13%;color:#0B1015">Temps</th><th style="width:24%;color:#0B1015">Étape</th><th style="color:#0B1015">Ce que le jury voit</th></tr>
-<tr><td>0:00</td><td>Topologie</td><td>32 nœuds GNS3, profil démo démarré</td></tr>
-<tr><td>0:30</td><td>Réseau</td><td>HSRP, OSPF et trunks sur CORE-A et LEAF-B1</td></tr>
-<tr><td>1:30</td><td>Pare-feu</td><td>CARP MASTER / BACKUP, site web via NAT</td></tr>
-<tr><td>2:15</td><td>Supervision</td><td>Zabbix 18 hôtes, tableau Grafana du NOC</td></tr>
-<tr><td>3:00</td><td>Panne T6</td><td>chemin A coupé, alarme, baies dégradées</td></tr>
-<tr><td>3:45</td><td>Panne T2</td><td>FW-A arrêté, sonde : une coupure de 2,5 s</td></tr>
-<tr><td>4:30</td><td>Preuve</td><td>demo_check.py : 12 lignes OK</td></tr>
+<tr><td>0:00</td><td>Démarrage</td><td>GNS3 à froid : les nœuds passent au vert</td></tr>
+<tr><td>0:29</td><td>Réseau</td><td>console GNS3 sur CORE-A : HSRP, OSPF</td></tr>
+<tr><td>1:07</td><td>Pare-feu</td><td>CARP : 5 VIP MASTER sur FW-A</td></tr>
+<tr><td>1:21</td><td>Services</td><td>site web via NAT, flux refusé par l’ACL</td></tr>
+<tr><td>1:46</td><td>SOC, NOC</td><td>journaux centralisés, tableau Grafana</td></tr>
+<tr><td>2:21</td><td>Pannes</td><td>T6 chemin A coupé ; T2 FW-A arrêté : 2,5 s</td></tr>
+<tr><td>2:51</td><td>Preuve</td><td>demo_check.py : 12 contrôles sur 12</td></tr>
 </table>
 </div>
 <div class="col" style="width:520px;justify-content:center">
-<img class="pic" src="/_blob/385fcbd6b3806e0dd57a18a0c0f37f90" alt="Vignette de la vidéo de démonstration : Data Center Casablanca, démo en direct, rendu 3D du campus en fond" style="width:520px;height:292px">
-<p style="font-size:26px;line-height:1.4;color:#0B1015"><b>Plan B :</b> la même démonstration en vidéo 1080p, enregistrée sur le labo le 23/11/2026, sur le PC et sur clé USB.</p>
+<img class="pic" src="/_blob/56cbec129d803d590fa4cc75f1d38c71" alt="Vignette de la vidéo : DC Casablanca, visite en direct, rendu 3D du campus en fond" style="width:520px;height:292px">
+<p style="font-size:26px;line-height:1.4;color:#0B1015"><b>Plan B :</b> vidéo 1080p de 3 min, voix off et sous-titres, enregistrée sur ce labo, sur le PC et sur clé USB.</p>
 </div>
 </div>
-<aside>Place à la réalisation pratique. Le laboratoire est démarré depuis le début de la soutenance. En cinq minutes : la topologie, le réseau sur les vrais équipements, le pare-feu, la supervision, puis deux pannes provoquées et chronométrées, et pour finir le contrôle automatique : douze lignes OK. Si le temps manque ou si le labo a un souci, nous passons la vidéo enregistrée sur ce même labo.</aside>
+<aside>Place à la réalisation pratique. La vidéo dure trois minutes, avec voix off et sous-titres : pour chaque machine, son rôle, le test, le résultat. Je la commente en direct et je la mets en pause aux étapes clés : la console GNS3 sur CORE-A, l’état CARP, la bascule T2 de 2,5 secondes, et la preuve douze sur douze. Il reste ainsi deux minutes pour les questions du jury pendant la démonstration.</aside>
 </section>

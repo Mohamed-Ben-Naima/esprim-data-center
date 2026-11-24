@@ -1,3 +1,6 @@
 raw/
 _tmp/
 raw2/
+_tmp2/
+vo/*.mp3
+vo/*.wav

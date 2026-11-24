@@ -20,5 +20,6 @@ Fill in the team members and the supervisor on the cover page before submitting.
 | `presentation/DC_Casablanca_Soutenance.pdf` | Backup PDF made from the gate renders (images) |
 | `presentation/facts.json`, `build_facts.py` | Every number shown on a slide or in the video, read from the inventory, tests and evidence |
 | `presentation/assets/` | Diagrams V2–V19 (`build_diagrams.py` → SVG + PNG), licensed photos, `CREDITS.md` |
-| `presentation/video/` | Demo video: `clips/` (one per scene), `DC_Casablanca_demo.mp4` (master), `thumbnail.png`, `endcard.png`, `chapters.txt`; recorded by `03_Network/automation/demo_video/director.py`, edited by `edit.py` |
+| `presentation/video/` (v2, PLAN_06) | **Live GNS3 walkthrough, French voiceover + burned-in subtitles**: `DC_Casablanca_demo_5min.mp4` (jury cut 2:57) and `DC_Casablanca_walkthrough.mp4` (6:33), `.srt` + `_chapters.txt` next to each, `clips_v2/` (one clip per segment), `thumbnail_v2.png`; recorded by `demo_video/walkthrough.py`, voice `voice.py`, edited by `edit2.py`, text `narration.yaml`; live script `presentation/DEMO_SCRIPT.md` |
+| `presentation/video/` (v1, PLAN_05) | Silent demo video: `clips/` (one per scene), `DC_Casablanca_demo.mp4` (master), `thumbnail.png`, `endcard.png`, `chapters.txt`; recorded by `03_Network/automation/demo_video/director.py`, edited by `edit.py` |
 | `presentation/REPETITION.md` | Rehearsal kit: timing, cue cards, 20 likely questions with answers, live-demo plan B |
